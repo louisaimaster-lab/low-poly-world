@@ -41,7 +41,6 @@
   </script>
 
   <script type="module">
-  try {
   import * as THREE from 'three';
 
   // ── Scene Setup ──────────────────────────────────────────
@@ -438,7 +437,6 @@
     camera.updateProjectionMatrix();
     renderer.setSize(innerWidth, innerHeight);
   });
-  } catch(e) { document.body.innerHTML = '<div style="color:#fff;background:#1a0000;padding:40px;font-family:monospace;"><h2>JavaScript Error:</h2><pre>' + e.message + '\n' + e.stack + '</pre></div>'; console.error(e); }
   </script>
 </body>
 </html>
