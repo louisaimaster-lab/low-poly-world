@@ -272,6 +272,9 @@
 
   // ── Player Character ─────────────────────────────────────
   const player = new THREE.Group();
+  const PLAYER_RADIUS = 0.4;   // collision radius
+  const PLAYER_HEIGHT = 2.5;   // collision height (ground to hat top)
+  const FEET_OFFSET = 0.3;     // hover clearance so feet don't clip into slopes
 
   // Body
   const body = new THREE.Mesh(
@@ -300,7 +303,7 @@
   hat.castShadow = true;
   player.add(hat);
 
-  player.position.set(0, getTerrainHeight(0, 0), 0);
+  player.position.set(0, getTerrainHeight(0, 0) + FEET_OFFSET, 0);
   scene.add(player);
 
   // ── Controls ─────────────────────────────────────────────
@@ -362,25 +365,34 @@
     velocity.x = move.x * speed;
     velocity.z = move.z * speed;
 
-    // ── Jump & Gravity ────────────────────────────────────────
+    // Move horizontally FIRST so we check terrain at the destination
+    player.position.x += velocity.x * dt;
+    player.position.z += velocity.z * dt;
+
+    // Keep in bounds
+    player.position.x = Math.max(-terrainSize/2 + 2, Math.min(terrainSize/2 - 2, player.position.x));
+    player.position.z = Math.max(-terrainSize/2 + 2, Math.min(terrainSize/2 - 2, player.position.z));
+
+    // ── Jump & Gravity (hitbox-aware) ─────────────────────
+    // groundY is where the character's feet sit (group origin = feet)
     const groundY = getTerrainHeight(player.position.x, player.position.z);
     const terrainNormal = getTerrainNormal(player.position.x, player.position.z);
 
-    // Apply gravity only when above ground
-    if (player.position.y > groundY + 0.01) {
+    // Apply gravity only when above ground clearance
+    if (player.position.y > groundY + FEET_OFFSET + 0.01) {
       vy -= 15 * dt;
     }
 
-    // Jump (only when on ground)
-    if (keys['Space'] && vy === 0 && Math.abs(player.position.y - groundY) < 0.1) {
+    // Jump (only when feet are on terrain)
+    if (keys['Space'] && vy === 0 && Math.abs(player.position.y - groundY - FEET_OFFSET) < 0.1) {
       vy = 5;
     }
 
     player.position.y += vy * dt;
 
-    // Anti fall-through: hard clamp to terrain
-    if (player.position.y < groundY) {
-      player.position.y = groundY;
+    // Anti fall-through: clamp to terrain + clearance
+    if (player.position.y < groundY + FEET_OFFSET) {
+      player.position.y = groundY + FEET_OFFSET;
       vy = 0;
     }
 
@@ -389,23 +401,14 @@
       Math.sin(yaw), 0, Math.cos(yaw)
     );
     const rightDir = new THREE.Vector3().crossVectors(forwardDir, terrainNormal).normalize();
-    const trueForward = new THREE.Vector3().crossVectors(terrainNormal, rightDir).normalize();
     const targetQuat = new THREE.Quaternion().setFromUnitVectors(
       new THREE.Vector3(0, 1, 0), terrainNormal
     );
-    // Blend yaw yaw rotation
     const yawQuat = new THREE.Quaternion().setFromAxisAngle(
       new THREE.Vector3(0, 1, 0), yaw + Math.PI
     );
     const combined = targetQuat.multiply(yawQuat);
     player.quaternion.slerp(combined, 5 * dt);
-
-    player.position.x += velocity.x * dt;
-    player.position.z += velocity.z * dt;
-
-    // Keep in bounds
-    player.position.x = Math.max(-terrainSize/2 + 2, Math.min(terrainSize/2 - 2, player.position.x));
-    player.position.z = Math.max(-terrainSize/2 + 2, Math.min(terrainSize/2 - 2, player.position.z));
 
     // Camera follow
     const camDist = 5, camHeight = 3;
