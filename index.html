@@ -156,16 +156,37 @@
     return g;
   }
 
-  // ── Utility: get terrain height at (x,y) ─────────────────
+  // ── Utility: get terrain height at (x,z) with bilinear interpolation ─
   function getTerrainHeight(x, z) {
     const half = terrainSize / 2;
     const seg = terrainSize / terrainSegs;
     const col = (x + half) / seg;
-    const row = (-z + half) / seg; // note: z flipped due to rotation
+    const row = (-z + half) / seg;
     const ci = Math.floor(col), ri = Math.floor(row);
-    if (ci < 0 || ci >= terrainSegs || ri < 0 || ri >= terrainSegs) return 0;
-    const idx = ri * (terrainSegs + 1) + ci;
-    return verts.getZ(idx);
+    const cf = col - ci, rf = row - ri;
+    const ci2 = Math.min(ci + 1, terrainSegs);
+    const ri2 = Math.min(ri + 1, terrainSegs);
+    const clamp = (i, j) => {
+      if (i < 0 || i > terrainSegs || j < 0 || j > terrainSegs) return 0;
+      return verts.getZ(j * (terrainSegs + 1) + i);
+    };
+    const h00 = clamp(ci, ri), h10 = clamp(ci2, ri);
+    const h01 = clamp(ci, ri2), h11 = clamp(ci2, ri2);
+    const h0 = h00 * (1 - cf) + h10 * cf;
+    const h1 = h01 * (1 - cf) + h11 * cf;
+    return h0 * (1 - rf) + h1 * rf;
+  }
+
+  // ── Terrain normal: tilt player to match slope ─────────────
+  function getTerrainNormal(x, z) {
+    const s = 0.5;
+    const hl = getTerrainHeight(x - s, z);
+    const hr = getTerrainHeight(x + s, z);
+    const hf = getTerrainHeight(x, z - s);
+    const hb = getTerrainHeight(x, z + s);
+    const dx = hr - hl;
+    const dz = hf - hb;
+    return new THREE.Vector3(-dx, s * 2, -dz).normalize();
   }
 
   // ── Scatter Trees, Rocks, Flowers ────────────────────────
@@ -332,7 +353,6 @@
 
     if (move.length() > 0) {
       move.normalize();
-      player.rotation.y = yaw + Math.PI;
 
       // Bob animation
       const bob = Math.sin(clock.elapsedTime * (keys['ShiftLeft'] ? 12 : 8)) * 0.1;
@@ -342,15 +362,43 @@
     velocity.x = move.x * speed;
     velocity.z = move.z * speed;
 
-    // Jump
-    if (keys['Space'] && vy === 0) vy = 5;
-    vy -= 15 * dt; // gravity
+    // ── Jump & Gravity ────────────────────────────────────────
     const groundY = getTerrainHeight(player.position.x, player.position.z);
+    const terrainNormal = getTerrainNormal(player.position.x, player.position.z);
+
+    // Apply gravity only when above ground
+    if (player.position.y > groundY + 0.01) {
+      vy -= 15 * dt;
+    }
+
+    // Jump (only when on ground)
+    if (keys['Space'] && vy === 0 && Math.abs(player.position.y - groundY) < 0.1) {
+      vy = 5;
+    }
+
     player.position.y += vy * dt;
+
+    // Anti fall-through: hard clamp to terrain
     if (player.position.y < groundY) {
       player.position.y = groundY;
       vy = 0;
     }
+
+    // Rotate player to align with terrain slope
+    const forwardDir = new THREE.Vector3(
+      Math.sin(yaw), 0, Math.cos(yaw)
+    );
+    const rightDir = new THREE.Vector3().crossVectors(forwardDir, terrainNormal).normalize();
+    const trueForward = new THREE.Vector3().crossVectors(terrainNormal, rightDir).normalize();
+    const targetQuat = new THREE.Quaternion().setFromUnitVectors(
+      new THREE.Vector3(0, 1, 0), terrainNormal
+    );
+    // Blend yaw yaw rotation
+    const yawQuat = new THREE.Quaternion().setFromAxisAngle(
+      new THREE.Vector3(0, 1, 0), yaw + Math.PI
+    );
+    const combined = targetQuat.multiply(yawQuat);
+    player.quaternion.slerp(combined, 5 * dt);
 
     player.position.x += velocity.x * dt;
     player.position.z += velocity.z * dt;
