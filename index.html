@@ -203,14 +203,16 @@
       scene.add(createTree(x, z));
     } else {
       // Rock
+      const rockSize = 0.5 + Math.random() * 1;
       const rock = new THREE.Mesh(
-        new THREE.DodecahedronGeometry(0.5 + Math.random() * 1, 0),
+        new THREE.DodecahedronGeometry(rockSize, 0),
         new THREE.MeshStandardMaterial({
           color: new THREE.Color().setHSL(0, 0, 0.3 + Math.random() * 0.3),
           flatShading: true
         })
       );
-      rock.position.set(x, getTerrainHeight(x, z) + 0.5, z);
+      const rockY = Math.max(getTerrainHeight(x, z) + rockSize, -1.5);
+      rock.position.set(x, rockY, z);
       rock.rotation.set(Math.random(), Math.random(), Math.random());
       rock.castShadow = true;
       scene.add(rock);
@@ -225,24 +227,24 @@
     const fx = Math.cos(angle) * dist;
     const fz = Math.sin(angle) * dist;
 
-    // Stem, with water clearance
+    // Stem, sitting properly on terrain
     const stem = new THREE.Mesh(
       new THREE.CylinderGeometry(0.02, 0.02, 0.4, 3),
       new THREE.MeshStandardMaterial({ color: 0x3a7d2c, flatShading: true })
     );
-    const flowerBaseY = Math.max(getTerrainHeight(fx, fz) + 0.3, -1.5);
-    stem.position.set(fx, flowerBaseY + 0.2, fz);
+    const flowerY = Math.max(getTerrainHeight(fx, fz), -1.5);
+    stem.position.set(fx, flowerY + 0.2, fz);
     scene.add(stem);
 
     // Petals
     const petal = new THREE.Mesh(
-      new THREE.SphereGeometry(0.12 + Math.random() * 0.08, 4, 3),
+      petalGeo,
       new THREE.MeshStandardMaterial({
         color: flowerColors[Math.floor(Math.random() * flowerColors.length)],
         flatShading: true
       })
     );
-    petal.position.set(fx, flowerBaseY + 0.5, fz);
+    petal.position.set(fx, flowerY + 0.5, fz);
     scene.add(petal);
   }
 
