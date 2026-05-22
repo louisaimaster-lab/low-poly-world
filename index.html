@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Low Poly World — Built with Hermes</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { overflow: hidden; background: #000; font-family: 'Segoe UI', Arial, sans-serif; }
+    canvas { display: block; }
+    #ui {
+      position: fixed; top: 20px; left: 20px; z-index: 10;
+      color: #fff; font-size: 14px;
+      background: rgba(0,0,0,0.5); padding: 16px 22px;
+      border-radius: 12px; backdrop-filter: blur(8px);
+    }
+    #ui h1 { font-size: 18px; margin-bottom: 6px; font-weight: 600; }
+    #ui p { opacity: 0.7; font-size: 13px; line-height: 1.5; }
+    #ui kbd {
+      background: #fff2; padding: 2px 8px; border-radius: 4px;
+      font-family: monospace; font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div id="ui">
+    <h1>🌍 Low Poly World</h1>
+    <p>
+      <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> Move<br/>
+      <kbd>Shift</kbd> Run &middot; <kbd>Space</kbd> Jump<br/>
+      <kbd>Mouse</kbd> Look around
+    </p>
+  </div>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js"
+    }
+  }
+  </script>
+
+  <script type="module">
+  import * as THREE from 'three';
+
+  // ── Scene Setup ──────────────────────────────────────────
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x7ec8e3);
+  scene.fog = new THREE.FogExp2(0x7ec8e3, 0.008);
+
+  const camera = new THREE.PerspectiveCamera(70, innerWidth / innerHeight, 0.1, 500);
+  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setSize(innerWidth, innerHeight);
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.1;
+  document.body.appendChild(renderer.domElement);
+
+  // ── Lights ───────────────────────────────────────────────
+  const sun = new THREE.DirectionalLight(0xfff4e0, 2);
+  sun.position.set(50, 80, 30);
+  sun.castShadow = true;
+  sun.shadow.mapSize.set(2048, 2048);
+  sun.shadow.camera.near = 1;
+  sun.shadow.camera.far = 200;
+  sun.shadow.camera.left = -80;
+  sun.shadow.camera.right = 80;
+  sun.shadow.camera.top = 80;
+  sun.shadow.camera.bottom = -80;
+  scene.add(sun);
+
+  scene.add(new THREE.HemisphereLight(0x87ceeb, 0x3a7d2c, 0.6));
+  scene.add(new THREE.AmbientLight(0x404060, 0.3));
+
+  // ── Low-Poly Terrain ─────────────────────────────────────
+  const terrainSize = 200;
+  const terrainSegs = 40;
+  const terrainGeo = new THREE.PlaneGeometry(terrainSize, terrainSize, terrainSegs, terrainSegs);
+  const verts = terrainGeo.attributes.position;
+  for (let i = 0; i < verts.count; i++) {
+    const x = verts.getX(i), y = verts.getY(i);
+    const dist = Math.sqrt(x * x + y * y);
+    let h = (Math.sin(x * 0.05) * Math.cos(y * 0.07) * 3 +
+             Math.sin(x * 0.12 + y * 0.09) * 2 +
+             Math.random() * 0.3);
+    // Flatten center area for player start
+    if (dist < 10) h *= dist / 10;
+    verts.setZ(i, h);
+  }
+  terrainGeo.computeVertexNormals();
+
+  // Low-poly coloring by height
+  const colors = [];
+  for (let i = 0; i < verts.count; i++) {
+    const h = verts.getZ(i);
+    let c;
+    if (h < -1.5) c = new THREE.Color(0x5a3a1a);    // low ground
+    else if (h < 0) c = new THREE.Color(0x4a7c3f);     // grass
+    else if (h < 2) c = new THREE.Color(0x5cb85c);     // light grass
+    else if (h < 4) c = new THREE.Color(0x7bc950);     // high grass
+    else c = new THREE.Color(0x8fbc8f);                // hill top
+    colors.push(c.r, c.g, c.b);
+  }
+  terrainGeo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+
+  const terrainMat = new THREE.MeshStandardMaterial({
+    vertexColors: true, flatShading: true, roughness: 0.9
+  });
+  const terrain = new THREE.Mesh(terrainGeo, terrainMat);
+  terrain.rotation.x = -Math.PI / 2;
+  terrain.receiveShadow = true;
+  scene.add(terrain);
+
+  // ── Water (flat blue plane) ──────────────────────────────
+  const water = new THREE.Mesh(
+    new THREE.CircleGeometry(300, 5),
+    new THREE.MeshStandardMaterial({ color: 0x5b91c6, flatShading: true, transparent: true, opacity: 0.8 })
+  );
+  water.rotation.x = -Math.PI / 2;
+  water.position.y = -2;
+  scene.add(water);
+
+  // ── Low-Poly Tree Generator ──────────────────────────────
+  function createTree(x, z) {
+    const g = new THREE.Group();
+
+    // Trunk
+    const trunkH = 1.5 + Math.random() * 2;
+    const trunk = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.15, 0.25, trunkH, 5),
+      new THREE.MeshStandardMaterial({ color: 0x8b5a2b, flatShading: true })
+    );
+    trunk.position.y = trunkH / 2;
+    trunk.castShadow = true;
+    g.add(trunk);
+
+    // Foliage layers
+    const foliagePalettes = [0x2d8b4a, 0x3aa85e, 0x2e7d32, 0x4caf50, 0x388e3c];
+    const layers = 2 + Math.floor(Math.random() * 2);
+    for (let i = 0; i < layers; i++) {
+      const r = (layers - i) * 0.8 + Math.random() * 0.3;
+      const h = r * 1.5;
+      const mat = new THREE.MeshStandardMaterial({
+        color: foliagePalettes[Math.floor(Math.random() * foliagePalettes.length)],
+        flatShading: true
+      });
+      const cone = new THREE.Mesh(new THREE.ConeGeometry(r, h, 5 + Math.floor(Math.random() * 3)), mat);
+      cone.position.y = trunkH + i * h * 0.5;
+      cone.castShadow = true;
+      g.add(cone);
+    }
+
+    g.position.set(x, getTerrainHeight(x, z), z);
+    return g;
+  }
+
+  // ── Utility: get terrain height at (x,y) ─────────────────
+  function getTerrainHeight(x, z) {
+    const half = terrainSize / 2;
+    const seg = terrainSize / terrainSegs;
+    const col = (x + half) / seg;
+    const row = (-z + half) / seg; // note: z flipped due to rotation
+    const ci = Math.floor(col), ri = Math.floor(row);
+    if (ci < 0 || ci >= terrainSegs || ri < 0 || ri >= terrainSegs) return 0;
+    const idx = ri * (terrainSegs + 1) + ci;
+    return verts.getZ(idx);
+  }
+
+  // ── Scatter Trees, Rocks, Flowers ────────────────────────
+  for (let i = 0; i < 200; i++) {
+    const x = (Math.random() - 0.5) * 160;
+    const z = (Math.random() - 0.5) * 160;
+    const dist = Math.sqrt(x * x + z * z);
+    if (dist < 5) continue; // keep center clear
+    if (dist < 80 && Math.random() > 0.7) continue;
+
+    if (Math.random() < 0.85) {
+      scene.add(createTree(x, z));
+    } else {
+      // Rock
+      const rock = new THREE.Mesh(
+        new THREE.DodecahedronGeometry(0.5 + Math.random() * 1, 0),
+        new THREE.MeshStandardMaterial({
+          color: new THREE.Color().setHSL(0, 0, 0.3 + Math.random() * 0.3),
+          flatShading: true
+        })
+      );
+      rock.position.set(x, getTerrainHeight(x, z) + 0.2, z);
+      rock.rotation.set(Math.random(), Math.random(), Math.random());
+      rock.castShadow = true;
+      scene.add(rock);
+    }
+  }
+
+  // Flowers
+  const flowerColors = [0xff6b9d, 0xffd700, 0xff4444, 0xffffff, 0xbb88ee, 0xff9944];
+  for (let i = 0; i < 150; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const dist = 5 + Math.random() * 60;
+    const fx = Math.cos(angle) * dist;
+    const fz = Math.sin(angle) * dist;
+
+    // Stem
+    const stem = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.02, 0.02, 0.4, 3),
+      new THREE.MeshStandardMaterial({ color: 0x3a7d2c, flatShading: true })
+    );
+    stem.position.set(fx, getTerrainHeight(fx, fz) + 0.2, fz);
+    scene.add(stem);
+
+    // Petals
+    const petal = new THREE.Mesh(
+      new THREE.SphereGeometry(0.12 + Math.random() * 0.08, 4, 3),
+      new THREE.MeshStandardMaterial({
+        color: flowerColors[Math.floor(Math.random() * flowerColors.length)],
+        flatShading: true
+      })
+    );
+    petal.position.set(fx, getTerrainHeight(fx, fz) + 0.5, fz);
+    scene.add(petal);
+  }
+
+  // ── Clouds ───────────────────────────────────────────────
+  function createCloud() {
+    const g = new THREE.Group();
+    const count = 3 + Math.floor(Math.random() * 4);
+    for (let i = 0; i < count; i++) {
+      const s = new THREE.Mesh(
+        new THREE.DodecahedronGeometry(2 + Math.random() * 3, 1),
+        new THREE.MeshStandardMaterial({ color: 0xffffff, flatShading: true, transparent: true, opacity: 0.9 })
+      );
+      s.position.set(i * 3 - count, Math.random() * 1, Math.random() * 2);
+      g.add(s);
+    }
+    g.position.set(
+      (Math.random() - 0.5) * 200,
+      30 + Math.random() * 15,
+      (Math.random() - 0.5) * 200
+    );
+    g.userData.speed = 0.2 + Math.random() * 0.5;
+    return g;
+  }
+  const clouds = [];
+  for (let i = 0; i < 12; i++) {
+    const c = createCloud();
+    clouds.push(c);
+    scene.add(c);
+  }
+
+  // ── Player Character ─────────────────────────────────────
+  const player = new THREE.Group();
+
+  // Body
+  const body = new THREE.Mesh(
+    new THREE.BoxGeometry(0.6, 1.2, 0.4),
+    new THREE.MeshStandardMaterial({ color: 0x4488cc, flatShading: true })
+  );
+  body.position.y = 0.9;
+  body.castShadow = true;
+  player.add(body);
+
+  // Head
+  const head = new THREE.Mesh(
+    new THREE.BoxGeometry(0.5, 0.5, 0.5),
+    new THREE.MeshStandardMaterial({ color: 0xffcc99, flatShading: true })
+  );
+  head.position.y = 1.75;
+  head.castShadow = true;
+  player.add(head);
+
+  // Hat
+  const hat = new THREE.Mesh(
+    new THREE.ConeGeometry(0.35, 0.5, 4),
+    new THREE.MeshStandardMaterial({ color: 0xe74c3c, flatShading: true })
+  );
+  hat.position.y = 2.25;
+  hat.castShadow = true;
+  player.add(hat);
+
+  player.position.set(0, getTerrainHeight(0, 0), 0);
+  scene.add(player);
+
+  // ── Controls ─────────────────────────────────────────────
+  const keys = {};
+  const velocity = new THREE.Vector3();
+  let yaw = 0, pitch = 0;
+  let isLocked = false;
+
+  document.addEventListener('keydown', e => { keys[e.code] = true; });
+  document.addEventListener('keyup', e => { keys[e.code] = false; });
+
+  renderer.domElement.addEventListener('click', () => {
+    renderer.domElement.requestPointerLock();
+  });
+
+  document.addEventListener('pointerlockchange', () => {
+    isLocked = document.pointerLockElement === renderer.domElement;
+  });
+
+  document.addEventListener('mousemove', e => {
+    if (!isLocked) return;
+    yaw -= e.movementX * 0.002;
+    pitch = Math.max(-0.4, Math.min(0.8, pitch - e.movementY * 0.002));
+  });
+
+  // ── Game Loop ────────────────────────────────────────────
+  const clock = new THREE.Clock();
+  let vy = 0; // vertical velocity (jump)
+
+  function animate() {
+    requestAnimationFrame(animate);
+    const dt = Math.min(clock.getDelta(), 0.05);
+
+    // Clouds drift
+    for (const c of clouds) {
+      c.position.x += c.userData.speed * dt;
+      if (c.position.x > 100) c.position.x = -100;
+    }
+
+    // Player movement
+    const speed = keys['ShiftLeft'] ? 12 : 6;
+    const forward = new THREE.Vector3(-Math.sin(yaw), 0, -Math.cos(yaw));
+    const right = new THREE.Vector3(Math.cos(yaw), 0, -Math.sin(yaw));
+
+    const move = new THREE.Vector3();
+    if (keys['KeyW'] || keys['ArrowUp']) move.add(forward);
+    if (keys['KeyS'] || keys['ArrowDown']) move.sub(forward);
+    if (keys['KeyA'] || keys['ArrowLeft']) move.sub(right);
+    if (keys['KeyD'] || keys['ArrowRight']) move.add(right);
+
+    if (move.length() > 0) {
+      move.normalize();
+      player.rotation.y = yaw + Math.PI;
+
+      // Bob animation
+      const bob = Math.sin(clock.elapsedTime * (keys['ShiftLeft'] ? 12 : 8)) * 0.1;
+      body.position.y = 0.9 + bob;
+    }
+
+    velocity.x = move.x * speed;
+    velocity.z = move.z * speed;
+
+    // Jump
+    if (keys['Space'] && vy === 0) vy = 5;
+    vy -= 15 * dt; // gravity
+    const groundY = getTerrainHeight(player.position.x, player.position.z);
+    player.position.y += vy * dt;
+    if (player.position.y < groundY) {
+      player.position.y = groundY;
+      vy = 0;
+    }
+
+    player.position.x += velocity.x * dt;
+    player.position.z += velocity.z * dt;
+
+    // Keep in bounds
+    player.position.x = Math.max(-terrainSize/2 + 2, Math.min(terrainSize/2 - 2, player.position.x));
+    player.position.z = Math.max(-terrainSize/2 + 2, Math.min(terrainSize/2 - 2, player.position.z));
+
+    // Camera follow
+    const camDist = 5, camHeight = 3;
+    camera.position.set(
+      player.position.x + Math.sin(yaw) * camDist,
+      player.position.y + camHeight - pitch * 3,
+      player.position.z + Math.cos(yaw) * camDist
+    );
+    camera.lookAt(player.position.x, player.position.y + 1.5, player.position.z);
+
+    renderer.render(scene, camera);
+  }
+
+  animate();
+
+  // ── Resize ───────────────────────────────────────────────
+  window.addEventListener('resize', () => {
+    camera.aspect = innerWidth / innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(innerWidth, innerHeight);
+  });
+  </script>
+</body>
+</html>
