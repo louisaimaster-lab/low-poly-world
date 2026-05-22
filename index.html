@@ -403,7 +403,6 @@
     const forwardDir = new THREE.Vector3(
       Math.sin(yaw), 0, Math.cos(yaw)
     );
-    const terrainNormal = getTerrainNormal(player.position.x, player.position.z);
     const rightDir = new THREE.Vector3().crossVectors(forwardDir, terrainNormal).normalize();
     if (rightDir.length() > 0.1) {
       const targetQuat = new THREE.Quaternion().setFromUnitVectors(
@@ -413,11 +412,6 @@
         new THREE.Vector3(0, 1, 0), yaw + Math.PI
       );
       const combined = targetQuat.multiply(yawQuat);
-      // Very gentle slope alignment (30% weight) so we don't over-tilt
-      const slopeOnly = new THREE.Quaternion().setFromUnitVectors(
-        new THREE.Vector3(0, 1, 0), terrainNormal
-      );
-      const maxTilt = 0.15; // max tilt angle in radians
       player.quaternion.slerp(combined, 3 * dt);
     }
 
