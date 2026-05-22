@@ -126,7 +126,7 @@
   function createTree(x, z) {
     const g = new THREE.Group();
 
-    // Trunk
+    // Trunk sits ON the terrain, not at center
     const trunkH = 1.5 + Math.random() * 2;
     const trunk = new THREE.Mesh(
       new THREE.CylinderGeometry(0.15, 0.25, trunkH, 5),
@@ -152,7 +152,9 @@
       g.add(cone);
     }
 
-    g.position.set(x, getTerrainHeight(x, z), z);
+    // Position tree so its base sits on the terrain, with minimum clearance above water
+    const ty = Math.max(getTerrainHeight(x, z), -1.5); // water is at y=-2
+    g.position.set(x, ty, z);
     return g;
   }
 
@@ -177,16 +179,16 @@
     return h0 * (1 - rf) + h1 * rf;
   }
 
-  // ── Terrain normal: tilt player to match slope ─────────────
+    // ── Terrain normal: tilt player to match slope ─────────────
   function getTerrainNormal(x, z) {
-    const s = 0.5;
+    const s = 0.8; // wider sample = more stable normals
     const hl = getTerrainHeight(x - s, z);
     const hr = getTerrainHeight(x + s, z);
     const hf = getTerrainHeight(x, z - s);
     const hb = getTerrainHeight(x, z + s);
-    const dx = hr - hl;
-    const dz = hf - hb;
-    return new THREE.Vector3(-dx, s * 2, -dz).normalize();
+    const dx = (hr - hl) / (s * 2);
+    const dz = (hf - hb) / (s * 2);
+    return new THREE.Vector3(-dx, 1, -dz).normalize();
   }
 
   // ── Scatter Trees, Rocks, Flowers ────────────────────────
@@ -208,7 +210,7 @@
           flatShading: true
         })
       );
-      rock.position.set(x, getTerrainHeight(x, z) + 0.2, z);
+      rock.position.set(x, getTerrainHeight(x, z) + 0.5, z);
       rock.rotation.set(Math.random(), Math.random(), Math.random());
       rock.castShadow = true;
       scene.add(rock);
@@ -223,12 +225,13 @@
     const fx = Math.cos(angle) * dist;
     const fz = Math.sin(angle) * dist;
 
-    // Stem
+    // Stem, with water clearance
     const stem = new THREE.Mesh(
       new THREE.CylinderGeometry(0.02, 0.02, 0.4, 3),
       new THREE.MeshStandardMaterial({ color: 0x3a7d2c, flatShading: true })
     );
-    stem.position.set(fx, getTerrainHeight(fx, fz) + 0.2, fz);
+    const flowerBaseY = Math.max(getTerrainHeight(fx, fz) + 0.3, -1.5);
+    stem.position.set(fx, flowerBaseY + 0.2, fz);
     scene.add(stem);
 
     // Petals
@@ -239,7 +242,7 @@
         flatShading: true
       })
     );
-    petal.position.set(fx, getTerrainHeight(fx, fz) + 0.5, fz);
+    petal.position.set(fx, flowerBaseY + 0.5, fz);
     scene.add(petal);
   }
 
@@ -396,19 +399,27 @@
       vy = 0;
     }
 
-    // Rotate player to align with terrain slope
+    // Rotate player to align with terrain slope (gentle tilt only)
     const forwardDir = new THREE.Vector3(
       Math.sin(yaw), 0, Math.cos(yaw)
     );
+    const terrainNormal = getTerrainNormal(player.position.x, player.position.z);
     const rightDir = new THREE.Vector3().crossVectors(forwardDir, terrainNormal).normalize();
-    const targetQuat = new THREE.Quaternion().setFromUnitVectors(
-      new THREE.Vector3(0, 1, 0), terrainNormal
-    );
-    const yawQuat = new THREE.Quaternion().setFromAxisAngle(
-      new THREE.Vector3(0, 1, 0), yaw + Math.PI
-    );
-    const combined = targetQuat.multiply(yawQuat);
-    player.quaternion.slerp(combined, 5 * dt);
+    if (rightDir.length() > 0.1) {
+      const targetQuat = new THREE.Quaternion().setFromUnitVectors(
+        new THREE.Vector3(0, 1, 0), terrainNormal
+      );
+      const yawQuat = new THREE.Quaternion().setFromAxisAngle(
+        new THREE.Vector3(0, 1, 0), yaw + Math.PI
+      );
+      const combined = targetQuat.multiply(yawQuat);
+      // Very gentle slope alignment (30% weight) so we don't over-tilt
+      const slopeOnly = new THREE.Quaternion().setFromUnitVectors(
+        new THREE.Vector3(0, 1, 0), terrainNormal
+      );
+      const maxTilt = 0.15; // max tilt angle in radians
+      player.quaternion.slerp(combined, 3 * dt);
+    }
 
     // Camera follow
     const camDist = 5, camHeight = 3;
