@@ -66,10 +66,10 @@
   <div id="ui">
     <h1>🌍 Low Poly World</h1>
     <p>
-      <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> Move<br/>
+      <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> Move &middot; <kbd>E</kbd> Climb Up<br/>
       <kbd>Ctrl</kbd> Run &middot; <kbd>Space</kbd> Jump<br/>
       <kbd>Shift</kbd> Switch Shiftlock Mode<br/>
-      <kbd>Mouse</kbd> Look around
+      <kbd>Mouse</kbd> Look (Right-Click Drag without Shiftlock)
     </p>
     <div id="shiftlock-indicator" style="margin-top: 8px; font-size: 12px; font-weight: bold; color: #ffcc00; letter-spacing: 0.5px;">
       Shiftlock: Off (None)
@@ -901,28 +901,57 @@
       const dz = player.position.z - ladder.z;
       const dist = Math.sqrt(dx * dx + dz * dz);
       
-      if (dist < 1.0 && player.position.y >= ladder.yMin - 0.5 && player.position.y <= ladder.yMax + 0.8) {
+      if (dist < 1.1 && player.position.y >= ladder.yMin - 0.5 && player.position.y <= ladder.yMax + 0.8) {
         activeLadder = ladder;
         break;
       }
     }
     
     if (activeLadder) {
-      // If pressing W/Up or Space, climb up
-      if (keys['KeyW'] || keys['ArrowUp'] || keys['Space']) {
+      // W or Up Arrow always offsets Bob forward, detaching him from the ladder!
+      if (keys['KeyW'] || keys['ArrowUp']) {
+        player.userData.isClimbingLadder = false;
+        isClimbing = false;
+        // Push Bob horizontally slightly in his look direction to offset him from the ladder
+        player.position.x += forward.x * 2.0 * dt;
+        player.position.z += forward.z * 2.0 * dt;
+      } 
+      // E Key interacts to enter climbing state and climbs UP
+      else if (keys['KeyE']) {
+        player.userData.isClimbingLadder = true;
         vy = 4.5;
         isClimbing = true;
       } 
-      // If pressing S/Down, climb down
+      // S or Down Arrow interacts to enter climbing state and climbs DOWN
       else if (keys['KeyS'] || keys['ArrowDown']) {
+        player.userData.isClimbingLadder = true;
         vy = -4.5;
         isClimbing = true;
       } 
-      // If on ladder but not pressing anything, hold vertical position (no sliding/falling!)
-      else {
+      // If Bob is already in the climbing state, hold position (vy = 0)
+      else if (player.userData.isClimbingLadder) {
         vy = 0;
         isClimbing = true;
       }
+    } else {
+      player.userData.isClimbingLadder = false;
+    }
+
+    // ── Cute Low-Poly Climb Animation ─────────────────────
+    if (isClimbing) {
+      // Bob wiggles body and bobs head like he's climbing rungs!
+      const climbTime = clock.getElapsedTime() * 12;
+      body.position.x = Math.sin(climbTime) * 0.12;
+      body.position.y = 0.6 + Math.cos(climbTime * 2) * 0.08;
+      
+      head.position.x = Math.sin(climbTime) * 0.08;
+      head.position.y = 1.45 + Math.cos(climbTime * 2) * 0.05;
+    } else {
+      // Reset to standard resting positions
+      body.position.x = 0;
+      body.position.y = 0.6;
+      head.position.x = 0;
+      head.position.y = 1.45;
     }
     
     // groundY is where the character's feet sit (group origin = feet)
