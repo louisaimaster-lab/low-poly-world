@@ -850,7 +850,9 @@
     // Anti fall-through: clamp to terrain + clearance
     if (player.position.y < groundY + FEET_OFFSET) {
       player.position.y = groundY + FEET_OFFSET;
-      vy = 0;
+      if (vy < 0) {
+        vy = 0;
+      }
     }
 
     // Rotate player to align with terrain slope & Shiftlock mode settings
@@ -912,7 +914,7 @@
       
       // 1. Terrain collision check
       const terrainY = getTerrainHeight(checkX, checkZ);
-      if (checkY < terrainY + 0.3) {
+      if (checkY < terrainY + 0.08) {
         targetRadius = maxRadius * Math.max(0.15, t - 0.08);
         break;
       }
@@ -949,7 +951,7 @@
     
     // Smoothly decrease targetRadius if camera is calculated to be below terrain + buffer
     let safetyCounter = 0;
-    while (targetRadius > 1.2 && checkPos.y < terrainHeightAtCam + 0.4 && safetyCounter < 15) {
+    while (targetRadius > 1.2 && checkPos.y < terrainHeightAtCam + 0.12 && safetyCounter < 15) {
       targetRadius -= 0.3;
       testOffset.set(
         Math.sin(yaw) * Math.cos(pitch) * targetRadius,
