@@ -40,7 +40,20 @@
     </p>
   </div>
 
+  <!-- Load Three.js with robust CDN fallbacks (essential when jsDelivr is blocked by DNS/adblockers) -->
   <script src="https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.min.js"></script>
+  <script>
+    if (typeof THREE === 'undefined') {
+      console.warn('jsDelivr failed to load Three.js, attempting unpkg fallback...');
+      document.write('<script src="https://unpkg.com/three@0.164.1/build/three.min.js"><\/script>');
+    }
+  </script>
+  <script>
+    if (typeof THREE === 'undefined') {
+      console.warn('unpkg failed to load Three.js, attempting cdnjs fallback...');
+      document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"><\/script>');
+    }
+  </script>
 
   <script>
 
