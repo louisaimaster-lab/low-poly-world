@@ -483,6 +483,77 @@
   flagGroup.position.set(130, peakH + 5.0, -130);
   scene.add(flagGroup);
 
+  // ── Above the Clouds Biome (Visual Cloud Generator & Spawning) ──
+  function createVisualCloudPlatform(x, y, z, width, length) {
+    const g = new THREE.Group();
+    const cloudMat = new THREE.MeshStandardMaterial({
+      color: 0xffffff,
+      flatShading: true,
+      transparent: true,
+      opacity: 0.96,
+      roughness: 0.9
+    });
+    
+    // Spawn overlapping low-poly puffs around the border and slightly overlapping the top
+    const puffCount = 14;
+    for (let i = 0; i < puffCount; i++) {
+      const angle = (i / puffCount) * Math.PI * 2;
+      const radiusX = (width / 2) * (0.8 + Math.random() * 0.25);
+      const radiusZ = (length / 2) * (0.8 + Math.random() * 0.25);
+      
+      const px = Math.cos(angle) * radiusX;
+      const pz = Math.sin(angle) * radiusZ;
+      const py = -0.3 + (Math.random() - 0.5) * 0.3; // overlapping the flat hitbox
+      
+      const size = 2.0 + Math.random() * 1.5;
+      const puff = new THREE.Mesh(new THREE.DodecahedronGeometry(size, 1), cloudMat);
+      puff.position.set(px, py, pz);
+      puff.castShadow = true;
+      puff.receiveShadow = true;
+      g.add(puff);
+    }
+    
+    // Cloud underside fluffy base
+    for (let i = 0; i < 5; i++) {
+      const size = 3.0 + Math.random() * 2.0;
+      const puff = new THREE.Mesh(new THREE.DodecahedronGeometry(size, 1), cloudMat);
+      puff.position.set((Math.random() - 0.5) * width * 0.4, -1.0, (Math.random() - 0.5) * length * 0.4);
+      g.add(puff);
+    }
+    
+    g.position.set(x, y, z);
+    scene.add(g);
+  }
+
+  // 45% chance to spawn the secret sky biome in any given session!
+  const hasCloudBiome = Math.random() < 0.45;
+  if (hasCloudBiome) {
+    console.log("☁️ Secret cloud biome spawned at (-110, -110)!");
+    const indicator = document.createElement('div');
+    indicator.style.marginTop = '6px';
+    indicator.style.fontSize = '12px';
+    indicator.style.color = '#e0f7fa';
+    indicator.style.fontWeight = 'bold';
+    indicator.textContent = '☁️ Secret: Sky Clouds Biome spawned!';
+    const uiBox = document.getElementById('ui');
+    if (uiBox) uiBox.appendChild(indicator);
+
+    // 1. Spans a massive vertical ladder from ground level to 48.0 height
+    const groundHeight = getTerrainHeight(-110, -110);
+    createLadder(-110, groundHeight, 48.0, -110, 0);
+
+    // 2. Spawn 3 connected flat ground hitbox pathways (wood platforms) at height 48
+    // Width and Length acts as the physical collision box!
+    createPathway(-110, 48.0, -110, 0, 0, 0, 10, 10);
+    createPathway(-110, 48.0, -120, 0, 0, 0, 8, 8);
+    createPathway(-100, 48.0, -110, 0, 0, 0, 8, 8);
+
+    // 3. Cover them with fluffy visual cloud puffs (which overlap the flat hitbox)
+    createVisualCloudPlatform(-110, 48.0, -110, 10, 10);
+    createVisualCloudPlatform(-110, 48.0, -120, 8, 8);
+    createVisualCloudPlatform(-100, 48.0, -110, 8, 8);
+  }
+
   // ── Clouds ───────────────────────────────────────────────
   function createCloud() {
     const g = new THREE.Group();
@@ -833,31 +904,64 @@
     const groundY = getTerrainHeight(player.position.x, player.position.z);
     const terrainNormal = getTerrainNormal(player.position.x, player.position.z);
 
+    // Platform collision check (for elevated pathways/clouds)
+    let platformY = -999;
+    for (const path of pathwaysData) {
+      const pdx = player.position.x - path.x;
+      const pdz = player.position.z - path.z;
+      
+      const sizeX = path.width / 2 + 0.35;
+      const sizeZ = path.length / 2 + 0.35;
+      
+      const cosRY = Math.cos(-path.ry);
+      const sinRY = Math.sin(-path.ry);
+      const localX = pdx * cosRY - pdz * sinRY;
+      const localZ = pdx * sinRY + pdz * cosRY;
+      
+      if (Math.abs(localX) < sizeX && Math.abs(localZ) < sizeZ) {
+        // Player is horizontally inside the platform. Check if falling onto it
+        if (player.position.y >= path.y - 0.25 && player.position.y <= path.y + 0.6) {
+          platformY = path.y;
+          break;
+        }
+      }
+    }
+
+    let landingY = groundY + FEET_OFFSET;
+    let isStandingOnPlatform = false;
+    if (platformY > groundY + FEET_OFFSET) {
+      landingY = platformY;
+      isStandingOnPlatform = true;
+    }
+
     // Apply gravity only if not actively climbing a ladder
     if (!isClimbing) {
-      if (player.position.y > groundY + FEET_OFFSET + 0.01) {
+      if (player.position.y > landingY + 0.01) {
         vy -= 22 * dt;
+      } else {
+        vy = 0;
       }
 
-      // Jump (only when feet are on terrain, using a wider 0.35 threshold for sprint jumping)
-      if (keys['Space'] && vy === 0 && Math.abs(player.position.y - groundY - FEET_OFFSET) < 0.35) {
+      // Jump (only when feet are on landing surface, using a wider 0.35 threshold for sprint jumping)
+      if (keys['Space'] && vy === 0 && Math.abs(player.position.y - landingY) < 0.35) {
         vy = 8;
       }
     }
 
     player.position.y += vy * dt;
 
-    // Anti fall-through: clamp to terrain + clearance
-    if (player.position.y < groundY + FEET_OFFSET) {
-      player.position.y = groundY + FEET_OFFSET;
+    // Anti fall-through: clamp to terrain or platform
+    if (player.position.y < landingY) {
+      player.position.y = landingY;
       if (vy < 0) {
         vy = 0;
       }
     }
 
-    // Rotate player to align with terrain slope & Shiftlock mode settings
+    // Rotate player to align with terrain slope (or keep upright if standing on an elevated platform)
+    const activeNormal = isStandingOnPlatform ? new THREE.Vector3(0, 1, 0) : terrainNormal;
     const targetQuat = new THREE.Quaternion().setFromUnitVectors(
-      new THREE.Vector3(0, 1, 0), terrainNormal
+      new THREE.Vector3(0, 1, 0), activeNormal
     );
     
     if (shiftlockMode === 0) {
