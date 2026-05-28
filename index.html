@@ -206,6 +206,7 @@
   }
 
   // ── Scatter Trees, Rocks, Flowers ────────────────────────
+  const treePositions = [];
   for (let i = 0; i < 200; i++) {
     const tx = (Math.random() - 0.5) * 160;
     const tz = (Math.random() - 0.5) * 160;
@@ -215,6 +216,7 @@
 
     if (Math.random() < 0.85) {
       scene.add(createTree(tx, tz));
+      treePositions.push({ x: tx, z: tz });
     } else {
       // Rock
       const rockSize = 0.5 + Math.random() * 1;
@@ -377,9 +379,6 @@
     if (move.length() > 0) {
       move.normalize();
 
-      // Bob animation
-      const bob = Math.sin(clock.elapsedTime * (keys['ShiftLeft'] ? 12 : 8)) * 0.1;
-      body.position.y = 0.6 + bob;
     }
 
     velocity.x = move.x * speed;
@@ -393,6 +392,22 @@
     player.position.x = Math.max(-terrainSize/2 + 2, Math.min(terrainSize/2 - 2, player.position.x));
     player.position.z = Math.max(-terrainSize/2 + 2, Math.min(terrainSize/2 - 2, player.position.z));
 
+    // Tree collisions (cylinder-based check around the trunks)
+    const playerRadius = 0.4;
+    const trunkCollisionRadius = 0.5; // Slightly larger than tree trunks for smooth navigation
+    const minCollisionDist = playerRadius + trunkCollisionRadius;
+    for (const tree of treePositions) {
+      const dx = player.position.x - tree.x;
+      const dz = player.position.z - tree.z;
+      const dist = Math.sqrt(dx * dx + dz * dz);
+      if (dist < minCollisionDist) {
+        // Push the player outward to prevent clipping
+        const angle = Math.atan2(dz, dx);
+        player.position.x = tree.x + Math.cos(angle) * minCollisionDist;
+        player.position.z = tree.z + Math.sin(angle) * minCollisionDist;
+      }
+    }
+
     // ── Jump & Gravity (hitbox-aware) ─────────────────────
     // groundY is where the character's feet sit (group origin = feet)
     const groundY = getTerrainHeight(player.position.x, player.position.z);
@@ -400,12 +415,12 @@
 
     // Apply gravity only when above ground clearance
     if (player.position.y > groundY + FEET_OFFSET + 0.01) {
-      vy -= 15 * dt;
+      vy -= 22 * dt;
     }
 
-    // Jump (only when feet are on terrain)
-    if (keys['Space'] && vy === 0 && Math.abs(player.position.y - groundY - FEET_OFFSET) < 0.1) {
-      vy = 5;
+    // Jump (only when feet are on terrain, using a wider 0.35 threshold for sprint jumping)
+    if (keys['Space'] && vy === 0 && Math.abs(player.position.y - groundY - FEET_OFFSET) < 0.35) {
+      vy = 8;
     }
 
     player.position.y += vy * dt;
