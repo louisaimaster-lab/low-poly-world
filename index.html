@@ -384,6 +384,7 @@
   let yaw = 0, pitch = 0;
   let isLocked = false;
   let shiftlockMode = 0; // 0 = None, 1 = Smooth Lock, 2 = Instant Lock
+  let currentRadius = 6.0;
   let isMouseDown = false;
   document.addEventListener('mousedown', e => {
     if (e.button === 0 || e.button === 2) {
