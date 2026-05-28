@@ -137,20 +137,56 @@
              Math.random() * 0.3);
     // Flatten center area for player start
     if (dist < 10) h *= dist / 10;
+
+    // Snowy Mountains Biome creation
+    const dx = x - 120;
+    const dy = y - 120;
+    const distToPeak = Math.sqrt(dx * dx + dy * dy);
+    if (distToPeak < 130) {
+      const t = 1 - distToPeak / 130;
+      let mountH = Math.pow(t, 1.8) * 36;
+      
+      // Cliff terraces
+      if (distToPeak > 40 && distToPeak < 70) {
+        const cliffFactor = (distToPeak - 40) / 30; // 0 to 1
+        mountH -= Math.sin(cliffFactor * Math.PI) * 6;
+      }
+      h = Math.max(h, mountH);
+    }
+
     verts.setZ(i, h);
   }
   terrainGeo.computeVertexNormals();
 
-  // Low-poly coloring by height
+  // Low-poly coloring by height & location (Snowy Mountains Biome)
   const colors = [];
   for (let i = 0; i < verts.count; i++) {
+    const x = verts.getX(i);
+    const y = verts.getY(i);
     const h = verts.getZ(i);
     let c;
-    if (h < -1.5) c = new THREE.Color(0x5a3a1a);    // low ground
-    else if (h < 0) c = new THREE.Color(0x4a7c3f);     // grass
-    else if (h < 2) c = new THREE.Color(0x5cb85c);     // light grass
-    else if (h < 4) c = new THREE.Color(0x7bc950);     // high grass
-    else c = new THREE.Color(0x8fbc8f);                // hill top
+    
+    // Check if vertex lies in the Snowy Mountains biome quadrant
+    if (x > 30 && y > 30) {
+      if (h > 22) {
+        c = new THREE.Color(0xffffff); // Pure white snow caps
+      } else if (h > 14) {
+        c = new THREE.Color(0xdcdcdc); // Rocky snowy gray
+      } else if (h > 6) {
+        c = new THREE.Color(0x7a7f80); // Slate mountain gray
+      } else if (h > 1.5) {
+        c = new THREE.Color(0x3a5d38); // Dark evergreen/pine green
+      } else {
+        c = new THREE.Color(0x4a7c3f); // Normal valley grass
+      }
+    } else {
+      // Normal biome coloring
+      if (h < -1.5) c = new THREE.Color(0x5a3a1a);    // low ground
+      else if (h < 0) c = new THREE.Color(0x4a7c3f);     // grass
+      else if (h < 2) c = new THREE.Color(0x5cb85c);     // light grass
+      else if (h < 4) c = new THREE.Color(0x7bc950);     // high grass
+      else c = new THREE.Color(0x8fbc8f);                // hill top
+    }
     colors.push(c.r, c.g, c.b);
   }
   terrainGeo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
@@ -247,6 +283,83 @@
     return new THREE.Vector3(-dx, 1, dz).normalize();
   }
 
+  // ── Ladders and Pathways Definitions ──────────────────────
+  const laddersData = [];
+  const pathwaysData = [];
+
+  function createLadder(x, yMin, yMax, z, rotationY = 0) {
+    const g = new THREE.Group();
+    const height = yMax - yMin;
+    const midY = yMin + height / 2;
+    
+    const railMat = new THREE.MeshStandardMaterial({ color: 0x5c4033, flatShading: true, roughness: 0.9 });
+    const rungMat = new THREE.MeshStandardMaterial({ color: 0x8b5a2b, flatShading: true, roughness: 0.8 });
+    
+    // Left side rail
+    const railL = new THREE.Mesh(new THREE.BoxGeometry(0.1, height, 0.1), railMat);
+    railL.position.set(-0.35, 0, 0);
+    railL.castShadow = true;
+    railL.receiveShadow = true;
+    g.add(railL);
+    
+    // Right side rail
+    const railR = new THREE.Mesh(new THREE.BoxGeometry(0.1, height, 0.1), railMat);
+    railR.position.set(0.35, 0, 0);
+    railR.castShadow = true;
+    railR.receiveShadow = true;
+    g.add(railR);
+    
+    // Rungs spaced 0.4 units apart
+    const spacing = 0.4;
+    const rungsCount = Math.floor(height / spacing);
+    for (let i = 0; i <= rungsCount; i++) {
+      const rungY = -height / 2 + i * spacing;
+      const rung = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.6, 4), rungMat);
+      rung.rotation.z = Math.PI / 2;
+      rung.position.set(0, rungY, 0);
+      rung.castShadow = true;
+      rung.receiveShadow = true;
+      g.add(rung);
+    }
+    
+    g.position.set(x, midY, z);
+    g.rotation.y = rotationY;
+    scene.add(g);
+    
+    laddersData.push({ x, z, yMin, yMax });
+  }
+
+  function createPathway(x, y, z, rx, ry, rz, width = 2.8, length = 6.0) {
+    const g = new THREE.Group();
+    const woodMat = new THREE.MeshStandardMaterial({ color: 0x6e473b, flatShading: true, roughness: 0.9 });
+    const supportMat = new THREE.MeshStandardMaterial({ color: 0x4a312a, flatShading: true });
+    
+    // Horizontal planks
+    const plankGeo = new THREE.BoxGeometry(width, 0.15, length);
+    const plank = new THREE.Mesh(plankGeo, woodMat);
+    plank.castShadow = true;
+    plank.receiveShadow = true;
+    g.add(plank);
+    
+    // Left Support Beam
+    const beamL = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.25, length), supportMat);
+    beamL.position.set(-width / 2 + 0.25, -0.2, 0);
+    beamL.castShadow = true;
+    g.add(beamL);
+    
+    // Right Support Beam
+    const beamR = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.25, length), supportMat);
+    beamR.position.set(width / 2 - 0.25, -0.2, 0);
+    beamR.castShadow = true;
+    g.add(beamR);
+    
+    g.position.set(x, y, z);
+    g.rotation.set(rx, ry, rz);
+    scene.add(g);
+    
+    pathwaysData.push({ x, y, z, width, length, rx, ry, rz });
+  }
+
   // ── Scatter Trees, Rocks, Flowers ────────────────────────
   const treePositions = [];
   for (let i = 0; i < 600; i++) {
@@ -314,6 +427,61 @@
     petal.position.set(fx, flowerY + 0.5, fz);
     scene.add(petal);
   }
+
+  // ── Spawn Pathways, Ladders & Peak Flag ──────────────────
+  // Lower pathway ramp leading from mountain base upwards
+  createPathway(72, getTerrainHeight(72, -72) + 0.1, -72, 0.16, -Math.PI / 4, 0);
+  createPathway(80, getTerrainHeight(80, -80) + 0.1, -80, 0.18, -Math.PI / 4, 0);
+  createPathway(88, getTerrainHeight(88, -88) + 0.1, -88, 0.20, -Math.PI / 4, 0);
+
+  // First climbable ladder scaling the lower cliff terrace
+  createLadder(95.5, 13.8, 22.0, -95.5, -Math.PI / 4);
+
+  // Mid-level transition pathway and bridge
+  createPathway(101, getTerrainHeight(101, -101) + 0.1, -101, 0.05, -Math.PI / 4, 0);
+  createPathway(107, getTerrainHeight(107, -107) + 0.1, -107, 0.08, -Math.PI / 4, 0);
+
+  // Second climbable ladder scaling the final vertical summit cliff
+  createLadder(112.5, 21.8, 31.0, -112.5, -Math.PI / 4);
+
+  // Upper summit pathways leading to the very peak
+  createPathway(117, getTerrainHeight(117, -117) + 0.1, -117, 0.12, -Math.PI / 4, 0);
+  createPathway(123, getTerrainHeight(123, -123) + 0.1, -123, 0.08, -Math.PI / 4, 0);
+
+  // Summit Flag pole and flag waving on the mountain top
+  const peakH = getTerrainHeight(130, -130);
+  
+  const flagPole = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.08, 0.08, 6.0, 6),
+    new THREE.MeshStandardMaterial({ color: 0xdddddd, metalness: 0.8, roughness: 0.2 })
+  );
+  flagPole.position.set(130, peakH + 3.0, -130);
+  flagPole.castShadow = true;
+  flagPole.receiveShadow = true;
+  scene.add(flagPole);
+
+  const flagGroup = new THREE.Group();
+  
+  // Outer border & fabric of flag
+  const flagFabric = new THREE.Mesh(
+    new THREE.BoxGeometry(2.0, 1.0, 0.06),
+    new THREE.MeshStandardMaterial({ color: 0xff3333, flatShading: true, roughness: 0.6 })
+  );
+  flagFabric.position.set(1.0, 0, 0);
+  flagFabric.castShadow = true;
+  flagGroup.add(flagFabric);
+
+  // Golden low-poly crown/star dodecahedron emblem
+  const emblem = new THREE.Mesh(
+    new THREE.DodecahedronGeometry(0.3, 0),
+    new THREE.MeshStandardMaterial({ color: 0xffd700, flatShading: true, roughness: 0.3, metalness: 0.8 })
+  );
+  emblem.position.set(1.0, 0, 0.04);
+  emblem.castShadow = true;
+  flagGroup.add(emblem);
+
+  flagGroup.position.set(130, peakH + 5.0, -130);
+  scene.add(flagGroup);
 
   // ── Clouds ───────────────────────────────────────────────
   function createCloud() {
@@ -459,7 +627,14 @@
         el.style.color = '#ff3366';
       }
       if (ch) ch.style.display = 'block'; // Show crosshair!
-      renderer.domElement.requestPointerLock();
+      
+      // Catch pointer lock promise rejection to avoid "SecurityError" overlay
+      const p = renderer.domElement.requestPointerLock();
+      if (p && typeof p.catch === 'function') {
+        p.catch(err => {
+          console.warn("Pointer lock request denied (expected during rapid cycling/cooldown):", err);
+        });
+      }
     }
   }
 
@@ -477,15 +652,34 @@
   
   document.addEventListener('keyup', e => { keys[e.code] = false; });
 
+  // Clear keys on window blur to prevent infinite walking stuck keys
+  window.addEventListener('blur', () => {
+    for (const key in keys) {
+      keys[key] = false;
+    }
+    isMouseDown = false;
+  });
+
   renderer.domElement.addEventListener('click', () => {
     // Only lock pointer on click if Shiftlock is ON
     if (shiftlockMode > 0) {
-      renderer.domElement.requestPointerLock();
+      const p = renderer.domElement.requestPointerLock();
+      if (p && typeof p.catch === 'function') {
+        p.catch(err => {
+          console.warn("Pointer lock request denied on click:", err);
+        });
+      }
     }
   });
 
   document.addEventListener('pointerlockchange', () => {
     isLocked = document.pointerLockElement === renderer.domElement;
+    if (!isLocked) {
+      // Clear movement keys when pointer lock is lost/exited
+      for (const key in keys) {
+        keys[key] = false;
+      }
+    }
   });
 
   document.addEventListener('mousemove', e => {
@@ -537,8 +731,49 @@
     velocity.z = move.z * speed;
 
     // Move horizontally FIRST so we check terrain at the destination
+    const oldX = player.position.x;
+    const oldZ = player.position.z;
+    const oldGroundY = getTerrainHeight(oldX, oldZ);
+
     player.position.x += velocity.x * dt;
     player.position.z += velocity.z * dt;
+
+    // Check if we are on a steep slope and trying to walk UP
+    const newGroundY = getTerrainHeight(player.position.x, player.position.z);
+    const slopeNormal = getTerrainNormal(player.position.x, player.position.z);
+    
+    // Slopes too high to climb: normal.y < 0.707 (i.e. > 45 degrees)
+    if (slopeNormal.y < 0.707) {
+      // Check if player is near any pathway
+      let onPathway = false;
+      for (const path of pathwaysData) {
+        const pdx = player.position.x - path.x;
+        const pdz = player.position.z - path.z;
+        const pdist = Math.sqrt(pdx * pdx + pdz * pdz);
+        if (pdist < 3.8 && Math.abs(player.position.y - path.y) < 2.5) {
+          onPathway = true;
+          break;
+        }
+      }
+      
+      // Also check if they are near a ladder
+      let nearLadder = false;
+      for (const ladder of laddersData) {
+        const ldx = player.position.x - ladder.x;
+        const ldz = player.position.z - ladder.z;
+        const ldist = Math.sqrt(ldx * ldx + ldz * ldz);
+        if (ldist < 1.2 && player.position.y >= ladder.yMin - 0.5 && player.position.y <= ladder.yMax + 0.8) {
+          nearLadder = true;
+          break;
+        }
+      }
+
+      // If we are trying to go UP a steep slope and not on a path or ladder, block horizontal progress!
+      if (!onPathway && !nearLadder && newGroundY > oldGroundY + 0.05) {
+        player.position.x = oldX;
+        player.position.z = oldZ;
+      }
+    }
 
     // Keep in bounds
     player.position.x = Math.max(-terrainSize/2 + 2, Math.min(terrainSize/2 - 2, player.position.x));
@@ -560,19 +795,54 @@
       }
     }
 
-    // ── Jump & Gravity (hitbox-aware) ─────────────────────
+    // ── Ladder Climbing & Gravity Check ───────────────────
+    let isClimbing = false;
+    let activeLadder = null;
+    
+    // Check if the player is horizontally and vertically within ladder bounds
+    for (const ladder of laddersData) {
+      const dx = player.position.x - ladder.x;
+      const dz = player.position.z - ladder.z;
+      const dist = Math.sqrt(dx * dx + dz * dz);
+      
+      if (dist < 1.0 && player.position.y >= ladder.yMin - 0.5 && player.position.y <= ladder.yMax + 0.8) {
+        activeLadder = ladder;
+        break;
+      }
+    }
+    
+    if (activeLadder) {
+      // If pressing W/Up or Space, climb up
+      if (keys['KeyW'] || keys['ArrowUp'] || keys['Space']) {
+        vy = 4.5;
+        isClimbing = true;
+      } 
+      // If pressing S/Down, climb down
+      else if (keys['KeyS'] || keys['ArrowDown']) {
+        vy = -4.5;
+        isClimbing = true;
+      } 
+      // If on ladder but not pressing anything, hold vertical position (no sliding/falling!)
+      else {
+        vy = 0;
+        isClimbing = true;
+      }
+    }
+    
     // groundY is where the character's feet sit (group origin = feet)
     const groundY = getTerrainHeight(player.position.x, player.position.z);
     const terrainNormal = getTerrainNormal(player.position.x, player.position.z);
 
-    // Apply gravity only when above ground clearance
-    if (player.position.y > groundY + FEET_OFFSET + 0.01) {
-      vy -= 22 * dt;
-    }
+    // Apply gravity only if not actively climbing a ladder
+    if (!isClimbing) {
+      if (player.position.y > groundY + FEET_OFFSET + 0.01) {
+        vy -= 22 * dt;
+      }
 
-    // Jump (only when feet are on terrain, using a wider 0.35 threshold for sprint jumping)
-    if (keys['Space'] && vy === 0 && Math.abs(player.position.y - groundY - FEET_OFFSET) < 0.35) {
-      vy = 8;
+      // Jump (only when feet are on terrain, using a wider 0.35 threshold for sprint jumping)
+      if (keys['Space'] && vy === 0 && Math.abs(player.position.y - groundY - FEET_OFFSET) < 0.35) {
+        vy = 8;
+      }
     }
 
     player.position.y += vy * dt;
@@ -592,7 +862,7 @@
       // NONE MODE: Character turning is disabled unless moving
       if (move.length() > 0.01) {
         // Turn smoothly to face walking direction along shortest path
-        const targetYaw = Math.atan2(-move.x, -move.z);
+        const targetYaw = Math.atan2(move.x, move.z);
         let diff = targetYaw - playerYaw;
         diff = Math.atan2(Math.sin(diff), Math.cos(diff)); // Shortest path
         playerYaw += diff * 10 * dt;
