@@ -375,24 +375,31 @@
     // Horizontal planks
     const plankGeo = new THREE.BoxGeometry(width, 0.15, length);
     const plank = new THREE.Mesh(plankGeo, woodMat);
-    plank.castShadow = true;
-    plank.receiveShadow = true;
+    plank.castShadow = !isCloudPath;
+    plank.receiveShadow = !isCloudPath;
     g.add(plank);
     
     // Left Support Beam
     const beamL = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.25, length), supportMat);
     beamL.position.set(-width / 2 + 0.25, -0.2, 0);
-    beamL.castShadow = true;
+    beamL.castShadow = !isCloudPath;
     g.add(beamL);
     
     // Right Support Beam
     const beamR = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.25, length), supportMat);
     beamR.position.set(width / 2 - 0.25, -0.2, 0);
-    beamR.castShadow = true;
+    beamR.castShadow = !isCloudPath;
     g.add(beamR);
     
     g.position.set(x, y, z);
     g.rotation.set(rx, ry, rz);
+    
+    // If it is a cloud path, hide the solid rectangular meshes completely!
+    // Bob will walk on flat invisible hitboxes embedded seamlessly in the fluffy clouds.
+    if (isCloudPath) {
+      g.visible = false;
+    }
+    
     scene.add(g);
     
     pathwaysData.push({ x, y, z, width, length, rx, ry, rz });
