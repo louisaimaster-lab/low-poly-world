@@ -177,7 +177,7 @@
     const half = terrainSize / 2;
     const seg = terrainSize / terrainSegs;
     const col = (x + half) / seg;
-    const row = (-z + half) / seg;
+    const row = (z + half) / seg;
     const ci = Math.floor(col), ri = Math.floor(row);
     const cf = col - ci, rf = row - ri;
     const ci2 = Math.min(ci + 1, terrainSegs);
@@ -202,7 +202,7 @@
     const hb = getTerrainHeight(x, z + s);
     const dx = (hr - hl) / (s * 2);
     const dz = (hf - hb) / (s * 2);
-    return new THREE.Vector3(-dx, 1, -dz).normalize();
+    return new THREE.Vector3(-dx, 1, dz).normalize();
   }
 
   // ── Scatter Trees, Rocks, Flowers ────────────────────────
