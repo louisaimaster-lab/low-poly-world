@@ -293,15 +293,15 @@
   // ── Player Character ─────────────────────────────────────
   const player = new THREE.Group();
   const PLAYER_RADIUS = 0.4;   // collision radius
-  const PLAYER_HEIGHT = 2.5;   // collision height (ground to hat top)
-  const FEET_OFFSET = 0.3;     // hover clearance so feet don't clip into slopes
+  const PLAYER_HEIGHT = 2.2;   // collision height (ground to hat top)
+  const FEET_OFFSET = 0.0;     // hover clearance so feet don't clip into slopes
 
   // Body
   const body = new THREE.Mesh(
     new THREE.BoxGeometry(0.6, 1.2, 0.4),
     new THREE.MeshStandardMaterial({ color: 0x4488cc, flatShading: true })
   );
-  body.position.y = 0.9;
+  body.position.y = 0.6;
   body.castShadow = true;
   player.add(body);
 
@@ -310,7 +310,7 @@
     new THREE.BoxGeometry(0.5, 0.5, 0.5),
     new THREE.MeshStandardMaterial({ color: 0xffcc99, flatShading: true })
   );
-  head.position.y = 1.75;
+  head.position.y = 1.45;
   head.castShadow = true;
   player.add(head);
 
@@ -319,7 +319,7 @@
     new THREE.ConeGeometry(0.35, 0.5, 4),
     new THREE.MeshStandardMaterial({ color: 0xe74c3c, flatShading: true })
   );
-  hat.position.y = 2.25;
+  hat.position.y = 1.95;
   hat.castShadow = true;
   player.add(hat);
 
@@ -379,7 +379,7 @@
 
       // Bob animation
       const bob = Math.sin(clock.elapsedTime * (keys['ShiftLeft'] ? 12 : 8)) * 0.1;
-      body.position.y = 0.9 + bob;
+      body.position.y = 0.6 + bob;
     }
 
     velocity.x = move.x * speed;
