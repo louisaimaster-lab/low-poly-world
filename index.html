@@ -161,7 +161,7 @@
         flatShading: true
       });
       const cone = new THREE.Mesh(new THREE.ConeGeometry(r, h, 5 + Math.floor(Math.random() * 3)), mat);
-      cone.position.y = trunkH + i * h * 0.5;
+      cone.position.y = trunkH + h / 2 + i * h * 0.5;
       cone.castShadow = true;
       g.add(cone);
     }
@@ -461,7 +461,9 @@
     }
 
     // ── Spherical Camera Follow with Roblox-style Terrain & Obstacle Collision ──
-    const targetPos = new THREE.Vector3(player.position.x, player.position.y + 1.2, player.position.z);
+    const targetPos = new THREE.Vector3();
+    head.getWorldPosition(targetPos); // Follow the exact world position of the head, adapting to slope tilts!
+
     const maxRadius = 6.0; // Desired distance
     
     // Direction vector from target to camera (using pitch and yaw)
@@ -502,11 +504,19 @@
       if (hitTree) break;
     }
     
-    camera.position.set(
-      targetPos.x + Math.sin(yaw) * Math.cos(pitch) * actualRadius,
-      targetPos.y + Math.sin(pitch) * actualRadius,
-      targetPos.z + Math.cos(yaw) * Math.cos(pitch) * actualRadius
+    // Apply terrain slope rotation to camera offset so it aligns with side/slope tilting
+    const offset = new THREE.Vector3(
+      Math.sin(yaw) * Math.cos(pitch) * actualRadius,
+      Math.sin(pitch) * actualRadius,
+      Math.cos(yaw) * Math.cos(pitch) * actualRadius
     );
+    const targetQuat = new THREE.Quaternion().setFromUnitVectors(
+      new THREE.Vector3(0, 1, 0), terrainNormal
+    );
+    offset.applyQuaternion(targetQuat);
+    
+    camera.position.copy(targetPos).add(offset);
+    camera.up.copy(terrainNormal); // Tilt camera to match the side rotation
     camera.lookAt(targetPos);
 
     renderer.render(scene, camera);
