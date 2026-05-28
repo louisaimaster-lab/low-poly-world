@@ -528,7 +528,7 @@
     const dy = Math.sin(pitch) * maxRadius;
     const dz = Math.cos(yaw) * Math.cos(pitch) * maxRadius;
     
-    let actualRadius = maxRadius;
+    let targetRadius = maxRadius;
     const collisionSteps = 12;
     
     for (let i = 1; i <= collisionSteps; i++) {
@@ -540,7 +540,7 @@
       // 1. Terrain collision check
       const terrainY = getTerrainHeight(checkX, checkZ);
       if (checkY < terrainY + 0.3) {
-        actualRadius = maxRadius * Math.max(0.15, t - 0.08);
+        targetRadius = maxRadius * Math.max(0.15, t - 0.08);
         break;
       }
       
@@ -552,7 +552,7 @@
         const tdist = Math.sqrt(tdx * tdx + tdz * tdz);
         const treeBaseY = getTerrainHeight(tree.x, tree.z);
         if (tdist < 0.6 && checkY > treeBaseY && checkY < treeBaseY + 4.0) {
-          actualRadius = maxRadius * Math.max(0.15, t - 0.08);
+          targetRadius = maxRadius * Math.max(0.15, t - 0.08);
           hitTree = true;
           break;
         }
@@ -566,29 +566,45 @@
     );
     
     let testOffset = new THREE.Vector3(
-      Math.sin(yaw) * Math.cos(pitch) * actualRadius,
-      Math.sin(pitch) * actualRadius,
-      Math.cos(yaw) * Math.cos(pitch) * actualRadius
+      Math.sin(yaw) * Math.cos(pitch) * targetRadius,
+      Math.sin(pitch) * targetRadius,
+      Math.cos(yaw) * Math.cos(pitch) * targetRadius
     ).applyQuaternion(camTargetQuat);
     
     let checkPos = new THREE.Vector3().copy(targetPos).add(testOffset);
     let terrainHeightAtCam = getTerrainHeight(checkPos.x, checkPos.z);
     
-    // Smoothly decrease radius if camera is calculated to be below terrain + buffer
+    // Smoothly decrease targetRadius if camera is calculated to be below terrain + buffer
     let safetyCounter = 0;
-    while (actualRadius > 1.2 && checkPos.y < terrainHeightAtCam + 0.4 && safetyCounter < 15) {
-      actualRadius -= 0.3;
+    while (targetRadius > 1.2 && checkPos.y < terrainHeightAtCam + 0.4 && safetyCounter < 15) {
+      targetRadius -= 0.3;
       testOffset.set(
-        Math.sin(yaw) * Math.cos(pitch) * actualRadius,
-        Math.sin(pitch) * actualRadius,
-        Math.cos(yaw) * Math.cos(pitch) * actualRadius
+        Math.sin(yaw) * Math.cos(pitch) * targetRadius,
+        Math.sin(pitch) * targetRadius,
+        Math.cos(yaw) * Math.cos(pitch) * targetRadius
       ).applyQuaternion(camTargetQuat);
       checkPos.copy(targetPos).add(testOffset);
       terrainHeightAtCam = getTerrainHeight(checkPos.x, checkPos.z);
       safetyCounter++;
     }
     
-    camera.position.copy(targetPos).add(testOffset);
+    // ── SMOOTH ASYMMETRIC RADIUS LERPING (FAST IN, SMOOTH OUT) ──
+    if (targetRadius < currentRadius) {
+      // Zooming in (collision): extremely fast to prevent clipping, with a micro-smoothing
+      currentRadius += (targetRadius - currentRadius) * 28 * dt;
+      if (currentRadius < targetRadius) currentRadius = targetRadius; // Physical safety limit
+    } else {
+      // Zooming out (cleared collision): smooth, elegant glide back to target
+      currentRadius += (targetRadius - currentRadius) * 6 * dt;
+    }
+    
+    const finalOffset = new THREE.Vector3(
+      Math.sin(yaw) * Math.cos(pitch) * currentRadius,
+      Math.sin(pitch) * currentRadius,
+      Math.cos(yaw) * Math.cos(pitch) * currentRadius
+    ).applyQuaternion(camTargetQuat);
+    
+    camera.position.copy(targetPos).add(finalOffset);
     camera.up.copy(terrainNormal); // Tilt camera to match the side rotation
     camera.lookAt(targetPos);
 
