@@ -35,9 +35,13 @@
     <h1>🌍 Low Poly World</h1>
     <p>
       <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> Move<br/>
-      <kbd>Shift</kbd> Run &middot; <kbd>Space</kbd> Jump<br/>
+      <kbd>Ctrl</kbd> Run &middot; <kbd>Space</kbd> Jump<br/>
+      <kbd>Shift</kbd> Switch Shiftlock Mode<br/>
       <kbd>Mouse</kbd> Look around
     </p>
+    <div id="shiftlock-indicator" style="margin-top: 8px; font-size: 12px; font-weight: bold; color: #ffcc00; letter-spacing: 0.5px;">
+      Shiftlock: Off (None)
+    </div>
   </div>
 
   <!-- Load Three.js with robust CDN fallbacks (essential when jsDelivr is blocked by DNS/adblockers) -->
@@ -347,8 +351,35 @@
   const velocity = new THREE.Vector3();
   let yaw = 0, pitch = 0;
   let isLocked = false;
+  let shiftlockMode = 0; // 0 = None, 1 = Smooth Lock, 2 = Instant Lock
+  
+  function updateShiftlockUI() {
+    const el = document.getElementById('shiftlock-indicator');
+    if (!el) return;
+    if (shiftlockMode === 0) {
+      el.textContent = 'Shiftlock: Off (None)';
+      el.style.color = '#ffcc00';
+    } else if (shiftlockMode === 1) {
+      el.textContent = 'Shiftlock: Mode 1 (Smooth)';
+      el.style.color = '#00ffcc';
+    } else if (shiftlockMode === 2) {
+      el.textContent = 'Shiftlock: Mode 2 (Instant)';
+      el.style.color = '#ff3366';
+    }
+  }
 
-  document.addEventListener('keydown', e => { keys[e.code] = true; });
+  document.addEventListener('keydown', e => { 
+    keys[e.code] = true; 
+    
+    // Cycle Shiftlock modes on Shift press (without trigger repetition when holding key)
+    if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
+      if (!e.repeat) {
+        shiftlockMode = (shiftlockMode + 1) % 3;
+        updateShiftlockUI();
+      }
+    }
+  });
+  
   document.addEventListener('keyup', e => { keys[e.code] = false; });
 
   renderer.domElement.addEventListener('click', () => {
@@ -380,7 +411,7 @@
     }
 
     // Player movement
-    const speed = keys['ShiftLeft'] ? 12 : 6;
+    const speed = keys['ControlLeft'] ? 12 : 6;
     const forward = new THREE.Vector3(-Math.sin(yaw), 0, -Math.cos(yaw));
     const right = new THREE.Vector3(Math.cos(yaw), 0, -Math.sin(yaw));
 
@@ -445,20 +476,44 @@
       vy = 0;
     }
 
-    // Rotate player to align with terrain slope (gentle tilt only)
-    const forwardDir = new THREE.Vector3(
-      Math.sin(yaw), 0, Math.cos(yaw)
+    // Rotate player to align with terrain slope & Shiftlock mode settings
+    const targetQuat = new THREE.Quaternion().setFromUnitVectors(
+      new THREE.Vector3(0, 1, 0), terrainNormal
     );
-    const rightDir = new THREE.Vector3().crossVectors(forwardDir, terrainNormal).normalize();
-    if (rightDir.length() > 0.1) {
-      const targetQuat = new THREE.Quaternion().setFromUnitVectors(
-        new THREE.Vector3(0, 1, 0), terrainNormal
-      );
+    
+    if (shiftlockMode === 0) {
+      // NONE MODE: Character turning is disabled unless moving
+      if (move.length() > 0.01) {
+        // Turn smoothly to face walking direction
+        const targetYaw = Math.atan2(-move.x, -move.z);
+        const yawQuat = new THREE.Quaternion().setFromAxisAngle(
+          new THREE.Vector3(0, 1, 0), targetYaw
+        );
+        const combined = targetQuat.clone().multiply(yawQuat);
+        player.quaternion.slerp(combined, 10 * dt);
+      } else {
+        // Standing still: Align with slope normal, preserve current character model yaw
+        const currentEuler = new THREE.Euler().setFromQuaternion(player.quaternion, 'YXZ');
+        const yawQuat = new THREE.Quaternion().setFromAxisAngle(
+          new THREE.Vector3(0, 1, 0), currentEuler.y
+        );
+        const combined = targetQuat.clone().multiply(yawQuat);
+        player.quaternion.slerp(combined, 10 * dt);
+      }
+    } else if (shiftlockMode === 1) {
+      // SHIFTLOCK 1: Smooth lock to face camera direction (yaw + PI)
       const yawQuat = new THREE.Quaternion().setFromAxisAngle(
         new THREE.Vector3(0, 1, 0), yaw + Math.PI
       );
-      const combined = targetQuat.multiply(yawQuat);
-      player.quaternion.slerp(combined, 3 * dt);
+      const combined = targetQuat.clone().multiply(yawQuat);
+      player.quaternion.slerp(combined, 8 * dt);
+    } else if (shiftlockMode === 2) {
+      // SHIFTLOCK 2: Instant lock to face camera direction (yaw + PI)
+      const yawQuat = new THREE.Quaternion().setFromAxisAngle(
+        new THREE.Vector3(0, 1, 0), yaw + Math.PI
+      );
+      const combined = targetQuat.clone().multiply(yawQuat);
+      player.quaternion.copy(combined);
     }
 
     // ── Spherical Camera Follow with Roblox-style Terrain & Obstacle Collision ──
@@ -505,18 +560,35 @@
       if (hitTree) break;
     }
     
-    // Apply terrain slope rotation to camera offset so it aligns with side/slope tilting
-    const offset = new THREE.Vector3(
+    // ── MATHEMATICAL SAFETY NET (PREVENTS ANY UNDERGROUND CLIPPING) ──
+    const camTargetQuat = new THREE.Quaternion().setFromUnitVectors(
+      new THREE.Vector3(0, 1, 0), terrainNormal
+    );
+    
+    let testOffset = new THREE.Vector3(
       Math.sin(yaw) * Math.cos(pitch) * actualRadius,
       Math.sin(pitch) * actualRadius,
       Math.cos(yaw) * Math.cos(pitch) * actualRadius
-    );
-    const targetQuat = new THREE.Quaternion().setFromUnitVectors(
-      new THREE.Vector3(0, 1, 0), terrainNormal
-    );
-    offset.applyQuaternion(targetQuat);
+    ).applyQuaternion(camTargetQuat);
     
-    camera.position.copy(targetPos).add(offset);
+    let checkPos = new THREE.Vector3().copy(targetPos).add(testOffset);
+    let terrainHeightAtCam = getTerrainHeight(checkPos.x, checkPos.z);
+    
+    // Smoothly decrease radius if camera is calculated to be below terrain + buffer
+    let safetyCounter = 0;
+    while (actualRadius > 1.2 && checkPos.y < terrainHeightAtCam + 0.4 && safetyCounter < 15) {
+      actualRadius -= 0.3;
+      testOffset.set(
+        Math.sin(yaw) * Math.cos(pitch) * actualRadius,
+        Math.sin(pitch) * actualRadius,
+        Math.cos(yaw) * Math.cos(pitch) * actualRadius
+      ).applyQuaternion(camTargetQuat);
+      checkPos.copy(targetPos).add(testOffset);
+      terrainHeightAtCam = getTerrainHeight(checkPos.x, checkPos.z);
+      safetyCounter++;
+    }
+    
+    camera.position.copy(targetPos).add(testOffset);
     camera.up.copy(terrainNormal); // Tilt camera to match the side rotation
     camera.lookAt(targetPos);
 
