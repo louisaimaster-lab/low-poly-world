@@ -666,15 +666,37 @@
   let shiftlockMode = 0; // 0 = None, 1 = Smooth Lock, 2 = Instant Lock
   let currentRadius = 6.0;
   let playerYaw = 0; // Store the persistent, smooth player yaw to prevent 360 spins!
-  let isMouseDown = false;
+  let isRightMouseDown = false;
+
+  // Intercept browser context menu to allow smooth right-click camera dragging
+  document.addEventListener('contextmenu', e => {
+    e.preventDefault();
+  });
+
   document.addEventListener('mousedown', e => {
-    if (e.button === 0 || e.button === 2) {
-      isMouseDown = true;
+    if (e.button === 2) {
+      isRightMouseDown = true;
+      // Only lock the pointer on right-click mousedown if Shiftlock is OFF (None Mode)
+      if (shiftlockMode === 0) {
+        const p = renderer.domElement.requestPointerLock();
+        if (p && typeof p.catch === 'function') {
+          p.catch(err => {
+            console.warn("Pointer lock request denied on right-click:", err);
+          });
+        }
+      }
     }
   });
+
   document.addEventListener('mouseup', e => {
-    if (e.button === 0 || e.button === 2) {
-      isMouseDown = false;
+    if (e.button === 2) {
+      isRightMouseDown = false;
+      // Only release pointer lock on right-click mouseup if Shiftlock is OFF (None Mode)
+      if (shiftlockMode === 0) {
+        if (document.pointerLockElement === renderer.domElement) {
+          document.exitPointerLock();
+        }
+      }
     }
   });
 
@@ -728,7 +750,7 @@
     for (const key in keys) {
       keys[key] = false;
     }
-    isMouseDown = false;
+    isRightMouseDown = false;
   });
 
   renderer.domElement.addEventListener('click', () => {
@@ -750,6 +772,9 @@
       for (const key in keys) {
         keys[key] = false;
       }
+      if (shiftlockMode === 0) {
+        isRightMouseDown = false;
+      }
     }
   });
 
@@ -760,9 +785,9 @@
       yaw -= e.movementX * 0.002;
       pitch = Math.max(-0.6, Math.min(1.2, pitch + e.movementY * 0.002));
     } 
-    // Shiftlock is OFF: Dragging mouse rotates camera (cursor is free)
+    // Shiftlock is OFF: Dragging mouse with RIGHT CLICK rotates camera and locks cursor in place
     else {
-      if (!isMouseDown) return;
+      if (!isLocked && !isRightMouseDown) return;
       yaw -= e.movementX * 0.0025; // Slightly faster since it's drag
       pitch = Math.max(-0.6, Math.min(1.2, pitch + e.movementY * 0.0025));
     }
