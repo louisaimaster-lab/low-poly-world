@@ -4,6 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Low Poly World — Built with Hermes</title>
+  <script>
+    window.addEventListener('error', function(e) {
+      document.body.innerHTML = '<div style="color:#ff3333;background:#111;padding:40px;font-family:monospace;z-index:9999;position:absolute;top:0;left:0;width:100%;height:100%;overflow:auto;"><h2>JavaScript Error:</h2><pre>' + e.message + '\nat ' + e.filename + ':' + e.lineno + ':' + e.colno + '\n\nStack:\n' + (e.error ? e.error.stack : 'N/A') + '</pre></div>';
+    });
+    window.addEventListener('unhandledrejection', function(e) {
+      document.body.innerHTML = '<div style="color:#ff3333;background:#111;padding:40px;font-family:monospace;z-index:9999;position:absolute;top:0;left:0;width:100%;height:100%;overflow:auto;"><h2>Unhandled Promise Rejection:</h2><pre>' + e.reason + '</pre></div>';
+    });
+  </script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { overflow: hidden; background: #000; font-family: 'Segoe UI', Arial, sans-serif; }
@@ -32,16 +40,9 @@
     </p>
   </div>
 
-  <script type="importmap">
-  {
-    "imports": {
-      "three": "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js"
-    }
-  }
-  </script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.min.js"></script>
 
-  <script type="module">
-  import * as THREE from 'three';
+  <script>
 
   // ── Scene Setup ──────────────────────────────────────────
   const scene = new THREE.Scene();
