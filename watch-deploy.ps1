@@ -43,12 +43,11 @@ while ($true) {
         Write-Host "   $commitOutput" -ForegroundColor DarkGray
 
         Write-Host "Pushing to GitHub (origin main)..." -ForegroundColor Cyan
-        # Capture stderr and stdout
+        # Run push and capture output
         $pushOutput = git push origin main 2>&1
-        $pushSuccess = $?
-
-        # Check output for typical success indicators or exit code
-        if ($pushSuccess -and ($pushOutput -notmatch "fatal:" -and $pushOutput -notmatch "error:")) {
+        
+        # Check exit code of the last run native command
+        if ($LASTEXITCODE -eq 0) {
             Write-Host "SUCCESS: Successfully pushed to GitHub!" -ForegroundColor Green
             Write-Host "Vercel & Hetzner VPS builds triggered automatically." -ForegroundColor Green
         } else {
