@@ -329,10 +329,24 @@
     laddersData.push({ x, z, yMin, yMax });
   }
 
-  function createPathway(x, y, z, rx, ry, rz, width = 2.8, length = 6.0) {
+  function createPathway(x, y, z, rx, ry, rz, width = 2.8, length = 6.0, isCloudPath = false) {
     const g = new THREE.Group();
-    const woodMat = new THREE.MeshStandardMaterial({ color: 0x6e473b, flatShading: true, roughness: 0.9 });
-    const supportMat = new THREE.MeshStandardMaterial({ color: 0x4a312a, flatShading: true });
+    
+    // Cloud platforms are styled in highly visible glowing low-poly orange (matching user's diagram!)
+    const woodColor = isCloudPath ? 0xff7f00 : 0x6e473b;
+    const roughness = isCloudPath ? 0.3 : 0.9;
+    const metalness = isCloudPath ? 0.5 : 0.0;
+    
+    const woodMat = new THREE.MeshStandardMaterial({ 
+      color: woodColor, 
+      flatShading: true, 
+      roughness: roughness,
+      metalness: metalness
+    });
+    const supportMat = new THREE.MeshStandardMaterial({ 
+      color: isCloudPath ? 0xcc6600 : 0x4a312a, 
+      flatShading: true 
+    });
     
     // Horizontal planks
     const plankGeo = new THREE.BoxGeometry(width, 0.15, length);
@@ -542,11 +556,11 @@
     const groundHeight = getTerrainHeight(-110, -110);
     createLadder(-110, groundHeight, 48.0, -110, 0);
 
-    // 2. Spawn 3 connected flat ground hitbox pathways (wood platforms) at height 48
+    // 2. Spawn 3 connected flat ground hitbox pathways (orange platforms) at height 48
     // Width and Length acts as the physical collision box!
-    createPathway(-110, 48.0, -110, 0, 0, 0, 10, 10);
-    createPathway(-110, 48.0, -120, 0, 0, 0, 8, 8);
-    createPathway(-100, 48.0, -110, 0, 0, 0, 8, 8);
+    createPathway(-110, 48.0, -110, 0, 0, 0, 10, 10, true);
+    createPathway(-110, 48.0, -120, 0, 0, 0, 8, 8, true);
+    createPathway(-100, 48.0, -110, 0, 0, 0, 8, 8, true);
 
     // 3. Cover them with fluffy visual cloud puffs (which overlap the flat hitbox)
     createVisualCloudPlatform(-110, 48.0, -110, 10, 10);
@@ -664,9 +678,18 @@
   let yaw = 0, pitch = 0;
   let isLocked = false;
   let shiftlockMode = 0; // 0 = None, 1 = Smooth Lock, 2 = Instant Lock
+  let cameraZoomDistance = 6.0; // Dynamic zoom distance controlled by scroll wheel!
   let currentRadius = 6.0;
   let playerYaw = 0; // Store the persistent, smooth player yaw to prevent 360 spins!
   let isRightMouseDown = false;
+
+  // Scroll wheel event listener to zoom in and out
+  document.addEventListener('wheel', e => {
+    // Zoom in or out (e.deltaY is positive when scrolling down / zooming out)
+    cameraZoomDistance += e.deltaY * 0.005;
+    // Keep bounded between 2.0 (close up third person) and 15.0 (wide environment view)
+    cameraZoomDistance = Math.max(2.0, Math.min(15.0, cameraZoomDistance));
+  });
 
   // Intercept browser context menu to allow smooth right-click camera dragging
   document.addEventListener('contextmenu', e => {
@@ -911,30 +934,37 @@
       // W or Up Arrow always offsets Bob forward, detaching him from the ladder!
       if (keys['KeyW'] || keys['ArrowUp']) {
         player.userData.isClimbingLadder = false;
+        player.userData.climbDirection = 0;
         isClimbing = false;
         // Push Bob horizontally slightly in his look direction to offset him from the ladder
         player.position.x += forward.x * 2.0 * dt;
         player.position.z += forward.z * 2.0 * dt;
       } 
-      // E Key interacts to enter climbing state and climbs UP
+      // E Key pressed once auto starts climb UP (fast speed 6.5!)
       else if (keys['KeyE']) {
         player.userData.isClimbingLadder = true;
-        vy = 4.5;
-        isClimbing = true;
+        player.userData.climbDirection = 1; // 1 = UP
       } 
-      // S or Down Arrow interacts to enter climbing state and climbs DOWN
+      // S or Down Arrow pressed once auto starts climb DOWN (fast speed -6.5!)
       else if (keys['KeyS'] || keys['ArrowDown']) {
         player.userData.isClimbingLadder = true;
-        vy = -4.5;
-        isClimbing = true;
+        player.userData.climbDirection = -1; // -1 = DOWN
       } 
-      // If Bob is already in the climbing state, hold position (vy = 0)
-      else if (player.userData.isClimbingLadder) {
-        vy = 0;
+      
+      // Handle auto climbing state mechanics
+      if (player.userData.isClimbingLadder) {
         isClimbing = true;
+        if (player.userData.climbDirection === 1) {
+          vy = 6.5; // Fast climbing!
+        } else if (player.userData.climbDirection === -1) {
+          vy = -6.5; // Fast descending!
+        } else {
+          vy = 0;
+        }
       }
     } else {
       player.userData.isClimbingLadder = false;
+      player.userData.climbDirection = 0;
     }
 
     // ── Cute Low-Poly Climb Animation ─────────────────────
@@ -1053,7 +1083,7 @@
     const targetPos = new THREE.Vector3();
     head.getWorldPosition(targetPos); // Follow the exact world position of the head, adapting to slope tilts!
 
-    const maxRadius = 6.0; // Desired distance
+    const maxRadius = cameraZoomDistance; // Desired distance
     
     // Direction vector from target to camera (using pitch and yaw)
     // pitch acts as the elevation angle, yaw acts as the azimuthal angle
