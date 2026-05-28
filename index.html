@@ -30,7 +30,7 @@
     }
     #crosshair {
       position: fixed;
-      top: 45%; /* slightly above center, positioned perfectly above Bob's head! */
+      top: 40%; /* slightly above center, positioned perfectly above Bob's head! */
       left: 50%;
       transform: translate(-50%, -50%);
       width: 12px;
@@ -357,23 +357,64 @@
   body.castShadow = true;
   player.add(body);
 
+  // Create a cute :3 face texture using Canvas
+  const faceCanvas = document.createElement('canvas');
+  faceCanvas.width = 128;
+  faceCanvas.height = 128;
+  const fCtx = faceCanvas.getContext('2d');
+
+  // Face background (skin tone matching skinMat color #ffcc99)
+  fCtx.fillStyle = '#ffcc99';
+  fCtx.fillRect(0, 0, 128, 128);
+
+  // Cute eyes
+  fCtx.fillStyle = '#222222';
+  fCtx.beginPath();
+  fCtx.arc(38, 52, 6, 0, Math.PI * 2);
+  fCtx.fill();
+  fCtx.beginPath();
+  fCtx.arc(90, 52, 6, 0, Math.PI * 2);
+  fCtx.fill();
+
+  // Cute :3 cat smile mouth
+  fCtx.strokeStyle = '#222222';
+  fCtx.lineWidth = 5;
+  fCtx.lineCap = 'round';
+  
+  // Left smile loop
+  fCtx.beginPath();
+  fCtx.arc(50, 76, 11, 0, Math.PI, false);
+  fCtx.stroke();
+  
+  // Right smile loop
+  fCtx.beginPath();
+  fCtx.arc(72, 76, 11, 0, Math.PI, false);
+  fCtx.stroke();
+
+  const faceTexture = new THREE.CanvasTexture(faceCanvas);
+  faceTexture.colorSpace = THREE.SRGBColorSpace;
+
+  // Materials array for the 6 faces of the head [right, left, top, bottom, front, back]
+  const skinMat = new THREE.MeshStandardMaterial({ color: 0xffcc99, flatShading: true });
+  const faceMat = new THREE.MeshStandardMaterial({ map: faceTexture, flatShading: true });
+  
+  const headMats = [
+    skinMat, // right (+X)
+    skinMat, // left (-X)
+    skinMat, // top (+Y)
+    skinMat, // bottom (-Y)
+    faceMat, // front (+Z) - facing forward locally
+    skinMat  // back (-Z)
+  ];
+
   // Head
   const head = new THREE.Mesh(
     new THREE.BoxGeometry(0.5, 0.5, 0.5),
-    new THREE.MeshStandardMaterial({ color: 0xffcc99, flatShading: true })
+    headMats
   );
   head.position.y = 1.45;
   head.castShadow = true;
   player.add(head);
-
-  // Hat
-  const hat = new THREE.Mesh(
-    new THREE.ConeGeometry(0.35, 0.5, 4),
-    new THREE.MeshStandardMaterial({ color: 0xe74c3c, flatShading: true })
-  );
-  hat.position.y = 1.95;
-  hat.castShadow = true;
-  player.add(hat);
 
   player.position.set(0, getTerrainHeight(0, 0) + FEET_OFFSET, 0);
   scene.add(player);
@@ -385,6 +426,7 @@
   let isLocked = false;
   let shiftlockMode = 0; // 0 = None, 1 = Smooth Lock, 2 = Instant Lock
   let currentRadius = 6.0;
+  let playerYaw = 0; // Store the persistent, smooth player yaw to prevent 360 spins!
   let isMouseDown = false;
   document.addEventListener('mousedown', e => {
     if (e.button === 0 || e.button === 2) {
@@ -549,39 +591,35 @@
     if (shiftlockMode === 0) {
       // NONE MODE: Character turning is disabled unless moving
       if (move.length() > 0.01) {
-        // Turn smoothly to face walking direction
+        // Turn smoothly to face walking direction along shortest path
         const targetYaw = Math.atan2(-move.x, -move.z);
-        const yawQuat = new THREE.Quaternion().setFromAxisAngle(
-          new THREE.Vector3(0, 1, 0), targetYaw
-        );
-        const combined = targetQuat.clone().multiply(yawQuat);
-        player.quaternion.slerp(combined, 10 * dt);
-      } else {
-        // Standing still: Align with slope normal, preserve current character model yaw
-        const currentEuler = new THREE.Euler().setFromQuaternion(player.quaternion, 'YXZ');
-        const yawQuat = new THREE.Quaternion().setFromAxisAngle(
-          new THREE.Vector3(0, 1, 0), currentEuler.y
-        );
-        const combined = targetQuat.clone().multiply(yawQuat);
-        player.quaternion.slerp(combined, 10 * dt);
+        let diff = targetYaw - playerYaw;
+        diff = Math.atan2(Math.sin(diff), Math.cos(diff)); // Shortest path
+        playerYaw += diff * 10 * dt;
       }
     } else if (shiftlockMode === 1) {
-      // SHIFTLOCK 1: Smooth lock to face camera direction (yaw + PI)
-      const yawQuat = new THREE.Quaternion().setFromAxisAngle(
-        new THREE.Vector3(0, 1, 0), yaw + Math.PI
-      );
-      const combined = targetQuat.clone().multiply(yawQuat);
-      player.quaternion.slerp(combined, 8 * dt);
+      // SHIFTLOCK 1: Smooth lock to face camera direction along shortest path
+      const targetYaw = yaw + Math.PI;
+      let diff = targetYaw - playerYaw;
+      diff = Math.atan2(Math.sin(diff), Math.cos(diff)); // Shortest path
+      playerYaw += diff * 10 * dt;
     } else if (shiftlockMode === 2) {
-      // SHIFTLOCK 2: Instant lock to face camera direction (yaw + PI)
-      const yawQuat = new THREE.Quaternion().setFromAxisAngle(
-        new THREE.Vector3(0, 1, 0), yaw + Math.PI
-      );
-      const combined = targetQuat.clone().multiply(yawQuat);
-      player.quaternion.copy(combined);
+      // SHIFTLOCK 2: Instant lock to face camera direction
+      playerYaw = yaw + Math.PI;
     }
 
+    // Keep playerYaw normalized between [-PI, PI] to prevent any numerical drift
+    playerYaw = Math.atan2(Math.sin(playerYaw), Math.cos(playerYaw));
+
+    // Construct final orientation incorporating terrain tilt + smooth shortest-path yaw
+    const yawQuat = new THREE.Quaternion().setFromAxisAngle(
+      new THREE.Vector3(0, 1, 0), playerYaw
+    );
+    const combinedQuat = targetQuat.clone().multiply(yawQuat);
+    player.quaternion.copy(combinedQuat); // Instantly copy the smooth target quaternion!
+
     // ── Spherical Camera Follow with Roblox-style Terrain & Obstacle Collision ──
+    player.updateMatrixWorld(true); // Force matrix update to prevent camera snapping/jumping!
     const targetPos = new THREE.Vector3();
     head.getWorldPosition(targetPos); // Follow the exact world position of the head, adapting to slope tilts!
 
