@@ -166,9 +166,14 @@
       g.add(cone);
     }
 
-    // Position tree so its base sits on the terrain, with minimum clearance above water
-    const ty = Math.max(getTerrainHeight(x, z), -1.5); // water is at y=-2
+    // Position tree so its base sits on the terrain
+    const ty = getTerrainHeight(x, z);
     g.position.set(x, ty, z);
+
+    // Rotate tree to match the terrain normal (slope tilt)
+    const normal = getTerrainNormal(x, z);
+    g.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), normal);
+
     return g;
   }
 
@@ -215,8 +220,16 @@
     if (td < 80 && Math.random() > 0.7) continue;
 
     if (Math.random() < 0.85) {
-      scene.add(createTree(tx, tz));
-      treePositions.push({ x: tx, z: tz });
+      const terrainH = getTerrainHeight(tx, tz);
+      const normal = getTerrainNormal(tx, tz);
+      
+      // Enforce spawning rules:
+      // 1. Cannot spawn on water (height <= -1.5)
+      // 2. Cannot spawn on steep ground (slope > 30 degrees, normal.y < 0.866)
+      if (terrainH > -1.5 && normal.y >= 0.866) {
+        scene.add(createTree(tx, tz));
+        treePositions.push({ x: tx, z: tz });
+      }
     } else {
       // Rock
       const rockSize = 0.5 + Math.random() * 1;
@@ -346,10 +359,10 @@
   });
 
   document.addEventListener('mousemove', e => {
-    if (!isLocked) return;
-    yaw -= e.movementX * 0.002;
-    pitch = Math.max(-0.4, Math.min(0.8, pitch - e.movementY * 0.002));
-  });
+      if (!isLocked) return;
+      yaw -= e.movementX * 0.002;
+      pitch = Math.max(-0.6, Math.min(1.2, pitch - e.movementY * 0.002));
+    });
 
   // ── Game Loop ────────────────────────────────────────────
   const clock = new THREE.Clock();
@@ -447,14 +460,54 @@
       player.quaternion.slerp(combined, 3 * dt);
     }
 
-    // Camera follow
-    const camDist = 5, camHeight = 3;
+    // ── Spherical Camera Follow with Roblox-style Terrain & Obstacle Collision ──
+    const targetPos = new THREE.Vector3(player.position.x, player.position.y + 1.2, player.position.z);
+    const maxRadius = 6.0; // Desired distance
+    
+    // Direction vector from target to camera (using pitch and yaw)
+    // pitch acts as the elevation angle, yaw acts as the azimuthal angle
+    const dx = Math.sin(yaw) * Math.cos(pitch) * maxRadius;
+    const dy = Math.sin(pitch) * maxRadius;
+    const dz = Math.cos(yaw) * Math.cos(pitch) * maxRadius;
+    
+    let actualRadius = maxRadius;
+    const collisionSteps = 12;
+    
+    for (let i = 1; i <= collisionSteps; i++) {
+      const t = i / collisionSteps;
+      const checkX = targetPos.x + dx * t;
+      const checkY = targetPos.y + dy * t;
+      const checkZ = targetPos.z + dz * t;
+      
+      // 1. Terrain collision check
+      const terrainY = getTerrainHeight(checkX, checkZ);
+      if (checkY < terrainY + 0.3) {
+        actualRadius = maxRadius * Math.max(0.15, t - 0.08);
+        break;
+      }
+      
+      // 2. Tree trunk collision check
+      let hitTree = false;
+      for (const tree of treePositions) {
+        const tdx = checkX - tree.x;
+        const tdz = checkZ - tree.z;
+        const tdist = Math.sqrt(tdx * tdx + tdz * tdz);
+        const treeBaseY = getTerrainHeight(tree.x, tree.z);
+        if (tdist < 0.6 && checkY > treeBaseY && checkY < treeBaseY + 4.0) {
+          actualRadius = maxRadius * Math.max(0.15, t - 0.08);
+          hitTree = true;
+          break;
+        }
+      }
+      if (hitTree) break;
+    }
+    
     camera.position.set(
-      player.position.x + Math.sin(yaw) * camDist,
-      player.position.y + camHeight - pitch * 3,
-      player.position.z + Math.cos(yaw) * camDist
+      targetPos.x + Math.sin(yaw) * Math.cos(pitch) * actualRadius,
+      targetPos.y + Math.sin(pitch) * actualRadius,
+      targetPos.z + Math.cos(yaw) * Math.cos(pitch) * actualRadius
     );
-    camera.lookAt(player.position.x, player.position.y + 1.5, player.position.z);
+    camera.lookAt(targetPos);
 
     renderer.render(scene, camera);
   }
