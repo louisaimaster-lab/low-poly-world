@@ -67,12 +67,36 @@
     <h1>🌍 Low Poly World</h1>
     <p>
       <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> Move &middot; <kbd>E</kbd> Climb Up<br/>
-      <kbd>Ctrl</kbd> Run &middot; <kbd>Space</kbd> Jump<br/>
+      <span id="sprint-key-label"><kbd>Ctrl</kbd></span> Run &middot; <kbd>Space</kbd> Jump<br/>
       <kbd>Shift</kbd> Switch Shiftlock Mode<br/>
       <kbd>Mouse</kbd> Look (Right-Click Drag without Shiftlock)
     </p>
     <div id="shiftlock-indicator" style="margin-top: 8px; font-size: 12px; font-weight: bold; color: #ffcc00; letter-spacing: 0.5px;">
       Shiftlock: Off (None)
+    </div>
+    
+    <!-- Beautiful low-poly styled settings panel! -->
+    <div style="margin-top: 14px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 10px;">
+      <h3 style="font-size: 13px; margin-bottom: 8px; color: #e0f7fa;">⚙️ Settings</h3>
+      
+      <!-- Sensitivity Bar -->
+      <div style="margin-bottom: 10px;">
+        <div style="display: flex; justify-content: space-between; font-size: 12px; opacity: 0.8; margin-bottom: 3px;">
+          <span>Look Sensitivity:</span>
+          <span id="sens-val">1.0x</span>
+        </div>
+        <input type="range" id="sens-slider" min="0.2" max="3.0" step="0.1" value="1.0" 
+               style="width: 100%; accent-color: #ffcc00; cursor: pointer; background: rgba(255,255,255,0.2); height: 5px; border-radius: 3px; appearance: none; outline: none;">
+      </div>
+      
+      <!-- Sprint Key OS Toggle -->
+      <div>
+        <div style="font-size: 12px; opacity: 0.8; margin-bottom: 4px;">Keyboard Layout:</div>
+        <div style="display: flex; gap: 6px;">
+          <button id="layout-win-btn" style="flex: 1; padding: 4px; font-size: 11px; font-weight: bold; border-radius: 4px; border: none; cursor: pointer; background: #ffcc00; color: #111; outline: none; transition: 0.2s;">Windows (Ctrl)</button>
+          <button id="layout-mac-btn" style="flex: 1; padding: 4px; font-size: 11px; font-weight: bold; border-radius: 4px; border: none; cursor: pointer; background: rgba(255,255,255,0.15); color: #fff; outline: none; transition: 0.2s;">macOS (Control)</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -691,6 +715,74 @@
     cameraZoomDistance = Math.max(2.0, Math.min(15.0, cameraZoomDistance));
   });
 
+  // Settings Wiring: Look Sensitivity and Keyboard Layout OS Toggle
+  let mouseSensitivity = 1.0;
+  let isMacLayout = false;
+
+  // Auto detect macOS
+  const ua = navigator.userAgent.toLowerCase();
+  const plat = navigator.platform.toLowerCase();
+  if (ua.includes('mac') || plat.includes('mac')) {
+    isMacLayout = true;
+  }
+
+  function updateLayoutUI() {
+    const label = document.getElementById('sprint-key-label');
+    const winBtn = document.getElementById('layout-win-btn');
+    const macBtn = document.getElementById('layout-mac-btn');
+    
+    if (isMacLayout) {
+      if (label) label.innerHTML = '<kbd>Control</kbd>';
+      if (winBtn) {
+        winBtn.style.background = 'rgba(255,255,255,0.15)';
+        winBtn.style.color = '#fff';
+      }
+      if (macBtn) {
+        macBtn.style.background = '#ffcc00';
+        macBtn.style.color = '#111';
+      }
+    } else {
+      if (label) label.innerHTML = '<kbd>Ctrl</kbd>';
+      if (winBtn) {
+        winBtn.style.background = '#ffcc00';
+        winBtn.style.color = '#111';
+      }
+      if (macBtn) {
+        macBtn.style.background = 'rgba(255,255,255,0.15)';
+        macBtn.style.color = '#fff';
+      }
+    }
+  }
+
+  // Wire buttons & slider after document DOM is ready (in script directly)
+  window.addEventListener('DOMContentLoaded', () => {
+    const sensSlider = document.getElementById('sens-slider');
+    const sensVal = document.getElementById('sens-val');
+    
+    if (sensSlider && sensVal) {
+      sensSlider.addEventListener('input', () => {
+        mouseSensitivity = parseFloat(sensSlider.value);
+        sensVal.textContent = mouseSensitivity.toFixed(1) + 'x';
+      });
+    }
+
+    const winBtn = document.getElementById('layout-win-btn');
+    const macBtn = document.getElementById('layout-mac-btn');
+
+    if (winBtn && macBtn) {
+      winBtn.addEventListener('click', () => {
+        isMacLayout = false;
+        updateLayoutUI();
+      });
+      macBtn.addEventListener('click', () => {
+        isMacLayout = true;
+        updateLayoutUI();
+      });
+    }
+
+    updateLayoutUI();
+  });
+
   // Intercept browser context menu to allow smooth right-click camera dragging
   document.addEventListener('contextmenu', e => {
     e.preventDefault();
@@ -805,14 +897,14 @@
     // Shiftlock is ON: Mouse moves camera directly (requires pointer lock)
     if (shiftlockMode > 0) {
       if (!isLocked) return;
-      yaw -= e.movementX * 0.002;
-      pitch = Math.max(-0.6, Math.min(1.2, pitch + e.movementY * 0.002));
+      yaw -= e.movementX * 0.002 * mouseSensitivity;
+      pitch = Math.max(-0.6, Math.min(1.2, pitch + e.movementY * 0.002 * mouseSensitivity));
     } 
-    // Shiftlock is OFF: Dragging mouse with RIGHT CLICK rotates camera and locks cursor in place
+    // Shiftlock is OFF: Dragging mouse with RIGHT CLICK rotates camera
     else {
       if (!isLocked && !isRightMouseDown) return;
-      yaw -= e.movementX * 0.0025; // Slightly faster since it's drag
-      pitch = Math.max(-0.6, Math.min(1.2, pitch + e.movementY * 0.0025));
+      yaw -= e.movementX * 0.0025 * mouseSensitivity; // Slightly faster since it's drag
+      pitch = Math.max(-0.6, Math.min(1.2, pitch + e.movementY * 0.0025 * mouseSensitivity));
     }
   });
 
