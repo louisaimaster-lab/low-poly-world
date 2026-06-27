@@ -853,13 +853,15 @@
     }
   });
 
+  let justLocked = false;
+
   document.addEventListener('pointerlockchange', () => {
+    const wasLocked = isLocked;
     isLocked = document.pointerLockElement === renderer.domElement;
+    if (isLocked && !wasLocked) {
+      justLocked = true;
+    }
     if (!isLocked) {
-      // Clear movement keys when pointer lock is lost/exited
-      for (const key in keys) {
-        keys[key] = false;
-      }
       if (shiftlockMode === 0) {
         isRightMouseDown = false;
       }
@@ -867,6 +869,10 @@
   });
 
   document.addEventListener('mousemove', e => {
+    if (justLocked) {
+      justLocked = false;
+      return;
+    }
     // Shiftlock is ON: Mouse moves camera directly (requires pointer lock)
     if (shiftlockMode > 0) {
       if (!isLocked) return;
