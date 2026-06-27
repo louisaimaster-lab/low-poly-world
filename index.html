@@ -63,7 +63,7 @@
 </head>
 <body>
   <div id="crosshair"></div>
-  <div id="fake-cursor" style="display: none; position: absolute; pointer-events: none; z-index: 10000; width: 24px; height: 24px; background: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2224%22 height=%2224%22 viewBox=%220 0 24 24%22><path fill=%22white%22 stroke=%22black%22 stroke-width=%221.5%22 d=%22M3,3 L3,20 L8.5,14.5 L14.5,22 L17.5,19.5 L11.5,12.5 L18,12 Z%22/></svg>') no-repeat;"></div>
+
   <div id="ui">
     <h1>🌍 Low Poly World</h1>
     <p>
@@ -865,19 +865,6 @@
   document.addEventListener('pointerlockchange', () => {
     const wasLocked = isLocked;
     isLocked = document.pointerLockElement === renderer.domElement;
-    
-    // Update fake cursor visibility and position
-    const fakeCursor = document.getElementById('fake-cursor');
-    if (fakeCursor) {
-      if (isLocked && shiftlockMode === 0) {
-        fakeCursor.style.left = (lastMouseX - 3) + 'px';
-        fakeCursor.style.top = (lastMouseY - 3) + 'px';
-        fakeCursor.style.display = 'block';
-      } else {
-        fakeCursor.style.display = 'none';
-      }
-    }
-
     if (isLocked) {
       if (!wasLocked) {
         justLocked = true;
