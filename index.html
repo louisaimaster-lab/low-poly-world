@@ -1016,7 +1016,7 @@
 
     // Update sliding state based on steepness of current slope (> 40 degrees)
     const isSlopeSteep = currentSlopeNormal.y < 0.766 && !onPathwayCurrent && !nearLadderCurrent;
-    const isSlidingActive = isSlopeSteep && isTouchingGround;
+    const isSlidingActive = isSlopeSteep;
 
     if (isSlidingActive) {
       // Accelerate downhill along the normal
