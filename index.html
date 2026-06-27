@@ -854,14 +854,21 @@
   });
 
   let justLocked = false;
+  let ignoreMovements = false;
 
   document.addEventListener('pointerlockchange', () => {
     const wasLocked = isLocked;
     isLocked = document.pointerLockElement === renderer.domElement;
-    if (isLocked && !wasLocked) {
-      justLocked = true;
-    }
-    if (!isLocked) {
+    if (isLocked) {
+      if (!wasLocked) {
+        justLocked = true;
+      }
+      if (shiftlockMode === 0 && !isRightMouseDown) {
+        ignoreMovements = true;
+        document.exitPointerLock();
+      }
+    } else {
+      ignoreMovements = false;
       if (shiftlockMode === 0) {
         isRightMouseDown = false;
       }
@@ -869,6 +876,9 @@
   });
 
   document.addEventListener('mousemove', e => {
+    if (ignoreMovements) {
+      return;
+    }
     if (justLocked) {
       justLocked = false;
       return;
