@@ -1049,6 +1049,25 @@
     player.position.x += (velocity.x + player.userData.slideVelocityX) * dt;
     player.position.z += (velocity.z + player.userData.slideVelocityZ) * dt;
 
+    // ── Slope Collision Push (Prevents Player Cylinder Clipping into Mountains) ──
+    const updatedSlopeNormal = getTerrainNormal(player.position.x, player.position.z);
+    const hLength = Math.sqrt(updatedSlopeNormal.x * updatedSlopeNormal.x + updatedSlopeNormal.z * updatedSlopeNormal.z);
+    if (hLength > 0.0001) {
+      const R = 0.22; // Slightly larger than PLAYER_RADIUS (0.2) to ensure no visual mesh clipping
+      const checkX = player.position.x - R * (updatedSlopeNormal.x / hLength);
+      const checkZ = player.position.z - R * (updatedSlopeNormal.z / hLength);
+      const heightAtInnerEdge = getTerrainHeight(checkX, checkZ);
+      
+      const currentGroundY = getTerrainHeight(player.position.x, player.position.z);
+      if (player.position.y < currentGroundY + 0.5) {
+        const dy = heightAtInnerEdge - player.position.y;
+        if (dy > 0.02) {
+          player.position.x += updatedSlopeNormal.x * dy * 1.5;
+          player.position.z += updatedSlopeNormal.z * dy * 1.5;
+        }
+      }
+    }
+
     // Keep in bounds
     player.position.x = Math.max(-terrainSize/2 + 2, Math.min(terrainSize/2 - 2, player.position.x));
     player.position.z = Math.max(-terrainSize/2 + 2, Math.min(terrainSize/2 - 2, player.position.z));
