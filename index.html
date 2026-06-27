@@ -168,12 +168,12 @@
     const distToPeak = Math.sqrt(dx * dx + dy * dy);
     if (distToPeak < 130) {
       const t = 1 - distToPeak / 130;
-      let mountH = Math.pow(t, 1.8) * 36;
+      let mountH = Math.pow(t, 1.8) * 75;
       
       // Cliff terraces
       if (distToPeak > 40 && distToPeak < 70) {
         const cliffFactor = (distToPeak - 40) / 30; // 0 to 1
-        mountH -= Math.sin(cliffFactor * Math.PI) * 6;
+        mountH -= Math.sin(cliffFactor * Math.PI) * 12;
       }
       h = Math.max(h, mountH);
     }
@@ -445,14 +445,14 @@
   createPathway(88, getTerrainHeight(88, -88) + 0.1, -88, 0.20, -Math.PI / 4, 0);
 
   // First climbable ladder scaling the lower cliff terrace
-  createLadder(95.5, 13.8, 22.0, -95.5, -Math.PI / 4);
+  createLadder(95.5, 28.75, 45.83, -95.5, -Math.PI / 4);
 
   // Mid-level transition pathway and bridge
   createPathway(101, getTerrainHeight(101, -101) + 0.1, -101, 0.05, -Math.PI / 4, 0);
   createPathway(107, getTerrainHeight(107, -107) + 0.1, -107, 0.08, -Math.PI / 4, 0);
 
-  // Second climbable ladder scaling the final vertical summit cliff
-  createLadder(112.5, 21.8, 31.0, -112.5, -Math.PI / 4);
+  // Second climbable ladder scaling the final vertical summit cliff (scaled by 75/36)
+  createLadder(112.5, 45.42, 64.58, -112.5, -Math.PI / 4);
 
   // Upper summit pathways leading to the very peak
   createPathway(117, getTerrainHeight(117, -117) + 0.1, -117, 0.12, -Math.PI / 4, 0);
@@ -593,8 +593,9 @@
 
   // ── Player Character ─────────────────────────────────────
   const player = new THREE.Group();
-  const PLAYER_RADIUS = 0.4;   // collision radius
-  const PLAYER_HEIGHT = 2.2;   // collision height (ground to hat top)
+  player.scale.set(0.5, 0.5, 0.5);
+  const PLAYER_RADIUS = 0.2;   // collision radius
+  const PLAYER_HEIGHT = 1.1;   // collision height (ground to hat top)
   const FEET_OFFSET = 0.0;     // hover clearance so feet don't clip into slopes
 
   // Body
@@ -910,16 +911,56 @@
 
     }
 
-    velocity.x = move.x * speed;
-    velocity.z = move.z * speed;
+    // Check if current position is a steep slope (> 50 degrees)
+    const currentSlopeNormal = getTerrainNormal(player.position.x, player.position.z);
+    
+    // Check if player is near any pathway
+    let onPathwayCurrent = false;
+    for (const path of pathwaysData) {
+      const pdx = player.position.x - path.x;
+      const pdz = player.position.z - path.z;
+      const pdist = Math.sqrt(pdx * pdx + pdz * pdz);
+      if (pdist < 3.8 && Math.abs(player.position.y - path.y) < 2.5) {
+        onPathwayCurrent = true;
+        break;
+      }
+    }
+    
+    // Also check if they are near a ladder
+    let nearLadderCurrent = false;
+    for (const ladder of laddersData) {
+      const ldx = player.position.x - ladder.x;
+      const ldz = player.position.z - ladder.z;
+      const ldist = Math.sqrt(ldx * ldx + ldz * ldz);
+      if (ldist < 1.2 && player.position.y >= ladder.yMin - 0.5 && player.position.y <= ladder.yMax + 0.8) {
+        nearLadderCurrent = true;
+        break;
+      }
+    }
+
+    let isSliding = false;
+    let slideX = 0, slideZ = 0;
+    if (currentSlopeNormal.y < 0.6428 && !onPathwayCurrent && !nearLadderCurrent) {
+      isSliding = true;
+      slideX = currentSlopeNormal.x * 12.0;
+      slideZ = currentSlopeNormal.z * 12.0;
+    }
+
+    if (isSliding) {
+      velocity.x = move.x * speed * 0.1;
+      velocity.z = move.z * speed * 0.1;
+    } else {
+      velocity.x = move.x * speed;
+      velocity.z = move.z * speed;
+    }
 
     // Move horizontally FIRST so we check terrain at the destination
     const oldX = player.position.x;
     const oldZ = player.position.z;
     const oldGroundY = getTerrainHeight(oldX, oldZ);
 
-    player.position.x += velocity.x * dt;
-    player.position.z += velocity.z * dt;
+    player.position.x += (velocity.x + slideX) * dt;
+    player.position.z += (velocity.z + slideZ) * dt;
 
     // Check if we are on a steep slope and trying to walk UP
     const newGroundY = getTerrainHeight(player.position.x, player.position.z);
@@ -963,7 +1004,7 @@
     player.position.z = Math.max(-terrainSize/2 + 2, Math.min(terrainSize/2 - 2, player.position.z));
 
     // Tree collisions (cylinder-based check around the trunks)
-    const playerRadius = 0.4;
+    const playerRadius = 0.2;
     const trunkCollisionRadius = 0.5; // Slightly larger than tree trunks for smooth navigation
     const minCollisionDist = playerRadius + trunkCollisionRadius;
     for (const tree of treePositions) {
@@ -1084,14 +1125,17 @@
 
     // Apply gravity only if not actively climbing a ladder
     if (!isClimbing) {
-      if (player.position.y > landingY + 0.01) {
+      if (player.position.y > landingY + 0.01 || isSliding) {
         vy -= 22 * dt;
+        if (isSliding && vy > -8) {
+          vy = -8; // ensure downward momentum
+        }
       } else {
         vy = 0;
       }
 
-      // Jump (only when feet are on landing surface, using a wider 0.35 threshold for sprint jumping)
-      if (keys['Space'] && vy === 0 && Math.abs(player.position.y - landingY) < 0.35) {
+      // Jump (only when feet are on landing surface, using a wider 0.35 threshold for sprint jumping, not sliding)
+      if (keys['Space'] && vy === 0 && !isSliding && Math.abs(player.position.y - landingY) < 0.35) {
         vy = 8;
       }
     }
@@ -1101,7 +1145,7 @@
     // Anti fall-through: clamp to terrain or platform
     if (player.position.y < landingY) {
       player.position.y = landingY;
-      if (vy < 0) {
+      if (vy < 0 && !isSliding) {
         vy = 0;
       }
     }
@@ -1129,7 +1173,7 @@
     // Keep playerYaw normalized between [-PI, PI] to prevent any numerical drift
     playerYaw = Math.atan2(Math.sin(playerYaw), Math.cos(playerYaw));
 
-    // Construct final orientation incorporating smooth shortest-path yaw (upright)
+    // Base orientation
     const yawQuat = new THREE.Quaternion().setFromAxisAngle(
       new THREE.Vector3(0, 1, 0), playerYaw
     );
