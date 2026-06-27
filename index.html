@@ -68,8 +68,8 @@
     <h1>🌍 Low Poly World</h1>
     <p>
       <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> Move &middot; <kbd>E</kbd> Climb Up<br/>
-      <span id="sprint-key-label"><kbd>Ctrl</kbd></span> Run &middot; <kbd>Space</kbd> Jump<br/>
-      <kbd>Shift</kbd> Switch Shiftlock Mode<br/>
+      <kbd>Shift</kbd> Run &middot; <kbd>Space</kbd> Jump<br/>
+      <span id="sprint-key-label"><kbd>Ctrl</kbd></span> Switch Shiftlock Mode<br/>
       <kbd>Mouse</kbd> Look (Right-Click Drag without Shiftlock)
     </p>
     <div id="shiftlock-indicator" style="margin-top: 8px; font-size: 12px; font-weight: bold; color: #ffcc00; letter-spacing: 0.5px;">
@@ -828,8 +828,8 @@
   document.addEventListener('keydown', e => { 
     keys[e.code] = true; 
     
-    // Cycle Shiftlock modes on Shift press (without trigger repetition when holding key)
-    if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
+    // Cycle Shiftlock modes on Ctrl press (without trigger repetition when holding key)
+    if (e.code === 'ControlLeft' || e.code === 'ControlRight') {
       if (!e.repeat) {
         shiftlockMode = (shiftlockMode + 1) % 3;
         updateShiftlockUI();
@@ -940,8 +940,8 @@
       if (c.position.x > 100) c.position.x = -100;
     }
 
-    // Player movement
-    const speed = keys['ControlLeft'] ? 12 : 6;
+    // Player movement (Sprint with ShiftLeft or ShiftRight)
+    const speed = (keys['ShiftLeft'] || keys['ShiftRight']) ? 12 : 6;
     const forward = new THREE.Vector3(-Math.sin(yaw), 0, -Math.cos(yaw));
     const right = new THREE.Vector3(Math.cos(yaw), 0, -Math.sin(yaw));
 
@@ -983,42 +983,10 @@
       }
     }
 
-    // Determine current ground/platform height for landing check
-    const currentGroundY = getTerrainHeight(player.position.x, player.position.z);
-    let currentPlatformY = -999;
-    for (const path of pathwaysData) {
-      const pdx = player.position.x - path.x;
-      const pdz = player.position.z - path.z;
-      const sizeX = path.width / 2 + 0.35;
-      const sizeZ = path.length / 2 + 0.35;
-      const cosRY = Math.cos(-path.ry);
-      const sinRY = Math.sin(-path.ry);
-      const localX = pdx * cosRY - pdz * sinRY;
-      const localZ = pdx * sinRY + pdz * cosRY;
-      if (Math.abs(localX) < sizeX && Math.abs(localZ) < sizeZ) {
-        if (player.position.y >= path.y - 0.25 && player.position.y <= path.y + 0.6) {
-          currentPlatformY = path.y;
-          break;
-        }
-      }
-    }
-    let currentLandingY = currentGroundY + FEET_OFFSET;
-    if (currentPlatformY > currentGroundY + FEET_OFFSET) {
-      currentLandingY = currentPlatformY;
-    }
-
-    const isTouchingGround = player.position.y <= currentLandingY + 0.05;
-    const wasAirborne = player.userData.wasAirborne === true;
+    // Update sliding state based on steepness of current slope
     const isSlopeSteep = currentSlopeNormal.y < 0.6428 && !onPathwayCurrent && !nearLadderCurrent;
-
-    if (wasAirborne && isTouchingGround && isSlopeSteep) {
-      player.userData.isSlidingOnSlope = true;
-    }
-
-    if (player.userData.isSlidingOnSlope) {
-      if (!isSlopeSteep) {
-        player.userData.isSlidingOnSlope = false;
-      }
+    if (player.userData.isSlidingOnSlope && !isSlopeSteep) {
+      player.userData.isSlidingOnSlope = false;
     }
 
     let isSliding = player.userData.isSlidingOnSlope === true;
@@ -1034,20 +1002,6 @@
     } else {
       velocity.x = move.x * speed;
       velocity.z = move.z * speed;
-      
-      // If slope is steep, prevent walking UP the slope by projecting velocity
-      if (isSlopeSteep) {
-        const horizontalLength = Math.sqrt(currentSlopeNormal.x * currentSlopeNormal.x + currentSlopeNormal.z * currentSlopeNormal.z);
-        if (horizontalLength > 0.0001) {
-          const ux = -currentSlopeNormal.x / horizontalLength;
-          const uz = -currentSlopeNormal.z / horizontalLength;
-          const dot = velocity.x * ux + velocity.z * uz;
-          if (dot > 0) {
-            velocity.x -= ux * dot;
-            velocity.z -= uz * dot;
-          }
-        }
-      }
     }
 
     player.position.x += (velocity.x + slideX) * dt;
@@ -1200,13 +1154,18 @@
 
     // Anti fall-through: clamp to terrain or platform
     if (player.position.y < landingY) {
+      // Check if player landed on a steep slope (> 50 degrees)
+      const slopeNormal = getTerrainNormal(player.position.x, player.position.z);
+      const isSlopeSteep = slopeNormal.y < 0.6428 && !onPathwayCurrent && !nearLadderCurrent;
+      if (vy < 0 && isSlopeSteep) {
+        player.userData.isSlidingOnSlope = true;
+      }
+      
       player.position.y = landingY;
       if (vy < 0 && !isSliding) {
         vy = 0;
       }
     }
-
-    player.userData.wasAirborne = player.position.y > landingY + 0.05;
 
     if (shiftlockMode === 0) {
       // NONE MODE: Character turning is disabled unless moving
