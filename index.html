@@ -310,7 +310,7 @@
 
     // ── Terrain normal: tilt player to match slope ─────────────
   function getTerrainNormal(x, z) {
-    const s = 0.8; // wider sample = more stable normals
+    const s = 0.2; // smaller sample = more accurate slope detection for sharp peaks/ridges
     const hl = getTerrainHeight(x - s, z);
     const hr = getTerrainHeight(x + s, z);
     const hf = getTerrainHeight(x, z - s);
