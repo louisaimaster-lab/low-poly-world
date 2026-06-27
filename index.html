@@ -1018,14 +1018,21 @@
     const isSlopeSteep = currentSlopeNormal.y < 0.866 && !onPathwayCurrent && !nearLadderCurrent;
     const isSlidingActive = isSlopeSteep;
 
+    let targetMaxSpeed = 0;
+    let accelerationRate = 0;
+    let maxWalkMultiplier = 1.0;
+
     if (isSlidingActive) {
-      // Determine target speed limits and acceleration rates based on slope angle
-      let targetMaxSpeed = 16.0;
-      let accelerationRate = 22.0;
-      if (currentSlopeNormal.y >= 0.766) {
+      if (currentSlopeNormal.y < 0.766) {
+        // Steep Slope (>= 40 degrees)
+        targetMaxSpeed = 16.0;
+        accelerationRate = 22.0;
+        maxWalkMultiplier = 0.15; // 15% control
+      } else {
         // Medium Slope (30 to 40 degrees)
         targetMaxSpeed = 4.0;
         accelerationRate = 8.0;
+        maxWalkMultiplier = 0.35; // 35% control (allows some movement but slide wins)
       }
 
       // Accelerate downhill along the normal
@@ -1050,8 +1057,9 @@
     const currentSlideSpeed = Math.sqrt(player.userData.slideVelocityX**2 + player.userData.slideVelocityZ**2);
     isSliding = isSlidingActive || currentSlideSpeed > 0.5;
 
-    // Walk multiplier smoothly drops as slide speed increases
-    const walkMultiplier = Math.max(0.15, 1.0 - currentSlideSpeed / 12.0);
+    // Walk multiplier smoothly drops as slide speed increases and is capped by slope type
+    const baseMultiplier = 1.0 - currentSlideSpeed / 12.0;
+    const walkMultiplier = Math.max(0.15, Math.min(maxWalkMultiplier, baseMultiplier));
 
     // If airborne and not climbing, horizontal velocity is locked to the launch velocity (no steering in air)
     if (!isTouchingGround && !player.userData.isClimbingLadder) {
