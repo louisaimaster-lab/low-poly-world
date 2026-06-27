@@ -999,50 +999,8 @@
       velocity.z = move.z * speed;
     }
 
-    // Move horizontally FIRST so we check terrain at the destination
-    const oldX = player.position.x;
-    const oldZ = player.position.z;
-    const oldGroundY = getTerrainHeight(oldX, oldZ);
-
     player.position.x += (velocity.x + slideX) * dt;
     player.position.z += (velocity.z + slideZ) * dt;
-
-    // Check if we are on a steep slope and trying to walk UP
-    const newGroundY = getTerrainHeight(player.position.x, player.position.z);
-    const slopeNormal = getTerrainNormal(player.position.x, player.position.z);
-    
-    // Slopes too high to climb: normal.y < 0.707 (i.e. > 45 degrees)
-    if (slopeNormal.y < 0.707) {
-      // Check if player is near any pathway
-      let onPathway = false;
-      for (const path of pathwaysData) {
-        const pdx = player.position.x - path.x;
-        const pdz = player.position.z - path.z;
-        const pdist = Math.sqrt(pdx * pdx + pdz * pdz);
-        if (pdist < 3.8 && Math.abs(player.position.y - path.y) < 2.5) {
-          onPathway = true;
-          break;
-        }
-      }
-      
-      // Also check if they are near a ladder
-      let nearLadder = false;
-      for (const ladder of laddersData) {
-        const ldx = player.position.x - ladder.x;
-        const ldz = player.position.z - ladder.z;
-        const ldist = Math.sqrt(ldx * ldx + ldz * ldz);
-        if (ldist < 1.2 && player.position.y >= ladder.yMin - 0.5 && player.position.y <= ladder.yMax + 0.8) {
-          nearLadder = true;
-          break;
-        }
-      }
-
-      // If we are trying to go UP a steep slope and not on a path or ladder, block horizontal progress!
-      if (!onPathway && !nearLadder && newGroundY > oldGroundY + 0.05) {
-        player.position.x = oldX;
-        player.position.z = oldZ;
-      }
-    }
 
     // Keep in bounds
     player.position.x = Math.max(-terrainSize/2 + 2, Math.min(terrainSize/2 - 2, player.position.x));
