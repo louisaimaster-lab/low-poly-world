@@ -859,7 +859,8 @@
     }
   });
 
-  let justLocked = false;
+  let lastLockTime = 0;
+  let lastUnlockTime = 0;
   let ignoreMovements = false;
 
   document.addEventListener('pointerlockchange', () => {
@@ -867,13 +868,16 @@
     isLocked = document.pointerLockElement === renderer.domElement;
     if (isLocked) {
       if (!wasLocked) {
-        justLocked = true;
+        lastLockTime = performance.now();
       }
       if (shiftlockMode === 0 && !isRightMouseDown) {
         ignoreMovements = true;
         document.exitPointerLock();
       }
     } else {
+      if (wasLocked) {
+        lastUnlockTime = performance.now();
+      }
       ignoreMovements = false;
       if (shiftlockMode === 0) {
         isRightMouseDown = false;
@@ -885,15 +889,19 @@
     if (ignoreMovements) {
       return;
     }
-    if (justLocked) {
-      justLocked = false;
+    const now = performance.now();
+    if (now - lastLockTime < 100 || now - lastUnlockTime < 100) {
       return;
     }
+
+    const mx = e.movementX || 0;
+    const my = e.movementY || 0;
+
     // Shiftlock is ON: Mouse moves camera directly (requires pointer lock)
     if (shiftlockMode > 0) {
       if (!isLocked) return;
-      yaw -= e.movementX * 0.002 * mouseSensitivity;
-      pitch = Math.max(-0.6, Math.min(1.2, pitch + e.movementY * 0.002 * mouseSensitivity));
+      yaw -= mx * 0.002 * mouseSensitivity;
+      pitch = Math.max(-0.6, Math.min(1.2, pitch + my * 0.002 * mouseSensitivity));
     } 
     // Shiftlock is OFF: Dragging mouse with RIGHT CLICK rotates camera
     else {
@@ -903,8 +911,8 @@
       let dy = 0;
       
       if (isLocked) {
-        dx = e.movementX;
-        dy = e.movementY;
+        dx = mx;
+        dy = my;
       } else {
         // If not locked, compute delta manually using clientX/clientY
         dx = e.clientX - lastMouseX;
