@@ -761,9 +761,14 @@
     e.preventDefault();
   });
 
+  let lastMouseX = 0;
+  let lastMouseY = 0;
+
   document.addEventListener('mousedown', e => {
     if (e.button === 2) {
       isRightMouseDown = true;
+      lastMouseX = e.clientX;
+      lastMouseY = e.clientY;
       // Only lock the pointer on right-click mousedown if Shiftlock is OFF (None Mode)
       if (shiftlockMode === 0) {
         const p = renderer.domElement.requestPointerLock();
@@ -892,8 +897,29 @@
     // Shiftlock is OFF: Dragging mouse with RIGHT CLICK rotates camera
     else {
       if (!isLocked && !isRightMouseDown) return;
-      yaw -= e.movementX * 0.0025 * mouseSensitivity; // Slightly faster since it's drag
-      pitch = Math.max(-0.6, Math.min(1.2, pitch + e.movementY * 0.0025 * mouseSensitivity));
+      
+      let dx = 0;
+      let dy = 0;
+      
+      if (isLocked) {
+        dx = e.movementX;
+        dy = e.movementY;
+      } else {
+        // If not locked, compute delta manually using clientX/clientY
+        dx = e.clientX - lastMouseX;
+        dy = e.clientY - lastMouseY;
+        
+        lastMouseX = e.clientX;
+        lastMouseY = e.clientY;
+        
+        // Ignore massive delta jumps (like snaps during transition)
+        if (Math.abs(dx) > 150 || Math.abs(dy) > 150) {
+          return;
+        }
+      }
+      
+      yaw -= dx * 0.0025 * mouseSensitivity;
+      pitch = Math.max(-0.6, Math.min(1.2, pitch + dy * 0.0025 * mouseSensitivity));
     }
   });
 
