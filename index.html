@@ -1014,20 +1014,30 @@
     }
     const isTouchingGround = player.position.y <= currentLandingY + 0.05;
 
-    // Update sliding state based on steepness of current slope (> 40 degrees)
-    const isSlopeSteep = currentSlopeNormal.y < 0.766 && !onPathwayCurrent && !nearLadderCurrent;
+    // Update sliding state based on steepness of current slope (> 30 degrees)
+    const isSlopeSteep = currentSlopeNormal.y < 0.866 && !onPathwayCurrent && !nearLadderCurrent;
     const isSlidingActive = isSlopeSteep;
 
     if (isSlidingActive) {
+      // Determine target speed limits and acceleration rates based on slope angle
+      let targetMaxSpeed = 16.0;
+      let accelerationRate = 22.0;
+      if (currentSlopeNormal.y >= 0.766) {
+        // Medium Slope (30 to 40 degrees)
+        targetMaxSpeed = 4.0;
+        accelerationRate = 8.0;
+      }
+
       // Accelerate downhill along the normal
-      player.userData.slideVelocityX += currentSlopeNormal.x * 22.0 * dt;
-      player.userData.slideVelocityZ += currentSlopeNormal.z * 22.0 * dt;
+      player.userData.slideVelocityX += currentSlopeNormal.x * accelerationRate * dt;
+      player.userData.slideVelocityZ += currentSlopeNormal.z * accelerationRate * dt;
       
-      // Clamp to max slide speed
+      // Smooth deceleration or clamping to targetMaxSpeed
       const slideSpeed = Math.sqrt(player.userData.slideVelocityX**2 + player.userData.slideVelocityZ**2);
-      if (slideSpeed > 16.0) {
-        player.userData.slideVelocityX = (player.userData.slideVelocityX / slideSpeed) * 16.0;
-        player.userData.slideVelocityZ = (player.userData.slideVelocityZ / slideSpeed) * 16.0;
+      if (slideSpeed > targetMaxSpeed) {
+        const newSpeed = Math.max(targetMaxSpeed, slideSpeed - 15.0 * dt);
+        player.userData.slideVelocityX = (player.userData.slideVelocityX / slideSpeed) * newSpeed;
+        player.userData.slideVelocityZ = (player.userData.slideVelocityZ / slideSpeed) * newSpeed;
       }
     } else {
       // Decay slide velocity when not actively sliding
