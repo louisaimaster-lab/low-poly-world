@@ -859,26 +859,19 @@
     }
   });
 
-  let lastLockTime = 0;
-  let lastUnlockTime = 0;
-  let ignoreMovements = false;
+  let justLocked = false;
 
   document.addEventListener('pointerlockchange', () => {
     const wasLocked = isLocked;
     isLocked = document.pointerLockElement === renderer.domElement;
     if (isLocked) {
       if (!wasLocked) {
-        lastLockTime = performance.now();
+        justLocked = true;
       }
       if (shiftlockMode === 0 && !isRightMouseDown) {
-        ignoreMovements = true;
         document.exitPointerLock();
       }
     } else {
-      if (wasLocked) {
-        lastUnlockTime = performance.now();
-      }
-      ignoreMovements = false;
       if (shiftlockMode === 0) {
         isRightMouseDown = false;
       }
@@ -886,20 +879,18 @@
   });
 
   document.addEventListener('mousemove', e => {
-    if (ignoreMovements) {
-      return;
-    }
-    const now = performance.now();
-    if (now - lastLockTime < 100 || now - lastUnlockTime < 100) {
+    if (justLocked) {
+      justLocked = false;
       return;
     }
 
-    const mx = e.movementX || 0;
-    const my = e.movementY || 0;
+    const mx = e.movementX;
+    const my = e.movementY;
 
     // Shiftlock is ON: Mouse moves camera directly (requires pointer lock)
     if (shiftlockMode > 0) {
       if (!isLocked) return;
+      if (isNaN(mx) || isNaN(my) || !isFinite(mx) || !isFinite(my)) return;
       yaw -= mx * 0.002 * mouseSensitivity;
       pitch = Math.max(-0.6, Math.min(1.2, pitch + my * 0.002 * mouseSensitivity));
     } 
@@ -920,11 +911,14 @@
         
         lastMouseX = e.clientX;
         lastMouseY = e.clientY;
-        
-        // Ignore massive delta jumps (like snaps during transition)
-        if (Math.abs(dx) > 150 || Math.abs(dy) > 150) {
-          return;
-        }
+      }
+      
+      // Safeguard against NaN / undefined values
+      if (isNaN(dx) || isNaN(dy) || !isFinite(dx) || !isFinite(dy)) return;
+      
+      // Ignore massive delta jumps (like snaps during transition)
+      if (Math.abs(dx) > 150 || Math.abs(dy) > 150) {
+        return;
       }
       
       yaw -= dx * 0.0025 * mouseSensitivity;
