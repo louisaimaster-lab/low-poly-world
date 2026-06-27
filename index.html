@@ -1051,24 +1051,27 @@
 
     // ── Slope Collision Push (Prevents Player Cylinder Clipping into Mountains) ──
     const updatedSlopeNormal = getTerrainNormal(player.position.x, player.position.z);
-    const hLength = Math.sqrt(updatedSlopeNormal.x * updatedSlopeNormal.x + updatedSlopeNormal.z * updatedSlopeNormal.z);
-    if (hLength > 0.0001) {
-      const R = 0.22; // Slightly larger than PLAYER_RADIUS (0.2) to ensure no visual mesh clipping
-      const checkX = player.position.x - R * (updatedSlopeNormal.x / hLength);
-      const checkZ = player.position.z - R * (updatedSlopeNormal.z / hLength);
-      const heightAtInnerEdge = getTerrainHeight(checkX, checkZ);
-      
-      const currentGroundY = getTerrainHeight(player.position.x, player.position.z);
-      if (player.position.y < currentGroundY + 0.5) {
-        const dy = heightAtInnerEdge - player.position.y;
-        if (dy > 0.01) {
-          const pushDistance = dy * updatedSlopeNormal.y / (hLength * hLength);
-          player.position.x += (updatedSlopeNormal.x / hLength) * pushDistance;
-          player.position.z += (updatedSlopeNormal.z / hLength) * pushDistance;
-          
-          // Re-evaluate terrain height at the new position and update Y immediately in unison
-          const newGroundY = getTerrainHeight(player.position.x, player.position.z);
-          player.position.y = newGroundY + FEET_OFFSET;
+    // Only push on steep slopes (steeper than 30 degrees) where clipping actually happens
+    if (updatedSlopeNormal.y < 0.866) {
+      const hLength = Math.sqrt(updatedSlopeNormal.x * updatedSlopeNormal.x + updatedSlopeNormal.z * updatedSlopeNormal.z);
+      if (hLength > 0.0001) {
+        const R = 0.22; // Slightly larger than PLAYER_RADIUS (0.2) to ensure no visual mesh clipping
+        const checkX = player.position.x - R * (updatedSlopeNormal.x / hLength);
+        const checkZ = player.position.z - R * (updatedSlopeNormal.z / hLength);
+        const heightAtInnerEdge = getTerrainHeight(checkX, checkZ);
+        
+        const currentGroundY = getTerrainHeight(player.position.x, player.position.z);
+        if (player.position.y < currentGroundY + 0.5) {
+          const dy = heightAtInnerEdge - player.position.y;
+          if (dy > 0.01) {
+            const pushDistance = dy * 1.2; // Stable, non-flinging push factor
+            player.position.x += (updatedSlopeNormal.x / hLength) * pushDistance;
+            player.position.z += (updatedSlopeNormal.z / hLength) * pushDistance;
+            
+            // Re-evaluate terrain height at the new position and update Y immediately in unison
+            const newGroundY = getTerrainHeight(player.position.x, player.position.z);
+            player.position.y = newGroundY + FEET_OFFSET;
+          }
         }
       }
     }
