@@ -983,10 +983,47 @@
       }
     }
 
-    let isSliding = false;
+    // Determine current ground/platform height for landing check
+    const currentGroundY = getTerrainHeight(player.position.x, player.position.z);
+    let currentPlatformY = -999;
+    for (const path of pathwaysData) {
+      const pdx = player.position.x - path.x;
+      const pdz = player.position.z - path.z;
+      const sizeX = path.width / 2 + 0.35;
+      const sizeZ = path.length / 2 + 0.35;
+      const cosRY = Math.cos(-path.ry);
+      const sinRY = Math.sin(-path.ry);
+      const localX = pdx * cosRY - pdz * sinRY;
+      const localZ = pdx * sinRY + pdz * cosRY;
+      if (Math.abs(localX) < sizeX && Math.abs(localZ) < sizeZ) {
+        if (player.position.y >= path.y - 0.25 && player.position.y <= path.y + 0.6) {
+          currentPlatformY = path.y;
+          break;
+        }
+      }
+    }
+    let currentLandingY = currentGroundY + FEET_OFFSET;
+    if (currentPlatformY > currentGroundY + FEET_OFFSET) {
+      currentLandingY = currentPlatformY;
+    }
+
+    const isTouchingGround = player.position.y <= currentLandingY + 0.05;
+    const wasAirborne = player.userData.wasAirborne === true;
+    const isSlopeSteep = currentSlopeNormal.y < 0.6428 && !onPathwayCurrent && !nearLadderCurrent;
+
+    if (wasAirborne && isTouchingGround && isSlopeSteep) {
+      player.userData.isSlidingOnSlope = true;
+    }
+
+    if (player.userData.isSlidingOnSlope) {
+      if (!isSlopeSteep) {
+        player.userData.isSlidingOnSlope = false;
+      }
+    }
+
+    let isSliding = player.userData.isSlidingOnSlope === true;
     let slideX = 0, slideZ = 0;
-    if (currentSlopeNormal.y < 0.6428 && !onPathwayCurrent && !nearLadderCurrent) {
-      isSliding = true;
+    if (isSliding) {
       slideX = currentSlopeNormal.x * 12.0;
       slideZ = currentSlopeNormal.z * 12.0;
     }
@@ -997,6 +1034,20 @@
     } else {
       velocity.x = move.x * speed;
       velocity.z = move.z * speed;
+      
+      // If slope is steep, prevent walking UP the slope by projecting velocity
+      if (isSlopeSteep) {
+        const horizontalLength = Math.sqrt(currentSlopeNormal.x * currentSlopeNormal.x + currentSlopeNormal.z * currentSlopeNormal.z);
+        if (horizontalLength > 0.0001) {
+          const ux = -currentSlopeNormal.x / horizontalLength;
+          const uz = -currentSlopeNormal.z / horizontalLength;
+          const dot = velocity.x * ux + velocity.z * uz;
+          if (dot > 0) {
+            velocity.x -= ux * dot;
+            velocity.z -= uz * dot;
+          }
+        }
+      }
     }
 
     player.position.x += (velocity.x + slideX) * dt;
@@ -1137,9 +1188,11 @@
         vy = 0;
       }
 
-      // Jump (only when feet are on landing surface, using a wider 0.35 threshold for sprint jumping, not sliding)
-      if (keys['Space'] && vy === 0 && !isSliding && Math.abs(player.position.y - landingY) < 0.35) {
+      // Jump (allowed when on ground or sliding)
+      if (keys['Space'] && (vy === 0 || isSliding) && Math.abs(player.position.y - landingY) < 0.35) {
         vy = 8;
+        player.userData.isSlidingOnSlope = false;
+        isSliding = false;
       }
     }
 
@@ -1152,6 +1205,8 @@
         vy = 0;
       }
     }
+
+    player.userData.wasAirborne = player.position.y > landingY + 0.05;
 
     if (shiftlockMode === 0) {
       // NONE MODE: Character turning is disabled unless moving
