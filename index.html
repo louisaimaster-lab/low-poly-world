@@ -933,6 +933,7 @@
   function animate() {
     requestAnimationFrame(animate);
     const dt = Math.min(clock.getDelta(), 0.05);
+    let isSliding = false;
 
     // Clouds drift
     for (const c of clouds) {
@@ -983,29 +984,70 @@
       }
     }
 
-    // Update sliding state based on steepness of current slope
-    const isSlopeSteep = currentSlopeNormal.y < 0.6428 && !onPathwayCurrent && !nearLadderCurrent;
-    if (player.userData.isSlidingOnSlope && !isSlopeSteep) {
-      player.userData.isSlidingOnSlope = false;
+    if (player.userData.slideVelocityX === undefined) {
+      player.userData.slideVelocityX = 0;
+      player.userData.slideVelocityZ = 0;
     }
 
-    let isSliding = player.userData.isSlidingOnSlope === true;
-    let slideX = 0, slideZ = 0;
-    if (isSliding) {
-      slideX = currentSlopeNormal.x * 12.0;
-      slideZ = currentSlopeNormal.z * 12.0;
+    // Determine current ground/platform height for standing check
+    const currentGroundY = getTerrainHeight(player.position.x, player.position.z);
+    let currentPlatformY = -999;
+    for (const path of pathwaysData) {
+      const pdx = player.position.x - path.x;
+      const pdz = player.position.z - path.z;
+      const sizeX = path.width / 2 + 0.35;
+      const sizeZ = path.length / 2 + 0.35;
+      const cosRY = Math.cos(-path.ry);
+      const sinRY = Math.sin(-path.ry);
+      const localX = pdx * cosRY - pdz * sinRY;
+      const localZ = pdx * sinRY + pdz * cosRY;
+      if (Math.abs(localX) < sizeX && Math.abs(localZ) < sizeZ) {
+        if (player.position.y >= path.y - 0.25 && player.position.y <= path.y + 0.6) {
+          currentPlatformY = path.y;
+          break;
+        }
+      }
     }
+    let currentLandingY = currentGroundY + FEET_OFFSET;
+    if (currentPlatformY > currentGroundY + FEET_OFFSET) {
+      currentLandingY = currentPlatformY;
+    }
+    const isTouchingGround = player.position.y <= currentLandingY + 0.05;
 
-    if (isSliding) {
-      velocity.x = move.x * speed * 0.1;
-      velocity.z = move.z * speed * 0.1;
+    // Update sliding state based on steepness of current slope (> 40 degrees)
+    const isSlopeSteep = currentSlopeNormal.y < 0.766 && !onPathwayCurrent && !nearLadderCurrent;
+    const isSlidingActive = isSlopeSteep && isTouchingGround;
+
+    if (isSlidingActive) {
+      // Accelerate downhill along the normal
+      player.userData.slideVelocityX += currentSlopeNormal.x * 22.0 * dt;
+      player.userData.slideVelocityZ += currentSlopeNormal.z * 22.0 * dt;
+      
+      // Clamp to max slide speed
+      const slideSpeed = Math.sqrt(player.userData.slideVelocityX**2 + player.userData.slideVelocityZ**2);
+      if (slideSpeed > 16.0) {
+        player.userData.slideVelocityX = (player.userData.slideVelocityX / slideSpeed) * 16.0;
+        player.userData.slideVelocityZ = (player.userData.slideVelocityZ / slideSpeed) * 16.0;
+      }
     } else {
-      velocity.x = move.x * speed;
-      velocity.z = move.z * speed;
+      // Decay slide velocity when not actively sliding
+      // Lose momentum over 0.8 seconds (faster if moving forward)
+      const decayTime = (move.length() > 0.1) ? 0.25 : 0.8;
+      player.userData.slideVelocityX *= Math.max(0, 1 - dt / decayTime);
+      player.userData.slideVelocityZ *= Math.max(0, 1 - dt / decayTime);
     }
 
-    player.position.x += (velocity.x + slideX) * dt;
-    player.position.z += (velocity.z + slideZ) * dt;
+    const currentSlideSpeed = Math.sqrt(player.userData.slideVelocityX**2 + player.userData.slideVelocityZ**2);
+    isSliding = isSlidingActive || currentSlideSpeed > 0.5;
+
+    // Walk multiplier smoothly drops as slide speed increases
+    const walkMultiplier = Math.max(0.15, 1.0 - currentSlideSpeed / 12.0);
+
+    velocity.x = move.x * speed * walkMultiplier;
+    velocity.z = move.z * speed * walkMultiplier;
+
+    player.position.x += (velocity.x + player.userData.slideVelocityX) * dt;
+    player.position.z += (velocity.z + player.userData.slideVelocityZ) * dt;
 
     // Keep in bounds
     player.position.x = Math.max(-terrainSize/2 + 2, Math.min(terrainSize/2 - 2, player.position.x));
@@ -1145,8 +1187,6 @@
       // Jump (allowed when on ground or sliding)
       if (keys['Space'] && (vy === 0 || isSliding) && Math.abs(player.position.y - landingY) < 0.35) {
         vy = 8;
-        player.userData.isSlidingOnSlope = false;
-        isSliding = false;
       }
     }
 
@@ -1154,13 +1194,6 @@
 
     // Anti fall-through: clamp to terrain or platform
     if (player.position.y < landingY) {
-      // Check if player landed on a steep slope (> 50 degrees)
-      const slopeNormal = getTerrainNormal(player.position.x, player.position.z);
-      const isSlopeSteep = slopeNormal.y < 0.6428 && !onPathwayCurrent && !nearLadderCurrent;
-      if (vy < 0 && isSlopeSteep) {
-        player.userData.isSlidingOnSlope = true;
-      }
-      
       player.position.y = landingY;
       if (vy < 0 && !isSliding) {
         vy = 0;
