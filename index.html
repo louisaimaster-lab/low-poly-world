@@ -1043,8 +1043,20 @@
     // Walk multiplier smoothly drops as slide speed increases
     const walkMultiplier = Math.max(0.15, 1.0 - currentSlideSpeed / 12.0);
 
-    velocity.x = move.x * speed * walkMultiplier;
-    velocity.z = move.z * speed * walkMultiplier;
+    // If airborne and not climbing, horizontal velocity is locked to the launch velocity (no steering in air)
+    if (!isTouchingGround && !player.userData.isClimbingLadder) {
+      if (!player.userData.isAirborne) {
+        player.userData.isAirborne = true;
+        player.userData.airVelocityX = velocity.x;
+        player.userData.airVelocityZ = velocity.z;
+      }
+      velocity.x = player.userData.airVelocityX || 0;
+      velocity.z = player.userData.airVelocityZ || 0;
+    } else {
+      player.userData.isAirborne = false;
+      velocity.x = move.x * speed * walkMultiplier;
+      velocity.z = move.z * speed * walkMultiplier;
+    }
 
     player.position.x += (velocity.x + player.userData.slideVelocityX) * dt;
     player.position.z += (velocity.z + player.userData.slideVelocityZ) * dt;
@@ -1194,6 +1206,15 @@
 
     // Anti fall-through: clamp to terrain or platform
     if (player.position.y < landingY) {
+      // Reset momentum on landing
+      if (player.userData.isAirborne) {
+        player.userData.isAirborne = false;
+        player.userData.airVelocityX = 0;
+        player.userData.airVelocityZ = 0;
+        player.userData.slideVelocityX = 0;
+        player.userData.slideVelocityZ = 0;
+      }
+      
       player.position.y = landingY;
       if (vy < 0 && !isSliding) {
         vy = 0;
