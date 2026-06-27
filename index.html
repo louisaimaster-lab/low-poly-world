@@ -1061,9 +1061,14 @@
       const currentGroundY = getTerrainHeight(player.position.x, player.position.z);
       if (player.position.y < currentGroundY + 0.5) {
         const dy = heightAtInnerEdge - player.position.y;
-        if (dy > 0.02) {
-          player.position.x += updatedSlopeNormal.x * dy * 1.5;
-          player.position.z += updatedSlopeNormal.z * dy * 1.5;
+        if (dy > 0.01) {
+          const pushDistance = dy * updatedSlopeNormal.y / (hLength * hLength);
+          player.position.x += (updatedSlopeNormal.x / hLength) * pushDistance;
+          player.position.z += (updatedSlopeNormal.z / hLength) * pushDistance;
+          
+          // Re-evaluate terrain height at the new position and update Y immediately in unison
+          const newGroundY = getTerrainHeight(player.position.x, player.position.z);
+          player.position.y = newGroundY + FEET_OFFSET;
         }
       }
     }
