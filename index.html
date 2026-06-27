@@ -248,19 +248,31 @@
 
     // Foliage layers
     const foliagePalettes = [0x2d8b4a, 0x3aa85e, 0x2e7d32, 0x4caf50, 0x388e3c];
-    const layers = 2 + Math.floor(Math.random() * 2);
-    for (let i = 0; i < layers; i++) {
-      const r = (layers - i) * 0.5 + Math.random() * 0.2;
-      const h = r * 1.4;
-      const mat = new THREE.MeshStandardMaterial({
-        color: foliagePalettes[Math.floor(Math.random() * foliagePalettes.length)],
-        flatShading: true
-      });
-      const cone = new THREE.Mesh(new THREE.ConeGeometry(r, h, 5 + Math.floor(Math.random() * 3)), mat);
-      cone.position.y = trunkH + h / 2 + i * h * 0.5;
-      cone.castShadow = true;
-      g.add(cone);
-    }
+    const r1 = 0.9 + Math.random() * 0.3;
+    const h1 = r1 * 1.4;
+    const ry = Math.random() * Math.PI * 2;
+
+    const mat1 = new THREE.MeshStandardMaterial({
+      color: foliagePalettes[Math.floor(Math.random() * foliagePalettes.length)],
+      flatShading: true
+    });
+    const cone1 = new THREE.Mesh(new THREE.ConeGeometry(r1, h1, 5 + Math.floor(Math.random() * 3)), mat1);
+    cone1.position.y = 0.15 + h1 / 2; // ponytail: leaves near ground but not touching
+    cone1.rotation.y = ry;
+    cone1.castShadow = true;
+    g.add(cone1);
+
+    const r2 = r1 * 0.8;
+    const h2 = h1 * 0.8;
+    const mat2 = new THREE.MeshStandardMaterial({
+      color: foliagePalettes[Math.floor(Math.random() * foliagePalettes.length)],
+      flatShading: true
+    });
+    const cone2 = new THREE.Mesh(new THREE.ConeGeometry(r2, h2, 5 + Math.floor(Math.random() * 3)), mat2);
+    cone2.position.y = cone1.position.y + h1 * 0.5;
+    cone2.rotation.y = ry;
+    cone2.castShadow = true;
+    g.add(cone2);
 
     // Position tree so its base sits on the terrain
     const ty = getTerrainHeight(x, z);
@@ -405,7 +417,7 @@
     pathwaysData.push({ x, y, z, width, length, rx, ry, rz });
   }
 
-  // ── Scatter Trees, Rocks, Flowers ────────────────────────
+  // ── Scatter Trees ────────────────────────────────────────
   const treePositions = [];
   for (let i = 0; i < 600; i++) {
     const tx = (Math.random() - 0.5) * 365;
@@ -414,63 +426,16 @@
     if (td < 5) continue; // keep center clear
     if (td < 80 && Math.random() > 0.7) continue;
 
-    if (Math.random() < 0.85) {
-      const terrainH = getTerrainHeight(tx, tz);
-      const normal = getTerrainNormal(tx, tz);
-      
-      // Enforce spawning rules:
-      // 1. Cannot spawn on water (height <= -1.5)
-      // 2. Cannot spawn on steep ground (slope > 30 degrees, normal.y < 0.866)
-      if (terrainH > -1.5 && normal.y >= 0.866) {
-        scene.add(createTree(tx, tz));
-        treePositions.push({ x: tx, z: tz });
-      }
-    } else {
-      // Rock
-      const rockSize = 0.5 + Math.random() * 1;
-      const rock = new THREE.Mesh(
-        new THREE.DodecahedronGeometry(rockSize, 0),
-        new THREE.MeshStandardMaterial({
-          color: new THREE.Color().setHSL(0, 0, 0.3 + Math.random() * 0.3),
-          flatShading: true
-        })
-      );
-      const rockY = Math.max(getTerrainHeight(tx, tz) + rockSize, -1.5);
-      rock.position.set(tx, rockY, tz);
-      rock.rotation.set(Math.random(), Math.random(), Math.random());
-      rock.castShadow = true;
-      scene.add(rock);
+    const terrainH = getTerrainHeight(tx, tz);
+    const normal = getTerrainNormal(tx, tz);
+    
+    // Enforce spawning rules:
+    // 1. Cannot spawn on water (height <= -1.5)
+    // 2. Cannot spawn on steep ground (slope > 30 degrees, normal.y < 0.866)
+    if (terrainH > -1.5 && normal.y >= 0.866) {
+      scene.add(createTree(tx, tz));
+      treePositions.push({ x: tx, z: tz });
     }
-  }
-
-  // Flowers
-  const petalGeo = new THREE.DodecahedronGeometry(0.15, 0);
-  const flowerColors = [0xff6b9d, 0xffd700, 0xff4444, 0xffffff, 0xbb88ee, 0xff9944];
-  for (let i = 0; i < 500; i++) {
-    const angle = Math.random() * Math.PI * 2;
-    const distF = 5 + Math.random() * 180;
-    const fx = Math.cos(angle) * distF;
-    const fz = Math.sin(angle) * distF;
-
-    // Stem, sitting properly on terrain
-    const stem = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.02, 0.02, 0.4, 3),
-      new THREE.MeshStandardMaterial({ color: 0x3a7d2c, flatShading: true })
-    );
-    const flowerY = Math.max(getTerrainHeight(fx, fz), -1.5);
-    stem.position.set(fx, flowerY + 0.2, fz);
-    scene.add(stem);
-
-    // Petals
-    const petal = new THREE.Mesh(
-      petalGeo,
-      new THREE.MeshStandardMaterial({
-        color: flowerColors[Math.floor(Math.random() * flowerColors.length)],
-        flatShading: true
-      })
-    );
-    petal.position.set(fx, flowerY + 0.5, fz);
-    scene.add(petal);
   }
 
   // ── Spawn Pathways, Ladders & Peak Flag ──────────────────
@@ -1141,12 +1106,6 @@
       }
     }
 
-    // Rotate player to align with terrain slope (or keep upright if standing on an elevated platform)
-    const activeNormal = isStandingOnPlatform ? new THREE.Vector3(0, 1, 0) : terrainNormal;
-    const targetQuat = new THREE.Quaternion().setFromUnitVectors(
-      new THREE.Vector3(0, 1, 0), activeNormal
-    );
-    
     if (shiftlockMode === 0) {
       // NONE MODE: Character turning is disabled unless moving
       if (move.length() > 0.01) {
@@ -1170,12 +1129,11 @@
     // Keep playerYaw normalized between [-PI, PI] to prevent any numerical drift
     playerYaw = Math.atan2(Math.sin(playerYaw), Math.cos(playerYaw));
 
-    // Construct final orientation incorporating terrain tilt + smooth shortest-path yaw
+    // Construct final orientation incorporating smooth shortest-path yaw (upright)
     const yawQuat = new THREE.Quaternion().setFromAxisAngle(
       new THREE.Vector3(0, 1, 0), playerYaw
     );
-    const combinedQuat = targetQuat.clone().multiply(yawQuat);
-    player.quaternion.copy(combinedQuat); // Instantly copy the smooth target quaternion!
+    player.quaternion.copy(yawQuat); // Instantly copy the smooth target quaternion!
 
     // ── Spherical Camera Follow with Roblox-style Terrain & Obstacle Collision ──
     player.updateMatrixWorld(true); // Force matrix update to prevent camera snapping/jumping!
@@ -1223,15 +1181,11 @@
     }
     
     // ── MATHEMATICAL SAFETY NET (PREVENTS ANY UNDERGROUND CLIPPING) ──
-    const camTargetQuat = new THREE.Quaternion().setFromUnitVectors(
-      new THREE.Vector3(0, 1, 0), terrainNormal
-    );
-    
     let testOffset = new THREE.Vector3(
       Math.sin(yaw) * Math.cos(pitch) * targetRadius,
       Math.sin(pitch) * targetRadius,
       Math.cos(yaw) * Math.cos(pitch) * targetRadius
-    ).applyQuaternion(camTargetQuat);
+    );
     
     let checkPos = new THREE.Vector3().copy(targetPos).add(testOffset);
     let terrainHeightAtCam = getTerrainHeight(checkPos.x, checkPos.z);
@@ -1244,7 +1198,7 @@
         Math.sin(yaw) * Math.cos(pitch) * targetRadius,
         Math.sin(pitch) * targetRadius,
         Math.cos(yaw) * Math.cos(pitch) * targetRadius
-      ).applyQuaternion(camTargetQuat);
+      );
       checkPos.copy(targetPos).add(testOffset);
       terrainHeightAtCam = getTerrainHeight(checkPos.x, checkPos.z);
       safetyCounter++;
@@ -1264,10 +1218,10 @@
       Math.sin(yaw) * Math.cos(pitch) * currentRadius,
       Math.sin(pitch) * currentRadius,
       Math.cos(yaw) * Math.cos(pitch) * currentRadius
-    ).applyQuaternion(camTargetQuat);
+    );
     
     camera.position.copy(targetPos).add(finalOffset);
-    camera.up.copy(terrainNormal); // Tilt camera to match the side rotation
+    camera.up.set(0, 1, 0); // Keep camera upright (remove terrain normal tilt)
     camera.lookAt(targetPos);
 
     renderer.render(scene, camera);
