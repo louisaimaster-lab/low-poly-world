@@ -1281,14 +1281,11 @@
         // Intensity scales to 1.0 at 1.64m drop (height of a normal jump)
         const intensity = Math.min(1.5, dropDistance / 1.64);
         
-        const walkVelMultiplier = Math.max(0, 1.0 - intensity);
-        player.userData.walkVelocityX *= walkVelMultiplier;
-        player.userData.walkVelocityZ *= walkVelMultiplier;
-        player.userData.slideVelocityX *= walkVelMultiplier;
-        player.userData.slideVelocityZ *= walkVelMultiplier;
-        
         player.userData.landingRecoveryTimer = 0.4 * intensity;
         player.userData.landingSpeedMultiplier = Math.max(0.5, 1.0 - 0.5 * intensity);
+        
+        // Trigger camera landing impact bob (scales with intensity)
+        player.userData.cameraBobOffset = -0.45 * intensity;
       }
       
       player.position.y = landingY;
@@ -1327,9 +1324,16 @@
     player.quaternion.copy(yawQuat); // Instantly copy the smooth target quaternion!
 
     // ── Spherical Camera Follow with Roblox-style Terrain & Obstacle Collision ──
+    // Decay camera landing impact bob smoothly
+    if (player.userData.cameraBobOffset === undefined) {
+      player.userData.cameraBobOffset = 0;
+    }
+    player.userData.cameraBobOffset = THREE.MathUtils.lerp(player.userData.cameraBobOffset, 0, 10 * dt);
+
     player.updateMatrixWorld(true); // Force matrix update to prevent camera snapping/jumping!
     const targetPos = new THREE.Vector3();
     head.getWorldPosition(targetPos); // Follow the exact world position of the head, adapting to slope tilts!
+    targetPos.y += player.userData.cameraBobOffset;
 
     const maxRadius = cameraZoomDistance; // Desired distance
     
