@@ -1065,8 +1065,11 @@
     if (!isTouchingGround && !player.userData.isClimbingLadder) {
       if (!player.userData.isAirborne) {
         player.userData.isAirborne = true;
-        player.userData.airVelocityX = velocity.x;
-        player.userData.airVelocityZ = velocity.z;
+        player.userData.airVelocityX = velocity.x + player.userData.slideVelocityX;
+        player.userData.airVelocityZ = velocity.z + player.userData.slideVelocityZ;
+        // Zero out slide velocity so it doesn't double-apply in the air
+        player.userData.slideVelocityX = 0;
+        player.userData.slideVelocityZ = 0;
       }
       velocity.x = player.userData.airVelocityX || 0;
       velocity.z = player.userData.airVelocityZ || 0;
@@ -1207,8 +1210,8 @@
     if (!isClimbing) {
       if (player.position.y > landingY + 0.01 || isSliding) {
         vy -= 22 * dt;
-        if (isSliding && vy > -8) {
-          vy = -8; // ensure downward momentum
+        if (isSliding) {
+          vy = Math.max(-8, vy); // Clamp downward momentum to prevent infinite gravity accumulation glitch
         }
       } else {
         vy = 0;
