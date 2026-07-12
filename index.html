@@ -1016,7 +1016,7 @@
 
     // Update sliding state based on steepness of current slope (> 30 degrees)
     const isSlopeSteep = currentSlopeNormal.y < 0.866 && !onPathwayCurrent && !nearLadderCurrent;
-    const isSlidingActive = isSlopeSteep;
+    const isSlidingActive = isSlopeSteep && isTouchingGround;
 
     let targetMaxSpeed = 0;
     let accelerationRate = 0;
@@ -1214,8 +1214,10 @@
         vy = 0;
       }
 
-      // Jump (allowed when on ground or sliding)
-      if (keys['Space'] && (vy === 0 || isSliding) && Math.abs(player.position.y - landingY) < 0.35) {
+      // Jump (allowed when on ground or sliding, except on steep slopes >= 40 degrees)
+      const freshSlopeNormal = getTerrainNormal(player.position.x, player.position.z);
+      const isSlopeSteep = freshSlopeNormal.y < 0.766 && !onPathwayCurrent && !nearLadderCurrent;
+      if (keys['Space'] && (vy === 0 || isSliding) && Math.abs(player.position.y - landingY) < 0.35 && !isSlopeSteep) {
         vy = 8;
       }
     }
