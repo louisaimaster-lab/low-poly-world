@@ -1020,19 +1020,16 @@
 
     let targetMaxSpeed = 0;
     let accelerationRate = 0;
-    let maxWalkMultiplier = 1.0;
 
     if (isSlidingActive) {
       if (currentSlopeNormal.y < 0.766) {
         // Steep Slope (>= 40 degrees)
         targetMaxSpeed = 16.0;
         accelerationRate = 22.0;
-        maxWalkMultiplier = 0.15; // 15% control
       } else {
         // Medium Slope (30 to 40 degrees)
         targetMaxSpeed = 4.0;
         accelerationRate = 8.0;
-        maxWalkMultiplier = 0.35; // 35% control (allows some movement but slide wins)
       }
 
       // Accelerate downhill along the normal
@@ -1057,9 +1054,22 @@
     const currentSlideSpeed = Math.sqrt(player.userData.slideVelocityX**2 + player.userData.slideVelocityZ**2);
     isSliding = isSlidingActive || currentSlideSpeed > 0.5;
 
-    // Walk multiplier smoothly drops as slide speed increases and is capped by slope type
-    const baseMultiplier = 1.0 - currentSlideSpeed / 12.0;
-    const walkMultiplier = Math.max(0.15, Math.min(maxWalkMultiplier, baseMultiplier));
+    // Calculate target walk multiplier based on movement direction relative to the slope normal
+    const dot = move.x * currentSlopeNormal.x + move.z * currentSlopeNormal.z;
+    let targetWalkMultiplier = 1.0;
+    if (isSlidingActive && dot < 0) {
+      // Moving uphill: scale down walk speed proportionally to the slope angle
+      targetWalkMultiplier = Math.max(0.15, 1.0 + dot * 1.3);
+    }
+    // Also scale down control if already sliding fast
+    targetWalkMultiplier = Math.min(targetWalkMultiplier, Math.max(0.15, 1.0 - currentSlideSpeed / 12.0));
+
+    // Smoothly interpolate walk multiplier to prevent instant slowdown jitter
+    if (player.userData.walkMultiplier === undefined) {
+      player.userData.walkMultiplier = 1.0;
+    }
+    player.userData.walkMultiplier = THREE.MathUtils.lerp(player.userData.walkMultiplier, targetWalkMultiplier, 8 * dt);
+    const walkMultiplier = Math.max(0.15, player.userData.walkMultiplier);
 
     // If airborne and not climbing, horizontal velocity is locked to the launch velocity (no steering in air)
     if (!isTouchingGround && !player.userData.isClimbingLadder) {
