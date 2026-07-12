@@ -987,6 +987,8 @@
     if (player.userData.slideVelocityX === undefined) {
       player.userData.slideVelocityX = 0;
       player.userData.slideVelocityZ = 0;
+      player.userData.walkVelocityX = 0;
+      player.userData.walkVelocityZ = 0;
     }
 
     // Determine current ground/platform height for standing check
@@ -1075,18 +1077,28 @@
     if (!isTouchingGround && !player.userData.isClimbingLadder) {
       if (!player.userData.isAirborne) {
         player.userData.isAirborne = true;
-        player.userData.airVelocityX = velocity.x + player.userData.slideVelocityX;
-        player.userData.airVelocityZ = velocity.z + player.userData.slideVelocityZ;
+        player.userData.airVelocityX = (player.userData.walkVelocityX || 0) + player.userData.slideVelocityX;
+        player.userData.airVelocityZ = (player.userData.walkVelocityZ || 0) + player.userData.slideVelocityZ;
         // Zero out slide velocity so it doesn't double-apply in the air
         player.userData.slideVelocityX = 0;
         player.userData.slideVelocityZ = 0;
       }
       velocity.x = player.userData.airVelocityX || 0;
       velocity.z = player.userData.airVelocityZ || 0;
+      
+      // Keep walkVelocity updated with airborne velocity so landing is seamless
+      player.userData.walkVelocityX = velocity.x;
+      player.userData.walkVelocityZ = velocity.z;
     } else {
       player.userData.isAirborne = false;
-      velocity.x = move.x * speed * walkMultiplier;
-      velocity.z = move.z * speed * walkMultiplier;
+      const targetVelX = move.x * speed * walkMultiplier;
+      const targetVelZ = move.z * speed * walkMultiplier;
+      // Smoothly interpolate walking velocity (0.2s stop time / 0.08 tau)
+      const lerpFactor = 1 - Math.exp(-dt / 0.08);
+      player.userData.walkVelocityX = THREE.MathUtils.lerp(player.userData.walkVelocityX || 0, targetVelX, lerpFactor);
+      player.userData.walkVelocityZ = THREE.MathUtils.lerp(player.userData.walkVelocityZ || 0, targetVelZ, lerpFactor);
+      velocity.x = player.userData.walkVelocityX;
+      velocity.z = player.userData.walkVelocityZ;
     }
 
     player.position.x += (velocity.x + player.userData.slideVelocityX) * dt;
