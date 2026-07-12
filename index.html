@@ -989,6 +989,7 @@
       player.userData.slideVelocityZ = 0;
       player.userData.walkVelocityX = 0;
       player.userData.walkVelocityZ = 0;
+      player.userData.landingRecoveryTimer = 0;
     }
 
     // Determine current ground/platform height for standing check
@@ -1091,10 +1092,22 @@
       player.userData.walkVelocityZ = velocity.z;
     } else {
       player.userData.isAirborne = false;
-      const targetVelX = move.x * speed * walkMultiplier;
-      const targetVelZ = move.z * speed * walkMultiplier;
-      // Smoothly interpolate walking velocity (0.2s stop time / 0.08 tau)
-      const lerpFactor = 1 - Math.exp(-dt / 0.08);
+      
+      // Update recovery timer
+      if (player.userData.landingRecoveryTimer > 0) {
+        player.userData.landingRecoveryTimer -= dt;
+      }
+      
+      let landingMultiplier = 1.0;
+      if (player.userData.landingRecoveryTimer > 0) {
+        landingMultiplier = 0.5;
+      }
+
+      const targetVelX = move.x * speed * walkMultiplier * landingMultiplier;
+      const targetVelZ = move.z * speed * walkMultiplier * landingMultiplier;
+      
+      // Smoothly interpolate walking velocity (0.25s stop time / 0.054 tau)
+      const lerpFactor = 1 - Math.exp(-dt / 0.054);
       player.userData.walkVelocityX = THREE.MathUtils.lerp(player.userData.walkVelocityX || 0, targetVelX, lerpFactor);
       player.userData.walkVelocityZ = THREE.MathUtils.lerp(player.userData.walkVelocityZ || 0, targetVelZ, lerpFactor);
       velocity.x = player.userData.walkVelocityX;
@@ -1258,6 +1271,9 @@
         player.userData.airVelocityZ = 0;
         player.userData.slideVelocityX = 0;
         player.userData.slideVelocityZ = 0;
+        player.userData.walkVelocityX = 0;
+        player.userData.walkVelocityZ = 0;
+        player.userData.landingRecoveryTimer = 0.4; // 0.4s recovery with 0.5 speed multiplier
       }
       
       player.position.y = landingY;
