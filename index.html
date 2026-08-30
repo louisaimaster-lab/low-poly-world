@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Chronicles of Aethelgard — Low Poly Open World RPG</title>
   
-  <!-- Fantasy & Medieval RPG Google Fonts -->
+  <!-- Fantasy & Medieval Outdoor RPG Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800;900&family=Cinzel+Decorative:wght@700;900&family=Outfit:wght@400;600;700&family=MedievalSharp&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Cinzel+Decorative:wght@700;900&family=MedievalSharp&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
 
   <style>
     :root {
@@ -16,11 +16,15 @@
       --gold-main: #f59e0b;
       --gold-dark: #b45309;
       --gold-border: #d97706;
-      --parchment: #1c1917;
-      --parchment-border: #78350f;
+      --wood-dark: #29180d;
+      --wood-med: #452311;
+      --wood-light: #78350f;
+      --parchment-bg: #261e19;
+      --parchment-border: #854d0e;
       --hp-red: #ef4444;
       --mp-blue: #3b82f6;
       --sta-green: #10b981;
+      --exp-purple: #a855f7;
       --font-title: 'Cinzel Decorative', 'Cinzel', serif;
       --font-body: 'Cinzel', serif;
       --font-ui: 'Outfit', sans-serif;
@@ -29,307 +33,372 @@
     * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
     body {
       overflow: hidden;
-      background: #0c0a09;
+      background: #080604;
       font-family: var(--font-body);
       color: #fef3c7;
     }
     canvas { display: block; width: 100vw; height: 100vh; }
 
-    /* ─── 1. MAIN MENU & TITLE SCREEN ─── */
+    /* ─── 1. TITLE SCREEN / MAIN MENU ─── */
     #main-menu {
       position: fixed; inset: 0; z-index: 1000;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      background: radial-gradient(circle at center, rgba(15, 23, 42, 0.4) 0%, rgba(12, 10, 9, 0.92) 80%);
-      backdrop-filter: blur(8px);
+      background: radial-gradient(circle at center, rgba(30, 20, 10, 0.4) 0%, rgba(10, 8, 6, 0.95) 85%);
+      backdrop-filter: blur(6px);
       transition: opacity 0.8s ease, transform 0.8s ease;
     }
-    #main-menu.hidden {
-      opacity: 0; pointer-events: none; transform: scale(1.08);
-    }
+    #main-menu.hidden { opacity: 0; pointer-events: none; transform: scale(1.06); }
+    
     .game-logo {
       font-family: var(--font-title);
-      font-size: clamp(32px, 5.5vw, 64px);
+      font-size: clamp(34px, 5.8vw, 68px);
       font-weight: 900;
       letter-spacing: 4px;
       text-align: center;
-      background: linear-gradient(180deg, #fffbeb 0%, #fde047 30%, #f59e0b 70%, #92400e 100%);
+      background: linear-gradient(180deg, #fffbeb 0%, #fde047 25%, #f59e0b 65%, #78350f 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      filter: drop-shadow(0 4px 16px rgba(245, 158, 11, 0.6)) drop-shadow(0 0 35px rgba(217, 119, 6, 0.4));
-      margin-bottom: 6px;
+      filter: drop-shadow(0 4px 16px rgba(245, 158, 11, 0.7)) drop-shadow(0 0 35px rgba(217, 119, 6, 0.5));
+      margin-bottom: 4px;
     }
     .game-subtitle {
       font-family: var(--font-body);
-      font-size: clamp(13px, 1.8vw, 18px);
+      font-size: clamp(12px, 1.8vw, 16px);
       color: #fcd34d;
-      letter-spacing: 3px;
+      letter-spacing: 4px;
       text-transform: uppercase;
-      margin-bottom: 34px;
-      text-shadow: 0 2px 8px rgba(0,0,0,0.9);
+      margin-bottom: 28px;
+      text-shadow: 0 2px 10px #000;
     }
-    .menu-card {
-      background: linear-gradient(180deg, rgba(41, 37, 36, 0.95) 0%, rgba(28, 25, 23, 0.98) 100%);
-      border: 3px solid var(--gold-border);
-      border-radius: 20px;
-      padding: 28px 40px;
-      box-shadow: 0 16px 50px rgba(0,0,0,0.9), inset 0 0 20px rgba(245, 158, 11, 0.15);
+    .menu-wood-card {
+      background: linear-gradient(180deg, #3d2314 0%, #26140b 100%);
+      border: 4px solid var(--gold-border);
+      border-radius: 24px;
+      padding: 30px 42px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.95), inset 0 0 25px rgba(0,0,0,0.8), inset 0 2px 4px rgba(254, 240, 138, 0.4);
       display: flex; flex-direction: column; align-items: center; gap: 18px;
-      max-width: 440px; width: 90%;
+      max-width: 460px; width: 92%;
+      position: relative;
+    }
+    .menu-wood-card::before {
+      content: '🌿'; position: absolute; top: -14px; left: 20px; font-size: 24px;
+    }
+    .menu-wood-card::after {
+      content: '🌿'; position: absolute; top: -14px; right: 20px; font-size: 24px;
     }
     .class-select-row {
       display: flex; gap: 12px; width: 100%; justify-content: center;
     }
-    .class-btn {
-      flex: 1; padding: 12px 8px;
-      background: rgba(68, 64, 60, 0.5);
-      border: 2px solid rgba(245, 158, 11, 0.4);
-      border-radius: 12px; color: #fef08a;
+    .class-wood-btn {
+      flex: 1; padding: 14px 10px;
+      background: linear-gradient(180deg, #4d2b17, #241209);
+      border: 2px solid #a16207;
+      border-radius: 14px; color: #fef08a;
       font-family: var(--font-body); font-weight: 700; font-size: 13px;
       cursor: pointer; transition: 0.2s; text-align: center;
+      box-shadow: inset 0 1px 3px rgba(255,255,255,0.2), 0 4px 12px rgba(0,0,0,0.6);
     }
-    .class-btn:hover { border-color: #fde047; background: rgba(245, 158, 11, 0.2); }
-    .class-btn.selected {
+    .class-wood-btn:hover { border-color: #fde047; transform: translateY(-2px); }
+    .class-wood-btn.selected {
       border-color: #fde047; background: linear-gradient(180deg, #d97706, #78350f);
-      box-shadow: 0 0 16px rgba(245, 158, 11, 0.6); color: #fff;
+      box-shadow: 0 0 20px rgba(245, 158, 11, 0.7), inset 0 2px 4px #fef08a; color: #fff;
     }
-    .btn-play-hero {
-      width: 100%; padding: 14px 28px;
-      background: linear-gradient(180deg, #fde047 0%, #f59e0b 50%, #b45309 100%);
+    .btn-enter-realm {
+      width: 100%; padding: 15px 30px;
+      background: linear-gradient(180deg, #fde047 0%, #f59e0b 50%, #92400e 100%);
       border: 2px solid #fff;
-      border-radius: 14px; color: #451a03;
-      font-family: var(--font-title); font-size: 17px; font-weight: 900;
+      border-radius: 16px; color: #3d1700;
+      font-family: var(--font-title); font-size: 18px; font-weight: 900;
       cursor: pointer; letter-spacing: 2px;
-      box-shadow: 0 6px 25px rgba(245, 158, 11, 0.6), inset 0 2px 4px rgba(255,255,255,0.8);
+      box-shadow: 0 8px 30px rgba(245, 158, 11, 0.7), inset 0 2px 4px rgba(255,255,255,0.8);
       transition: 0.2s transform, 0.2s filter;
     }
-    .btn-play-hero:hover {
+    .btn-enter-realm:hover {
       transform: translateY(-3px) scale(1.02);
       filter: brightness(1.12);
-      box-shadow: 0 10px 30px rgba(245, 158, 11, 0.85);
+      box-shadow: 0 12px 35px rgba(245, 158, 11, 0.9);
     }
 
-    /* ─── 2. CINEMATIC TRANSITIONS & LETTERBOX ─── */
+    /* ─── 2. CINEMATIC LETTERBOX & ACT INTRO ─── */
     #cinematic-bars {
       position: fixed; inset: 0; z-index: 900; pointer-events: none;
       display: flex; flex-direction: column; justify-content: space-between;
     }
-    .cine-bar {
-      height: 0vh; background: #000; transition: height 0.8s ease-in-out;
-    }
+    .cine-bar { height: 0vh; background: #0c0907; transition: height 0.8s ease-in-out; }
     #cinematic-bars.active .cine-bar { height: 10vh; }
     #act-banner {
-      position: fixed; top: 22%; left: 50%; transform: translate(-50%, -50%);
+      position: fixed; top: 20%; left: 50%; transform: translate(-50%, -50%);
       z-index: 950; text-align: center; pointer-events: none; opacity: 0;
       transition: opacity 1.2s ease, transform 1.2s ease;
     }
     #act-banner.show { opacity: 1; transform: translate(-50%, -40%); }
-    .act-label { font-family: var(--font-title); font-size: 16px; color: #f59e0b; letter-spacing: 5px; }
-    .act-title { font-family: var(--font-title); font-size: 32px; color: #fff; text-shadow: 0 4px 20px #000; }
+    .act-label { font-family: var(--font-title); font-size: 15px; color: #f59e0b; letter-spacing: 6px; }
+    .act-title { font-family: var(--font-title); font-size: 34px; color: #fff; text-shadow: 0 4px 25px #000; }
 
-    /* ─── 3. FANTASY RPG HUD ─── */
+    /* ─── 3. OUTDOOR FANTASY RPG HUD ─── */
     #hud {
       opacity: 0; pointer-events: none; transition: opacity 0.8s ease;
     }
     #hud.active { opacity: 1; pointer-events: auto; }
 
-    /* Top Left: Fantasy Hero Unit Frame & Orbs */
-    #fantasy-unit-frame {
-      position: fixed; top: 18px; left: 18px; z-index: 50;
+    /* ── TOP LEFT: DRAGON WING FILIGREE HERO FRAME ── */
+    #hero-unit-frame {
+      position: fixed; top: 20px; left: 20px; z-index: 50;
       display: flex; align-items: center; gap: 14px;
     }
-    .orb-container {
-      width: 72px; height: 72px; border-radius: 50%;
-      background: radial-gradient(circle, #292524 0%, #0c0a09 90%);
+    /* Ornate Sculpted Medallion */
+    .hero-medallion {
+      width: 78px; height: 78px; border-radius: 50%;
+      background: radial-gradient(circle, #452311 0%, #1c0f07 90%);
       border: 4px solid var(--gold-main);
-      box-shadow: 0 8px 24px rgba(0,0,0,0.8), 0 0 15px rgba(245, 158, 11, 0.4);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.9), 0 0 20px rgba(245, 158, 11, 0.4), inset 0 0 12px rgba(0,0,0,0.8);
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      position: relative; cursor: pointer;
+      position: relative; cursor: pointer; transition: transform 0.2s;
     }
-    .orb-icon { font-size: 32px; }
-    .lvl-ribbon {
-      position: absolute; bottom: -8px;
+    .hero-medallion:hover { transform: scale(1.05); }
+    .hero-avatar-icon { font-size: 36px; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.8)); }
+    .hero-lvl-ribbon {
+      position: absolute; bottom: -10px;
       background: linear-gradient(180deg, #f59e0b, #78350f);
-      border: 1px solid #fef08a; border-radius: 8px;
-      padding: 1px 8px; font-size: 10px; font-weight: 900;
+      border: 2px solid #fef08a; border-radius: 12px;
+      padding: 2px 10px; font-size: 11px; font-weight: 900;
       color: #fff; text-shadow: 0 1px 3px #000;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.7);
     }
-    .vitals-column {
-      display: flex; flex-direction: column; gap: 6px; width: 170px;
-    }
-    .fantasy-bar-wrap {
-      background: rgba(28, 25, 23, 0.9);
-      border: 2px solid #78350f;
-      border-radius: 8px; padding: 2px 4px;
-      box-shadow: inset 0 2px 5px rgba(0,0,0,0.8);
+    /* Carved Wooden Vitals Tray */
+    .vitals-plank {
+      background: linear-gradient(180deg, #3d2314 0%, #241309 100%);
+      border: 3px solid var(--gold-border);
+      border-radius: 18px; padding: 10px 14px; width: 220px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.85), inset 0 0 10px rgba(0,0,0,0.6);
+      display: flex; flex-direction: column; gap: 7px;
       position: relative;
     }
-    .fantasy-bar-label {
+    .vitals-plank::before {
+      content: '⚜️'; position: absolute; left: -10px; top: 50%; transform: translateY(-50%); font-size: 16px;
+    }
+    .bar-frame {
+      position: relative; height: 16px; border-radius: 8px;
+      background: #140b06; border: 2px solid #573016;
+      overflow: hidden; box-shadow: inset 0 2px 5px rgba(0,0,0,0.9);
+    }
+    .bar-label-left {
       position: absolute; top: 50%; left: 8px; transform: translateY(-50%);
-      font-size: 9px; font-weight: 800; color: #fff; z-index: 2;
-      text-shadow: 0 1px 2px #000;
+      font-size: 9px; font-weight: 900; color: #fff; z-index: 2;
+      text-shadow: 0 1px 3px #000; letter-spacing: 1px;
     }
-    .fantasy-bar-val {
+    .bar-label-right {
       position: absolute; top: 50%; right: 8px; transform: translateY(-50%);
-      font-size: 9px; font-weight: 700; color: #fef08a; z-index: 2;
-      text-shadow: 0 1px 2px #000;
+      font-size: 9px; font-weight: 800; color: #fef08a; z-index: 2;
+      text-shadow: 0 1px 3px #000; font-family: var(--font-ui);
     }
-    .fantasy-bar-fill {
-      height: 12px; border-radius: 4px; transition: width 0.15s ease-out;
+    .bar-liquid { height: 100%; width: 100%; transition: width 0.15s ease-out; border-radius: 6px; }
+    .bar-liquid-hp {
+      background: linear-gradient(90deg, #7f1d1d 0%, #ef4444 60%, #fca5a5 100%);
+      box-shadow: 0 0 12px rgba(239, 68, 68, 0.7);
     }
-    .fill-health { background: linear-gradient(90deg, #991b1b, #ef4444, #f87171); box-shadow: 0 0 10px rgba(239, 68, 68, 0.6); }
-    .fill-mana { background: linear-gradient(90deg, #1e3a8a, #3b82f6, #93c5fd); box-shadow: 0 0 10px rgba(59, 130, 246, 0.6); }
-    .fill-stamina { background: linear-gradient(90deg, #065f46, #10b981, #6ee7b7); height: 6px; }
+    .bar-liquid-mp {
+      background: linear-gradient(90deg, #1e3a8a 0%, #3b82f6 60%, #93c5fd 100%);
+      box-shadow: 0 0 12px rgba(59, 130, 246, 0.7);
+    }
+    .bar-liquid-sta {
+      background: linear-gradient(90deg, #064e3b 0%, #10b981 60%, #6ee7b7 100%);
+      height: 6px; border-radius: 4px;
+    }
 
-    /* Top Right: Ornate Gold Resources & Quest Banner */
+    /* ── TOP CENTER: ADVENTURE COMPASS & BIOME BANNER ── */
+    #top-compass-banner {
+      position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+      z-index: 50; display: flex; flex-direction: column; align-items: center; gap: 4px;
+    }
+    .compass-wood-dial {
+      background: linear-gradient(180deg, #3d2314 0%, #241309 100%);
+      border: 2px solid var(--gold-border);
+      border-radius: 14px; padding: 4px 18px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.8);
+      font-size: 11px; font-weight: 800; color: #fef08a; letter-spacing: 2px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .zone-banner {
+      font-family: var(--font-title); font-size: 15px; font-weight: 900;
+      color: #fde047; text-shadow: 0 2px 8px #000, 0 0 12px rgba(245, 158, 11, 0.6);
+      letter-spacing: 2px;
+    }
+
+    /* ── TOP RIGHT: HANGING TAVERN SIGN (RESOURCES & BOUNTY) ── */
     #top-right-bar {
-      position: fixed; top: 18px; right: 18px; z-index: 50;
+      position: fixed; top: 20px; right: 20px; z-index: 50;
       display: flex; flex-direction: column; align-items: flex-end; gap: 10px;
     }
-    .gold-header-banner {
-      display: flex; gap: 12px;
-      background: linear-gradient(180deg, rgba(41, 37, 36, 0.95), rgba(28, 25, 23, 0.95));
-      border: 2px solid var(--gold-border);
-      border-radius: 14px; padding: 8px 16px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.8);
-      font-size: 13px; font-weight: 700; color: #fef3c7;
+    .hanging-resource-sign {
+      background: linear-gradient(180deg, #3d2314 0%, #241309 100%);
+      border: 3px solid var(--gold-border);
+      border-radius: 16px; padding: 8px 18px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.85);
+      display: flex; gap: 14px; font-size: 13px; font-weight: 800; color: #fef3c7;
+      position: relative;
     }
-    .quest-parchment-hud {
-      background: linear-gradient(180deg, #292524 0%, #1c1917 100%);
+    .hanging-resource-sign::after {
+      content: '🪵'; position: absolute; right: -8px; top: -8px; font-size: 16px;
+    }
+    .quest-scroll-hud {
+      background: linear-gradient(180deg, #2e1c12 0%, #1c0e07 100%);
       border: 2px solid var(--gold-border);
       border-left: 6px solid #f59e0b;
-      border-radius: 12px; padding: 10px 16px; width: 230px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.7); cursor: pointer;
+      border-radius: 14px; padding: 12px 16px; width: 250px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8); cursor: pointer;
+      position: relative; transition: 0.2s;
     }
-    .quest-parchment-hud h4 { font-size: 12px; color: #fde047; margin-bottom: 2px; }
-    .quest-parchment-hud p { font-size: 11px; opacity: 0.85; font-family: var(--font-ui); }
+    .quest-scroll-hud:hover { transform: translateY(-2px); border-color: #fde047; }
+    .quest-scroll-hud h4 { font-size: 13px; color: #fde047; margin-bottom: 3px; font-family: var(--font-body); }
+    .quest-scroll-hud p { font-size: 11px; opacity: 0.85; font-family: var(--font-ui); }
 
-    /* Target & Boss Bar */
+    /* World Boss Header */
     #boss-bar-wrap {
-      position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+      position: fixed; top: 75px; left: 50%; transform: translateX(-50%);
       z-index: 60; display: none; flex-direction: column; align-items: center;
-      width: 480px; max-width: 90vw;
+      width: 500px; max-width: 90vw;
     }
-    .boss-name-banner { font-family: var(--font-title); font-size: 18px; color: #f87171; letter-spacing: 3px; font-weight: 900; }
+    .boss-name-banner { font-family: var(--font-title); font-size: 19px; color: #f87171; letter-spacing: 3px; font-weight: 900; }
     .boss-hp-frame {
-      width: 100%; height: 16px; background: #000;
-      border: 2px solid #ef4444; border-radius: 8px; margin-top: 6px;
-      overflow: hidden; box-shadow: 0 0 20px rgba(239, 68, 68, 0.7);
+      width: 100%; height: 18px; background: #140b06;
+      border: 3px solid #ef4444; border-radius: 10px; margin-top: 6px;
+      overflow: hidden; box-shadow: 0 0 25px rgba(239, 68, 68, 0.8);
     }
-    .boss-hp-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #991b1b, #ef4444, #fca5a5); transition: width 0.1s; }
+    .boss-hp-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #7f1d1d, #ef4444, #fca5a5); transition: width 0.1s; }
 
-    /* Bottom Center: Fantasy Hotbar */
-    #fantasy-hotbar {
-      position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%);
-      z-index: 50; display: flex; gap: 8px; align-items: center;
-      background: linear-gradient(180deg, #292524 0%, #1c1917 100%);
-      padding: 8px 14px; border-radius: 20px; border: 2px solid var(--gold-border);
-      box-shadow: 0 10px 35px rgba(0,0,0,0.8), 0 0 20px rgba(245, 158, 11, 0.2);
+    /* ── BOTTOM CENTER: CARVED OAK & IRON ACTION HOTBAR ── */
+    #action-hotbar-container {
+      position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%);
+      z-index: 50; display: flex; gap: 10px; align-items: center;
+      background: linear-gradient(180deg, #3d2314 0%, #1f0f06 100%);
+      padding: 10px 16px; border-radius: 24px; border: 3px solid var(--gold-border);
+      box-shadow: 0 14px 40px rgba(0,0,0,0.9), 0 0 25px rgba(245, 158, 11, 0.25), inset 0 2px 4px rgba(254, 240, 138, 0.3);
+      position: relative;
     }
-    .slot-frame {
-      width: 54px; height: 54px; border-radius: 12px;
-      background: radial-gradient(circle, #44403c, #1c1917);
-      border: 2px solid #78350f;
+    .hotbar-leaf-l { position: absolute; left: -14px; top: -10px; font-size: 22px; }
+    .hotbar-leaf-r { position: absolute; right: -14px; top: -10px; font-size: 22px; }
+
+    .spell-socket {
+      width: 56px; height: 56px; border-radius: 14px;
+      background: radial-gradient(circle, #4d2a16, #1f0f06);
+      border: 2px solid #854d0e;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       position: relative; cursor: pointer; transition: 0.15s;
+      box-shadow: inset 0 2px 6px rgba(0,0,0,0.8), 0 4px 10px rgba(0,0,0,0.5);
     }
-    .slot-frame:hover { border-color: #fde047; transform: translateY(-3px); }
-    .slot-frame.active { border-color: #22c55e; box-shadow: 0 0 12px rgba(34, 197, 94, 0.6); }
-    .slot-key-tag {
-      position: absolute; top: 2px; left: 4px; font-size: 10px; font-weight: 900; color: #fde047;
+    .spell-socket:hover { border-color: #fde047; transform: translateY(-4px); box-shadow: 0 0 16px rgba(245, 158, 11, 0.6); }
+    .spell-socket.active { border-color: #22c55e; box-shadow: 0 0 16px rgba(34, 197, 94, 0.7); }
+    .spell-key-badge {
+      position: absolute; top: 2px; left: 4px; font-size: 9px; font-weight: 900; color: #fde047; font-family: var(--font-ui);
     }
-    .slot-symbol { font-size: 24px; }
-    .slot-mp-cost { position: absolute; bottom: 2px; right: 4px; font-size: 9px; color: #60a5fa; font-weight: 700; }
-    .slot-cd-curtain {
-      position: absolute; inset: 0; background: rgba(0,0,0,0.78);
-      border-radius: 10px; display: none; align-items: center; justify-content: center;
-      font-size: 13px; font-weight: 900; color: #f59e0b;
+    .spell-icon { font-size: 26px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8)); }
+    .spell-mana-badge {
+      position: absolute; bottom: 2px; right: 4px; font-size: 9px; color: #93c5fd; font-weight: 800; font-family: var(--font-ui);
+    }
+    .spell-cd-overlay {
+      position: absolute; inset: 0; background: rgba(12, 8, 5, 0.85);
+      border-radius: 12px; display: none; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 900; color: #f59e0b;
     }
 
-    /* Bottom Left: World Chat */
+    /* ── BOTTOM SCREEN: CELTIC ORNAMENTAL EXP RIBBON ── */
+    #bottom-exp-ribbon {
+      position: fixed; bottom: 0; left: 0; right: 0; height: 10px;
+      background: #140b06; border-top: 2px solid #854d0e; z-index: 40;
+    }
+    #exp-ribbon-fill {
+      height: 100%; width: 0%;
+      background: linear-gradient(90deg, #6b21a8, #a855f7, #c084fc);
+      box-shadow: 0 0 12px rgba(168, 85, 247, 0.8);
+      transition: width 0.2s ease-out;
+    }
+
+    /* ── BOTTOM LEFT: ADVENTURER'S JOURNAL CHAT ── */
     #world-chat {
-      position: fixed; bottom: 22px; left: 18px; z-index: 50;
+      position: fixed; bottom: 26px; left: 20px; z-index: 50;
       width: 320px; height: 160px;
-      background: rgba(28, 25, 23, 0.88); border: 2px solid #78350f;
-      border-radius: 14px; backdrop-filter: blur(8px);
+      background: rgba(36, 19, 11, 0.92); border: 3px solid #78350f;
+      border-radius: 18px; backdrop-filter: blur(8px);
       display: flex; flex-direction: column; overflow: hidden;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
     }
     #chat-box { flex: 1; padding: 10px; overflow-y: auto; font-size: 12px; font-family: var(--font-ui); display: flex; flex-direction: column; gap: 4px; }
     .chat-user { font-weight: 700; color: #38bdf8; }
     .chat-system { color: #f59e0b; font-weight: 700; }
     .chat-loot { color: #34d399; font-weight: 700; }
-    #chat-input-bar { display: flex; border-top: 1px solid #78350f; }
-    #chat-field { flex: 1; background: transparent; border: none; padding: 6px 10px; color: #fff; font-size: 12px; outline: none; }
+    #chat-input-bar { display: flex; border-top: 2px solid #573016; background: rgba(0,0,0,0.4); }
+    #chat-field { flex: 1; background: transparent; border: none; padding: 6px 10px; color: #fff; font-size: 12px; outline: none; font-family: var(--font-ui); }
 
-    /* Bottom Right Menu Buttons */
+    /* ── BOTTOM RIGHT: WOODEN ACTION BUTTONS ── */
     #right-menu-bar {
-      position: fixed; bottom: 22px; right: 18px; z-index: 50;
+      position: fixed; bottom: 26px; right: 20px; z-index: 50;
       display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
     }
-    .rpg-btn {
-      background: linear-gradient(180deg, #44403c 0%, #1c1917 100%);
-      border: 1px solid var(--gold-border);
-      color: #fef08a; border-radius: 10px;
-      padding: 8px 12px; font-size: 11px; font-weight: 700; font-family: var(--font-body);
-      cursor: pointer; transition: 0.15s;
+    .wood-menu-btn {
+      background: linear-gradient(180deg, #4d2a16 0%, #241309 100%);
+      border: 2px solid var(--gold-border);
+      color: #fef08a; border-radius: 12px;
+      padding: 8px 12px; font-size: 11px; font-weight: 800; font-family: var(--font-body);
+      cursor: pointer; transition: 0.15s; box-shadow: 0 4px 12px rgba(0,0,0,0.6);
     }
-    .rpg-btn:hover { background: #78350f; border-color: #fde047; }
+    .wood-menu-btn:hover { background: #78350f; border-color: #fde047; transform: translateY(-2px); }
 
     /* ─── 4. INTERACTIVE NPC DIALOGUE OVERLAY ─── */
     #dialogue-modal {
-      position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
+      position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
       z-index: 700; width: 680px; max-width: 92vw;
-      background: linear-gradient(180deg, #292524 0%, #1c1917 100%);
-      border: 3px solid var(--gold-main);
-      border-radius: 20px; padding: 22px;
-      box-shadow: 0 16px 60px rgba(0,0,0,0.9), 0 0 25px rgba(245, 158, 11, 0.3);
+      background: linear-gradient(180deg, #3d2314 0%, #1f0f06 100%);
+      border: 4px solid var(--gold-main);
+      border-radius: 24px; padding: 24px;
+      box-shadow: 0 20px 70px rgba(0,0,0,0.95), 0 0 35px rgba(245, 158, 11, 0.4);
       display: none; gap: 20px; align-items: flex-start;
     }
     .npc-portrait {
-      width: 80px; height: 80px; border-radius: 14px;
-      background: radial-gradient(circle, #78350f, #1c1917);
-      border: 2px solid var(--gold-border);
+      width: 86px; height: 86px; border-radius: 18px;
+      background: radial-gradient(circle, #78350f, #1c0e07);
+      border: 3px solid var(--gold-border);
       display: flex; align-items: center; justify-content: center;
-      font-size: 40px; box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+      font-size: 44px; box-shadow: 0 6px 16px rgba(0,0,0,0.7);
     }
     .dialogue-content { flex: 1; }
-    .npc-name { font-family: var(--font-title); font-size: 18px; color: #fde047; margin-bottom: 6px; }
-    .npc-speech { font-family: var(--font-ui); font-size: 14px; line-height: 1.5; color: #fef3c7; margin-bottom: 14px; }
+    .npc-name { font-family: var(--font-title); font-size: 19px; color: #fde047; margin-bottom: 6px; }
+    .npc-speech { font-family: var(--font-ui); font-size: 14px; line-height: 1.5; color: #fef3c7; margin-bottom: 16px; }
     .dialogue-options { display: flex; gap: 10px; flex-wrap: wrap; }
     .dialogue-opt-btn {
-      background: #44403c; border: 1px solid var(--gold-main);
-      color: #fff; padding: 6px 14px; border-radius: 8px; font-size: 12px;
-      font-family: var(--font-body); cursor: pointer; font-weight: 700;
+      background: #573016; border: 2px solid var(--gold-main);
+      color: #fff; padding: 8px 16px; border-radius: 10px; font-size: 12px;
+      font-family: var(--font-body); cursor: pointer; font-weight: 800;
     }
-    .dialogue-opt-btn:hover { background: #78350f; border-color: #fde047; }
+    .dialogue-opt-btn:hover { background: #854d0e; border-color: #fde047; }
 
     /* Floating Interact Prompt */
     #interact-prompt {
-      position: fixed; top: 62%; left: 50%; transform: translate(-50%, -50%);
+      position: fixed; top: 60%; left: 50%; transform: translate(-50%, -50%);
       z-index: 100; pointer-events: none; display: none;
-      background: rgba(0,0,0,0.75); border: 2px solid var(--gold-main);
-      padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 800;
-      color: #fde047; letter-spacing: 1px; box-shadow: 0 0 15px rgba(245, 158, 11, 0.6);
+      background: rgba(20, 10, 5, 0.85); border: 2px solid var(--gold-main);
+      padding: 8px 20px; border-radius: 25px; font-size: 13px; font-weight: 900;
+      color: #fde047; letter-spacing: 1px; box-shadow: 0 0 20px rgba(245, 158, 11, 0.7);
     }
 
-    /* Modals (Skill Tree, Inventory, Quests, Map) */
-    .rpg-modal {
+    /* Modals (Skills, Inventory, Quests, Map) */
+    .wood-modal {
       position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-      z-index: 800; background: linear-gradient(180deg, #292524 0%, #1c1917 100%);
-      border: 3px solid var(--gold-main); border-radius: 20px;
-      padding: 24px; box-shadow: 0 16px 64px rgba(0,0,0,0.9), 0 0 35px rgba(245,158,11,0.4);
+      z-index: 800; background: linear-gradient(180deg, #3d2314 0%, #1f0f06 100%);
+      border: 4px solid var(--gold-main); border-radius: 24px;
+      padding: 26px; box-shadow: 0 20px 80px rgba(0,0,0,0.95), 0 0 40px rgba(245,158,11,0.5);
       display: none; max-width: 92vw; max-height: 90vh; overflow: auto;
     }
-    .modal-head { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #78350f; padding-bottom: 10px; margin-bottom: 16px; }
-    .modal-title { font-family: var(--font-title); font-size: 20px; color: #fde047; }
-    .modal-close-btn { background: #44403c; border: 1px solid var(--gold-main); color: #fff; width: 30px; height: 30px; border-radius: 8px; cursor: pointer; font-weight: 900; }
+    .modal-head { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #78350f; padding-bottom: 12px; margin-bottom: 18px; }
+    .modal-title { font-family: var(--font-title); font-size: 21px; color: #fde047; }
+    .modal-close-btn { background: #573016; border: 2px solid var(--gold-main); color: #fff; width: 32px; height: 32px; border-radius: 10px; cursor: pointer; font-weight: 900; }
     .modal-close-btn:hover { background: #ef4444; }
 
     /* Damage Text */
     .dmg-popup {
       position: fixed; pointer-events: none; z-index: 200;
       font-family: var(--font-title); font-weight: 900;
-      text-shadow: 0 2px 8px rgba(0,0,0,0.9);
+      text-shadow: 0 2px 10px rgba(0,0,0,0.9);
       animation: floatDamage 0.8s ease-out forwards;
     }
     @keyframes floatDamage {
@@ -340,40 +409,40 @@
 
     /* Notification Toast */
     #toast-msg {
-      position: fixed; top: 120px; left: 50%; transform: translateX(-50%);
-      z-index: 999; background: linear-gradient(180deg, #f59e0b, #b45309);
-      border: 2px solid #fef08a; color: #000; font-family: var(--font-title);
-      padding: 10px 24px; border-radius: 25px; font-weight: 900; font-size: 15px;
-      box-shadow: 0 0 35px rgba(245, 158, 11, 0.9); display: none;
+      position: fixed; top: 125px; left: 50%; transform: translateX(-50%);
+      z-index: 999; background: linear-gradient(180deg, #f59e0b, #92400e);
+      border: 2px solid #fef08a; color: #fff; font-family: var(--font-title);
+      padding: 12px 28px; border-radius: 30px; font-weight: 900; font-size: 16px;
+      box-shadow: 0 0 40px rgba(245, 158, 11, 0.9); display: none;
     }
   </style>
 </head>
 <body>
   <div id="crosshair"></div>
 
-  <!-- ─── 1. MAIN TITLE & CLASS SELECTION SCREEN ─── -->
+  <!-- ─── 1. TITLE SCREEN / MAIN MENU ─── -->
   <div id="main-menu">
     <h1 class="game-logo">CHRONICLES OF AETHELGARD</h1>
-    <div class="game-subtitle">⚡ The Awakening of the Dawnblade ⚡</div>
+    <div class="game-subtitle">🍃 Open World Adventure RPG 🍃</div>
     
-    <div class="menu-card">
-      <div style="font-size: 13px; color: #fef08a; font-weight: 700; text-align: center;">CHOOSE YOUR PATH</div>
+    <div class="menu-wood-card">
+      <div style="font-size: 13px; color: #fef08a; font-weight: 800; letter-spacing: 1px;">SELECT HERO CLASS</div>
       <div class="class-select-row">
-        <div class="class-btn selected" id="cls-warrior" onclick="selectClass('Warrior')">
-          <div style="font-size: 24px; margin-bottom: 4px;">⚔️</div>
+        <div class="class-wood-btn selected" id="cls-warrior" onclick="selectClass('Warrior')">
+          <div style="font-size: 26px; margin-bottom: 4px;">⚔️</div>
           WARRIOR
         </div>
-        <div class="class-btn" id="cls-mage" onclick="selectClass('Mage')">
-          <div style="font-size: 24px; margin-bottom: 4px;">🔮</div>
+        <div class="class-wood-btn" id="cls-mage" onclick="selectClass('Mage')">
+          <div style="font-size: 26px; margin-bottom: 4px;">🔮</div>
           MAGE
         </div>
-        <div class="class-btn" id="cls-rogue" onclick="selectClass('Rogue')">
-          <div style="font-size: 24px; margin-bottom: 4px;">🏹</div>
+        <div class="class-wood-btn" id="cls-rogue" onclick="selectClass('Rogue')">
+          <div style="font-size: 26px; margin-bottom: 4px;">🏹</div>
           ROGUE
         </div>
       </div>
-      <button class="btn-play-hero" onclick="startAdventure()">ENTER REALM</button>
-      <div style="font-size: 11px; opacity: 0.7; font-family: var(--font-ui);">Controls: WASD Move &middot; Space Jump &middot; LMB Attack &middot; Shift Sprint</div>
+      <button class="btn-enter-realm" onclick="startAdventure()">ENTER REALM</button>
+      <div style="font-size: 11px; opacity: 0.75; font-family: var(--font-ui);">Controls: WASD Move &middot; Space Jump &middot; LMB Attack &middot; Shift Sprint</div>
     </div>
   </div>
 
@@ -387,44 +456,53 @@
     <div class="act-title">AWAKENING IN HAVEN'S GLADE</div>
   </div>
 
-  <!-- ─── 3. FANTASY RPG HUD ─── -->
+  <!-- ─── 3. OUTDOOR FANTASY RPG HUD ─── -->
   <div id="hud">
     <!-- Top Left: Hero Unit Frame -->
-    <div id="fantasy-unit-frame">
-      <div class="orb-container" onclick="toggleModal('modal-char')" title="View Hero Stats">
-        <span class="orb-icon" id="hero-avatar">🧙‍♂️</span>
-        <div class="lvl-ribbon" id="hero-lvl-badge">LV 1</div>
+    <div id="hero-unit-frame">
+      <div class="hero-medallion" onclick="toggleModal('modal-char')" title="View Hero Sheet">
+        <span class="hero-avatar-icon" id="hero-avatar">🧙‍♂️</span>
+        <div class="hero-lvl-ribbon" id="hero-lvl-badge">LV 1</div>
       </div>
-      <div class="vitals-column">
-        <!-- Health -->
-        <div class="fantasy-bar-wrap">
-          <span class="fantasy-bar-label">HP</span>
-          <span class="fantasy-bar-val" id="hp-val">100 / 100</span>
-          <div class="fantasy-bar-fill fill-health" id="hp-fill" style="width: 100%;"></div>
+      <div class="vitals-plank">
+        <!-- HP -->
+        <div class="bar-frame">
+          <span class="bar-label-left">HP</span>
+          <span class="bar-label-right" id="hp-val">100 / 100</span>
+          <div class="bar-liquid bar-liquid-hp" id="hp-fill"></div>
         </div>
-        <!-- Mana -->
-        <div class="fantasy-bar-wrap">
-          <span class="fantasy-bar-label">MP</span>
-          <span class="fantasy-bar-val" id="mp-val">60 / 60</span>
-          <div class="fantasy-bar-fill fill-mana" id="mp-fill" style="width: 100%;"></div>
+        <!-- MP -->
+        <div class="bar-frame">
+          <span class="bar-label-left">MP</span>
+          <span class="bar-label-right" id="mp-val">60 / 60</span>
+          <div class="bar-liquid bar-liquid-mp" id="mp-fill"></div>
         </div>
         <!-- Stamina -->
-        <div class="fantasy-bar-wrap">
-          <span class="fantasy-bar-label" style="font-size:8px;">STA</span>
-          <div class="fantasy-bar-fill fill-stamina" id="sta-fill" style="width: 100%;"></div>
+        <div class="bar-frame" style="height:10px;">
+          <div class="bar-liquid bar-liquid-sta" id="sta-fill"></div>
         </div>
       </div>
     </div>
 
+    <!-- Top Center: Outdoor Adventure Compass & Biome Name -->
+    <div id="top-compass-banner">
+      <div class="compass-wood-dial">
+        <span>🧭</span>
+        <span>W &middot; NW &middot; <strong style="color:#fde047;">[ NORTH ]</strong> &middot; NE &middot; E</span>
+        <span>☀️ 12:00</span>
+      </div>
+      <div class="zone-banner" id="current-zone-name">Haven's Glade — Sunlit Plains</div>
+    </div>
+
     <!-- Top Right: Resources & Active Quest -->
     <div id="top-right-bar">
-      <div class="gold-header-banner">
+      <div class="hanging-resource-sign">
         <div>🪵 <span id="res-wood">50</span></div>
         <div>🪨 <span id="res-stone">30</span></div>
         <div>💎 <span id="res-cryst">5</span></div>
         <div>🪙 <span id="res-gold">120</span></div>
       </div>
-      <div class="quest-parchment-hud" onclick="toggleModal('modal-quests')">
+      <div class="quest-scroll-hud" onclick="toggleModal('modal-quests')">
         <h4 id="hud-quest-name">📜 Act I: Haven's Trial</h4>
         <p id="hud-quest-desc">Speak with Elder Cedric in the village center.</p>
       </div>
@@ -436,68 +514,76 @@
       <div class="boss-hp-frame"><div class="boss-hp-fill" id="boss-fill"></div></div>
     </div>
 
-    <!-- Bottom Center: Fantasy Hotbar -->
-    <div id="fantasy-hotbar">
-      <div class="slot-frame active" id="slot-0" onclick="castSkill(0)">
-        <span class="slot-key-tag">LMB</span>
-        <span class="slot-symbol" id="slot-icon-0">⚔️</span>
-        <div class="slot-cd-curtain" id="cd-0"></div>
+    <!-- Bottom Center: Carved Oak & Iron Hotbar -->
+    <div id="action-hotbar-container">
+      <span class="hotbar-leaf-l">🌿</span>
+      <span class="hotbar-leaf-r">🌿</span>
+      
+      <div class="spell-socket active" id="slot-0" onclick="castSkill(0)">
+        <span class="spell-key-badge">LMB</span>
+        <span class="spell-icon" id="slot-icon-0">⚔️</span>
+        <div class="spell-cd-overlay" id="cd-0"></div>
       </div>
-      <div class="slot-frame" id="slot-1" onclick="castSkill(1)">
-        <span class="slot-key-tag">1</span>
-        <span class="slot-symbol" id="slot-icon-1">🔥</span>
-        <span class="slot-mp-cost">15</span>
-        <div class="slot-cd-curtain" id="cd-1"></div>
+      <div class="spell-socket" id="slot-1" onclick="castSkill(1)">
+        <span class="spell-key-badge">1</span>
+        <span class="spell-icon" id="slot-icon-1">🔥</span>
+        <span class="spell-mana-badge">15</span>
+        <div class="spell-cd-overlay" id="cd-1"></div>
       </div>
-      <div class="slot-frame" id="slot-2" onclick="castSkill(2)">
-        <span class="slot-key-tag">2</span>
-        <span class="slot-symbol" id="slot-icon-2">❄️</span>
-        <span class="slot-mp-cost">20</span>
-        <div class="slot-cd-curtain" id="cd-2"></div>
+      <div class="spell-socket" id="slot-2" onclick="castSkill(2)">
+        <span class="spell-key-badge">2</span>
+        <span class="spell-icon" id="slot-icon-2">❄️</span>
+        <span class="spell-mana-badge">20</span>
+        <div class="spell-cd-overlay" id="cd-2"></div>
       </div>
-      <div class="slot-frame" id="slot-3" onclick="castSkill(3)">
-        <span class="slot-key-tag">3</span>
-        <span class="slot-symbol" id="slot-icon-3">⚡</span>
-        <span class="slot-mp-cost">25</span>
-        <div class="slot-cd-curtain" id="cd-3"></div>
+      <div class="spell-socket" id="slot-3" onclick="castSkill(3)">
+        <span class="spell-key-badge">3</span>
+        <span class="spell-icon" id="slot-icon-3">⚡</span>
+        <span class="spell-mana-badge">25</span>
+        <div class="spell-cd-overlay" id="cd-3"></div>
       </div>
-      <div class="slot-frame" id="slot-4" onclick="castSkill(4)">
-        <span class="slot-key-tag">4</span>
-        <span class="slot-symbol" id="slot-icon-4">🌪️</span>
-        <span class="slot-mp-cost">30</span>
-        <div class="slot-cd-curtain" id="cd-4"></div>
+      <div class="spell-socket" id="slot-4" onclick="castSkill(4)">
+        <span class="spell-key-badge">4</span>
+        <span class="spell-icon" id="slot-icon-4">🌪️</span>
+        <span class="spell-mana-badge">30</span>
+        <div class="spell-cd-overlay" id="cd-4"></div>
       </div>
-      <div class="slot-frame" id="slot-5" onclick="castSkill(5)">
-        <span class="slot-key-tag">5</span>
-        <span class="slot-symbol" id="slot-icon-5">☄️</span>
-        <span class="slot-mp-cost">50</span>
-        <div class="slot-cd-curtain" id="cd-5"></div>
+      <div class="spell-socket" id="slot-5" onclick="castSkill(5)">
+        <span class="spell-key-badge">5</span>
+        <span class="spell-icon" id="slot-icon-5">☄️</span>
+        <span class="spell-mana-badge">50</span>
+        <div class="spell-cd-overlay" id="cd-5"></div>
       </div>
+    </div>
+
+    <!-- Bottom Full Width EXP Ribbon -->
+    <div id="bottom-exp-ribbon">
+      <div id="exp-ribbon-fill"></div>
     </div>
 
     <!-- Bottom Left: Chat Log -->
     <div id="world-chat">
       <div id="chat-box">
         <div class="chat-line chat-system">🌟 Welcome to Chronicles of Aethelgard!</div>
-        <div class="chat-line"><span class="chat-user">Valkyrie_Rose</span>: Welcome to the village! Speak with Elder Cedric to begin your quest!</div>
+        <div class="chat-line"><span class="chat-user">Valkyrie_Rose</span>: Welcome to Haven's Glade! Speak with Elder Cedric to begin!</div>
       </div>
       <div id="chat-input-bar">
         <input type="text" id="chat-field" placeholder="Press Enter to talk..." maxlength="100">
       </div>
     </div>
 
-    <!-- Bottom Right: Menu Buttons -->
+    <!-- Bottom Right: Wood Buttons -->
     <div id="right-menu-bar">
-      <button class="rpg-btn" onclick="toggleModal('modal-skills')">⚔️ Skills (K)</button>
-      <button class="rpg-btn" onclick="toggleModal('modal-inv')">🎒 Items (I)</button>
-      <button class="rpg-btn" onclick="toggleBuildMode()">🔨 Build (B)</button>
-      <button class="rpg-btn" onclick="toggleModal('modal-quests')">📜 Quests (J)</button>
-      <button class="rpg-btn" onclick="toggleModal('modal-map')">🗺️ Map (M)</button>
-      <button class="rpg-btn" onclick="toggleModal('modal-char')">👑 Hero (C)</button>
+      <button class="wood-menu-btn" onclick="toggleModal('modal-skills')">⚔️ Skills (K)</button>
+      <button class="wood-menu-btn" onclick="toggleModal('modal-inv')">🎒 Items (I)</button>
+      <button class="wood-menu-btn" onclick="toggleBuildMode()">🔨 Build (B)</button>
+      <button class="wood-menu-btn" onclick="toggleModal('modal-quests')">📜 Quests (J)</button>
+      <button class="wood-menu-btn" onclick="toggleModal('modal-map')">🗺️ Map (M)</button>
+      <button class="wood-menu-btn" onclick="toggleModal('modal-char')">👑 Hero (C)</button>
     </div>
   </div>
 
-  <!-- ─── 4. INTERACTIVE NPC DIALOGUE MODAL ─── -->
+  <!-- ─── 4. INTERACTIVE NPC DIALOGUE OVERLAY ─── -->
   <div id="interact-prompt">PRESS [E] TO TALK</div>
   <div id="dialogue-modal">
     <div class="npc-portrait" id="diag-portrait">🧙‍♂️</div>
@@ -516,7 +602,7 @@
 
   <!-- ─── 5. FANTASY MODALS ─── -->
   <!-- Quests Modal -->
-  <div class="rpg-modal" id="modal-quests">
+  <div class="wood-modal" id="modal-quests">
     <div class="modal-head">
       <h2 class="modal-title">📜 Quest Chronicles & Bounties</h2>
       <button class="modal-close-btn" onclick="closeModals()">✕</button>
@@ -527,7 +613,7 @@
   </div>
 
   <!-- Skills Modal -->
-  <div class="rpg-modal" id="modal-skills">
+  <div class="wood-modal" id="modal-skills">
     <div class="modal-head">
       <h2 class="modal-title">🌟 Hero Skill Tree & Spells</h2>
       <button class="modal-close-btn" onclick="closeModals()">✕</button>
@@ -536,13 +622,13 @@
       Available Skill Points: <strong id="sp-count" style="font-size:16px;">0</strong>
     </div>
     <div style="display:flex; gap:16px; flex-wrap:wrap; justify-content:center;">
-      <div style="background:rgba(0,0,0,0.5); padding:14px; border-radius:12px; border:1px solid #78350f; width:220px;">
+      <div style="background:#26140b; padding:14px; border-radius:14px; border:2px solid var(--gold-border); width:220px;">
         <h4 style="color:#fde047; text-align:center; margin-bottom:8px;">⚔️ PATH OF IRON</h4>
         <div style="font-size:12px; opacity:0.9;">Cleave Slash [Lv.1] (Unlocked)</div>
         <div style="font-size:12px; opacity:0.9; margin-top:6px;">Whirlwind Spin [Lv.2]</div>
         <div style="font-size:12px; opacity:0.9; margin-top:6px;">Earth Shatter [Lv.4]</div>
       </div>
-      <div style="background:rgba(0,0,0,0.5); padding:14px; border-radius:12px; border:1px solid #78350f; width:220px;">
+      <div style="background:#26140b; padding:14px; border-radius:14px; border:2px solid var(--gold-border); width:220px;">
         <h4 style="color:#60a5fa; text-align:center; margin-bottom:8px;">🔮 PATH OF ARCANA</h4>
         <div style="font-size:12px; opacity:0.9;">Fireball [Lv.1] (Unlocked)</div>
         <div style="font-size:12px; opacity:0.9; margin-top:6px;">Frost Nova [Lv.2] (Unlocked)</div>
@@ -552,17 +638,17 @@
   </div>
 
   <!-- Inventory Modal -->
-  <div class="rpg-modal" id="modal-inv">
+  <div class="wood-modal" id="modal-inv">
     <div class="modal-head">
       <h2 class="modal-title">🎒 Adventurer's Backpack</h2>
       <button class="modal-close-btn" onclick="closeModals()">✕</button>
     </div>
     <div style="display:flex; gap:12px;">
-      <div style="padding:14px; background:#44403c; border:2px solid var(--gold-main); border-radius:12px; text-align:center; cursor:pointer;" onclick="usePotion('hp')">
+      <div style="padding:14px; background:#4d2a16; border:2px solid var(--gold-main); border-radius:14px; text-align:center; cursor:pointer;" onclick="usePotion('hp')">
         <div style="font-size:28px;">🧪</div>
         <div style="font-size:12px; font-weight:700;">Health Flask (<span id="inv-hp">3</span>)</div>
       </div>
-      <div style="padding:14px; background:#44403c; border:2px solid var(--gold-main); border-radius:12px; text-align:center; cursor:pointer;" onclick="usePotion('mp')">
+      <div style="padding:14px; background:#4d2a16; border:2px solid var(--gold-main); border-radius:14px; text-align:center; cursor:pointer;" onclick="usePotion('mp')">
         <div style="font-size:28px;">🫙</div>
         <div style="font-size:12px; font-weight:700;">Mana Potion (<span id="inv-mp">3</span>)</div>
       </div>
@@ -570,7 +656,7 @@
   </div>
 
   <!-- Character Stats Modal -->
-  <div class="rpg-modal" id="modal-char">
+  <div class="wood-modal" id="modal-char">
     <div class="modal-head">
       <h2 class="modal-title">👑 Hero Character Record</h2>
       <button class="modal-close-btn" onclick="closeModals()">✕</button>
@@ -586,12 +672,12 @@
   </div>
 
   <!-- Full Map Modal -->
-  <div class="rpg-modal" id="modal-map">
+  <div class="wood-modal" id="modal-map">
     <div class="modal-head">
       <h2 class="modal-title">🗺️ Realm of Aethelgard</h2>
       <button class="modal-close-btn" onclick="closeModals()">✕</button>
     </div>
-    <canvas id="big-map-canvas" width="460" height="460" style="border:2px solid var(--gold-border); border-radius:12px;"></canvas>
+    <canvas id="big-map-canvas" width="460" height="460" style="border:3px solid var(--gold-border); border-radius:14px;"></canvas>
   </div>
 
   <!-- Three.js Library -->
@@ -664,6 +750,20 @@
   scene.add(hemiLight);
   const ambLight = new THREE.AmbientLight(0xffffff, 0.45);
   scene.add(ambLight);
+
+  // ── AMBIENT OUTDOOR PARTICLES (WIND LEAVES & DANDELIONS) ────────────────
+  const leafCount = 150;
+  const leafGeo = new THREE.BufferGeometry();
+  const leafPos = new Float32Array(leafCount * 3);
+  for (let i = 0; i < leafCount * 3; i += 3) {
+    leafPos[i] = (Math.random() - 0.5) * 120;
+    leafPos[i+1] = Math.random() * 20;
+    leafPos[i+2] = (Math.random() - 0.5) * 120;
+  }
+  leafGeo.setAttribute('position', new THREE.BufferAttribute(leafPos, 3));
+  const leafMat = new THREE.PointsMaterial({ color: 0x84cc16, size: 1.2, transparent: true, opacity: 0.7 });
+  const leafParticles = new THREE.Points(leafGeo, leafMat);
+  scene.add(leafParticles);
 
   // ── 5-BIOME TERRAIN ─────────────────────────────────────────────────────
   const terrainSize = 500;
@@ -808,7 +908,7 @@
   player.group.position.set(0, getTerrainHeight(0, 0), 0);
   scene.add(player.group);
 
-  // ── MONSTERS ────────────────────────────────────────────────────────────
+  // ── MONSTERS ────────────────────────────────────────────────────
   const monsters = [];
   function spawnMob(name, hp, dmg, exp, x, z, col = 0x22c55e, scale = 0.8, isBoss = false) {
     const g = new THREE.Group();
@@ -826,14 +926,14 @@
   spawnMob("Ancient Magma Titan", 3000, 55, 2000, 130, 130, 0xb91c1c, 3.0, true);
 
   // ── GAME STATE & CAMERA TRANSITIONS ─────────────────────────────────────
-  let gameState = 'MENU'; // 'MENU' | 'SPAWNING' | 'PLAYING'
+  let gameState = 'MENU';
   let spawnProgress = 0;
   let yaw = 0, pitch = 0.2;
   let activeDialogueNPC = null;
 
   function selectClass(cls) {
     player.heroClass = cls;
-    document.querySelectorAll('.class-btn').forEach(b => b.classList.remove('selected'));
+    document.querySelectorAll('.class-wood-btn').forEach(b => b.classList.remove('selected'));
     document.getElementById('cls-' + cls.toLowerCase()).classList.add('selected');
     document.getElementById('char-class').textContent = cls;
     const icons = { Warrior: '⚔️', Mage: '🔮', Rogue: '🏹' };
@@ -902,7 +1002,9 @@
         }
         if (m.hp <= 0) {
           player.kills++;
+          player.exp += m.exp;
           document.getElementById('char-kills').textContent = player.kills;
+          document.getElementById('exp-ribbon-fill').style.width = Math.min(100, (player.exp / player.expNext * 100)) + '%';
           scene.remove(m.mesh);
           monsters.splice(monsters.indexOf(m), 1);
           if (m.isBoss) {
@@ -962,7 +1064,7 @@
   }
 
   function closeModals() {
-    document.querySelectorAll('.rpg-modal').forEach(m => m.style.display = 'none');
+    document.querySelectorAll('.wood-modal').forEach(m => m.style.display = 'none');
   }
 
   function toggleBuildMode() {
@@ -982,7 +1084,6 @@
   document.addEventListener('keydown', e => {
     keys[e.code] = true;
     if (e.code === 'KeyE') {
-      // Check near NPC
       npcs.forEach(npc => {
         if (Math.hypot(npc.x - player.group.position.x, npc.z - player.group.position.z) < 4.0) {
           openDialogue(npc);
@@ -1018,6 +1119,15 @@
   function animate() {
     requestAnimationFrame(animate);
     const dt = Math.min(clock.getDelta(), 0.05);
+
+    // Animate ambient leaves
+    const lPos = leafGeo.attributes.position.array;
+    for (let i = 0; i < leafCount * 3; i += 3) {
+      lPos[i] += Math.sin(clock.getElapsedTime() + i) * 0.02 + 0.04;
+      lPos[i+1] -= 0.02;
+      if (lPos[i+1] < 0) lPos[i+1] = 20;
+    }
+    leafGeo.attributes.position.needsUpdate = true;
 
     if (gameState === 'MENU') {
       // Slow scenic orbit around starting village
