@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Chronicles of Aethelgard — Low Poly Open World RPG</title>
   
-  <!-- Fantasy & Medieval Outdoor RPG Google Fonts -->
+  <!-- Fantasy Outdoor RPG Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Cinzel+Decorative:wght@700;900&family=MedievalSharp&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Cinzel+Decorative:wght@700;900&family=Outfit:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 
   <style>
     :root {
@@ -18,9 +18,7 @@
       --gold-border: #d97706;
       --wood-dark: #29180d;
       --wood-med: #452311;
-      --wood-light: #78350f;
-      --parchment-bg: #261e19;
-      --parchment-border: #854d0e;
+      --wood-border: #78350f;
       --hp-red: #ef4444;
       --mp-blue: #3b82f6;
       --sta-green: #10b981;
@@ -28,22 +26,37 @@
       --font-title: 'Cinzel Decorative', 'Cinzel', serif;
       --font-body: 'Cinzel', serif;
       --font-ui: 'Outfit', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
     body {
       overflow: hidden;
-      background: #7ec8e3; /* Match sky color to prevent black flashing */
+      background: #8bc4dd;
       font-family: var(--font-body);
       color: #fef3c7;
     }
     canvas { display: block; width: 100vw; height: 100vh; position: fixed; inset: 0; z-index: 1; }
 
+    /* Crosshair for Shiftlock */
+    #crosshair {
+      position: fixed; top: 45%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 14px; height: 14px;
+      pointer-events: none; z-index: 100; display: none;
+    }
+    #crosshair::before, #crosshair::after {
+      content: ''; position: absolute; background: #fff;
+      box-shadow: 0 0 4px rgba(0,0,0,0.8);
+    }
+    #crosshair::before { top: 6px; left: 0; width: 14px; height: 2px; }
+    #crosshair::after { top: 0; left: 6px; width: 2px; height: 14px; }
+
     /* ─── 1. TITLE SCREEN / MAIN MENU ─── */
     #main-menu {
       position: fixed; inset: 0; z-index: 1000;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      background: radial-gradient(circle at center, rgba(30, 20, 10, 0.3) 0%, rgba(10, 8, 6, 0.85) 85%);
+      background: radial-gradient(circle at center, rgba(30, 20, 10, 0.25) 0%, rgba(10, 8, 6, 0.85) 85%);
       backdrop-filter: blur(4px);
       transition: opacity 0.6s ease, transform 0.6s ease;
     }
@@ -79,12 +92,6 @@
       display: flex; flex-direction: column; align-items: center; gap: 16px;
       max-width: 460px; width: 92%;
       position: relative;
-    }
-    .menu-wood-card::before {
-      content: '🌿'; position: absolute; top: -14px; left: 20px; font-size: 24px;
-    }
-    .menu-wood-card::after {
-      content: '🌿'; position: absolute; top: -14px; right: 20px; font-size: 24px;
     }
     .class-select-row {
       display: flex; gap: 12px; width: 100%; justify-content: center;
@@ -202,7 +209,7 @@
       height: 5px; border-radius: 3px;
     }
 
-    /* ── TOP CENTER: ADVENTURE COMPASS & BIOME BANNER ── */
+    /* ── TOP CENTER: ADVENTURE COMPASS & COMBO METER ── */
     #top-compass-banner {
       position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
       z-index: 50; display: flex; flex-direction: column; align-items: center; gap: 4px;
@@ -220,6 +227,12 @@
       color: #fde047; text-shadow: 0 2px 8px #000, 0 0 12px rgba(245, 158, 11, 0.6);
       letter-spacing: 2px;
     }
+    #combo-badge {
+      font-family: var(--font-title); font-size: 20px; font-weight: 900;
+      color: #f59e0b; text-shadow: 0 0 15px rgba(245,158,11,0.9);
+      display: none; animation: popIn 0.2s ease-out; margin-top: 4px;
+    }
+    @keyframes popIn { 0% { transform: scale(0.6); } 100% { transform: scale(1.0); } }
 
     /* ── TOP RIGHT: HANGING TAVERN SIGN (RESOURCES & BOUNTY) ── */
     #top-right-bar {
@@ -261,7 +274,7 @@
 
     /* ── BOTTOM CENTER: CARVED OAK & IRON ACTION HOTBAR ── */
     #action-hotbar-container {
-      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
       z-index: 50; display: flex; gap: 8px; align-items: center;
       background: linear-gradient(180deg, #3d2314 0%, #1f0f06 100%);
       padding: 8px 14px; border-radius: 20px; border: 3px solid var(--gold-border);
@@ -292,8 +305,8 @@
 
     /* ── BOTTOM SCREEN: CELTIC EXP RIBBON ── */
     #bottom-exp-ribbon {
-      position: fixed; bottom: 0; left: 0; right: 0; height: 8px;
-      background: #140b06; border-top: 2px solid #854d0e; z-index: 40;
+      position: fixed; bottom: 0; left: 0; right: 0; height: 6px;
+      background: #140b06; border-top: 1px solid #854d0e; z-index: 40;
     }
     #exp-ribbon-fill {
       height: 100%; width: 0%;
@@ -302,25 +315,17 @@
       transition: width 0.2s ease-out;
     }
 
-    /* ── BOTTOM LEFT: CHAT ── */
-    #world-chat {
-      position: fixed; bottom: 24px; left: 16px; z-index: 50;
-      width: 290px; height: 140px;
-      background: rgba(36, 19, 11, 0.92); border: 2px solid #78350f;
-      border-radius: 16px; backdrop-filter: blur(6px);
-      display: flex; flex-direction: column; overflow: hidden;
-      box-shadow: 0 8px 25px rgba(0,0,0,0.8);
+    /* Controls Reminder */
+    #controls-hint {
+      position: fixed; bottom: 86px; left: 50%; transform: translateX(-50%);
+      z-index: 45; font-size: 11px; opacity: 0.85; pointer-events: none;
+      background: rgba(30, 15, 8, 0.85); border: 1px solid var(--gold-border);
+      padding: 4px 14px; border-radius: 20px; font-family: var(--font-ui); color: #fef08a;
     }
-    #chat-box { flex: 1; padding: 8px; overflow-y: auto; font-size: 11px; font-family: var(--font-ui); display: flex; flex-direction: column; gap: 3px; }
-    .chat-user { font-weight: 700; color: #38bdf8; }
-    .chat-system { color: #f59e0b; font-weight: 700; }
-    .chat-loot { color: #34d399; font-weight: 700; }
-    #chat-input-bar { display: flex; border-top: 2px solid #573016; background: rgba(0,0,0,0.4); }
-    #chat-field { flex: 1; background: transparent; border: none; padding: 5px 8px; color: #fff; font-size: 11px; outline: none; font-family: var(--font-ui); }
 
     /* ── BOTTOM RIGHT: BUTTONS ── */
     #right-menu-bar {
-      position: fixed; bottom: 24px; right: 16px; z-index: 50;
+      position: fixed; bottom: 20px; right: 16px; z-index: 50;
       display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
     }
     .wood-menu-btn {
@@ -333,6 +338,13 @@
     .wood-menu-btn:hover { background: #78350f; border-color: #fde047; }
 
     /* ─── 4. INTERACTIVE NPC DIALOGUE OVERLAY ─── */
+    #interact-prompt {
+      position: fixed; top: 60%; left: 50%; transform: translate(-50%, -50%);
+      z-index: 100; pointer-events: none; display: none;
+      background: rgba(20, 10, 5, 0.85); border: 2px solid var(--gold-main);
+      padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 900;
+      color: #fde047; letter-spacing: 1px; box-shadow: 0 0 16px rgba(245, 158, 11, 0.7);
+    }
     #dialogue-modal {
       position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
       z-index: 700; width: 640px; max-width: 92vw;
@@ -360,16 +372,7 @@
     }
     .dialogue-opt-btn:hover { background: #854d0e; border-color: #fde047; }
 
-    /* Floating Interact Prompt */
-    #interact-prompt {
-      position: fixed; top: 60%; left: 50%; transform: translate(-50%, -50%);
-      z-index: 100; pointer-events: none; display: none;
-      background: rgba(20, 10, 5, 0.85); border: 2px solid var(--gold-main);
-      padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 900;
-      color: #fde047; letter-spacing: 1px; box-shadow: 0 0 16px rgba(245, 158, 11, 0.7);
-    }
-
-    /* Modals (Skills, Inventory, Quests, Map) */
+    /* Modals (Skills, Inventory, Quests, Map, Build) */
     .wood-modal {
       position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
       z-index: 800; background: linear-gradient(180deg, #3d2314 0%, #1f0f06 100%);
@@ -381,6 +384,19 @@
     .modal-title { font-family: var(--font-title); font-size: 19px; color: #fde047; }
     .modal-close-btn { background: #573016; border: 2px solid var(--gold-main); color: #fff; width: 28px; height: 28px; border-radius: 8px; cursor: pointer; font-weight: 900; }
     .modal-close-btn:hover { background: #ef4444; }
+
+    /* Build Cards Grid */
+    #build-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 12px; width: 540px; max-width: 85vw;
+    }
+    .build-card {
+      background: #26140b; border: 2px solid var(--gold-border);
+      border-radius: 12px; padding: 12px; text-align: center; cursor: pointer;
+      display: flex; flex-direction: column; align-items: center; gap: 4px; transition: 0.2s;
+    }
+    .build-card:hover { border-color: #fde047; transform: translateY(-2px); }
+    .build-card.selected { border-color: #22c55e; background: rgba(34, 197, 94, 0.2); }
 
     /* Damage Text */
     .dmg-popup {
@@ -406,10 +422,12 @@
   </style>
 </head>
 <body>
+  <div id="crosshair"></div>
+
   <!-- ─── 1. TITLE SCREEN / MAIN MENU ─── -->
   <div id="main-menu">
     <h1 class="game-logo">CHRONICLES OF AETHELGARD</h1>
-    <div class="game-subtitle">🍃 Low-Poly Open World MMO RPG 🍃</div>
+    <div class="game-subtitle">🍃 Open World Action RPG 🍃</div>
     
     <div class="menu-wood-card">
       <div style="font-size: 12px; color: #fef08a; font-weight: 800; letter-spacing: 1px;">CHOOSE HERO CLASS</div>
@@ -428,7 +446,7 @@
         </div>
       </div>
       <button class="btn-enter-realm" onclick="startAdventure()">ENTER REALM</button>
-      <div style="font-size: 10px; opacity: 0.75; font-family: var(--font-ui);">WASD Move &middot; Space Jump &middot; LMB Attack &middot; Shift Sprint &middot; E Talk</div>
+      <div style="font-size: 10px; opacity: 0.75; font-family: var(--font-ui);">WASD Move &middot; Space Jump &middot; V Roll &middot; R Mount &middot; LMB/1-5 Combat &middot; E Talk</div>
     </div>
   </div>
 
@@ -478,6 +496,7 @@
         <span>☀️ 12:00</span>
       </div>
       <div class="zone-banner" id="current-zone-name">Haven's Glade — Sunlit Plains</div>
+      <div id="combo-badge">🔥 <span id="combo-num">0</span>x COMBO!</div>
     </div>
 
     <!-- Top Right: Resources & Active Quest -->
@@ -492,6 +511,11 @@
         <h4 id="hud-quest-name">📜 Act I: Haven's Trial</h4>
         <p id="hud-quest-desc">Speak with Elder Cedric in the village center.</p>
       </div>
+    </div>
+
+    <!-- Controls Reminder -->
+    <div id="controls-hint">
+      <kbd>WASD</kbd> Move &middot; <kbd>Shift</kbd> Sprint &middot; <kbd>Space</kbd> Jump &middot; <kbd>V</kbd> Dodge Roll &middot; <kbd>R</kbd> Mount &middot; <kbd>LMB/F</kbd> Strike &middot; <kbd>1-5</kbd> Spells &middot; <kbd>E</kbd> Talk &middot; <kbd>Ctrl</kbd> Shiftlock
     </div>
 
     <!-- World Boss Bar -->
@@ -544,22 +568,11 @@
       <div id="exp-ribbon-fill"></div>
     </div>
 
-    <!-- Bottom Left: Chat Log -->
-    <div id="world-chat">
-      <div id="chat-box">
-        <div class="chat-line chat-system">🌟 Welcome to Chronicles of Aethelgard!</div>
-        <div class="chat-line"><span class="chat-user">Valkyrie_Rose</span>: Welcome to Haven's Glade! Speak with Elder Cedric to begin!</div>
-      </div>
-      <div id="chat-input-bar">
-        <input type="text" id="chat-field" placeholder="Press Enter to talk..." maxlength="100">
-      </div>
-    </div>
-
     <!-- Bottom Right: Wood Buttons -->
     <div id="right-menu-bar">
       <button class="wood-menu-btn" onclick="toggleModal('modal-skills')">⚔️ Skills (K)</button>
       <button class="wood-menu-btn" onclick="toggleModal('modal-inv')">🎒 Items (I)</button>
-      <button class="wood-menu-btn" onclick="toggleBuildMode()">🔨 Build (B)</button>
+      <button class="wood-menu-btn" onclick="toggleModal('modal-build')">🔨 Build (B)</button>
       <button class="wood-menu-btn" onclick="toggleModal('modal-quests')">📜 Quests (J)</button>
       <button class="wood-menu-btn" onclick="toggleModal('modal-map')">🗺️ Map (M)</button>
       <button class="wood-menu-btn" onclick="toggleModal('modal-char')">👑 Hero (C)</button>
@@ -591,10 +604,7 @@
       <button class="modal-close-btn" onclick="closeModals()">✕</button>
     </div>
     <div id="quest-story-list" style="display:flex; flex-direction:column; gap:12px; min-width:300px;">
-      <div style="background:#26140b; padding:12px; border-radius:12px; border:2px solid var(--gold-border);">
-        <h4 style="color:#fde047;">Act I: Haven's Trial</h4>
-        <p style="font-size:12px; opacity:0.85; margin-top:2px;">Speak with Elder Cedric in the village center to begin your trial.</p>
-      </div>
+      <!-- Quests -->
     </div>
   </div>
 
@@ -619,6 +629,36 @@
         <div style="font-size:12px; opacity:0.9;">Fireball [Lv.1]</div>
         <div style="font-size:12px; opacity:0.9; margin-top:6px;">Frost Nova [Lv.2]</div>
         <div style="font-size:12px; opacity:0.9; margin-top:6px;">Chain Lightning [Lv.3]</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Build Modal -->
+  <div class="wood-modal" id="modal-build">
+    <div class="modal-head">
+      <h2 class="modal-title">🔨 Outpost Fortifications</h2>
+      <button class="modal-close-btn" onclick="closeModals()">✕</button>
+    </div>
+    <div id="build-grid">
+      <div class="build-card selected" onclick="selectBlueprint('wood_wall', this)">
+        <div style="font-size:28px;">🪵</div>
+        <div style="font-size:12px; font-weight:700;">Wood Wall</div>
+        <div style="font-size:10px; color:#f59e0b;">10 Wood</div>
+      </div>
+      <div class="build-card" onclick="selectBlueprint('stone_wall', this)">
+        <div style="font-size:28px;">🧱</div>
+        <div style="font-size:12px; font-weight:700;">Stone Bastion</div>
+        <div style="font-size:10px; color:#f59e0b;">15 Stone</div>
+      </div>
+      <div class="build-card" onclick="selectBlueprint('floor', this)">
+        <div style="font-size:28px;">🟫</div>
+        <div style="font-size:12px; font-weight:700;">Platform</div>
+        <div style="font-size:10px; color:#f59e0b;">10 Wood</div>
+      </div>
+      <div class="build-card" onclick="selectBlueprint('ramp', this)">
+        <div style="font-size:28px;">📐</div>
+        <div style="font-size:12px; font-weight:700;">Stair Ramp</div>
+        <div style="font-size:10px; color:#f59e0b;">10 Wood</div>
       </div>
     </div>
   </div>
@@ -666,7 +706,7 @@
     <canvas id="big-map-canvas" width="400" height="400" style="border:3px solid var(--gold-border); border-radius:14px;"></canvas>
   </div>
 
-  <!-- Three.js CDN with multiple fallbacks -->
+  <!-- Three.js CDN with multi-source fallback -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script>
     if (typeof THREE === 'undefined') {
@@ -676,10 +716,10 @@
 
   <script>
   /* =========================================================================
-     CHRONICLES OF AETHELGARD — IMMERSIVE OPEN WORLD ENGINE
+     CHRONICLES OF AETHELGARD — ULTIMATE SMOOTH PHYSICS & COMBAT ENGINE
      ========================================================================= */
 
-  // ── SOUND SYNTHESIS ─────────────────────────────────────────────────────
+  // ── 1. PROCEDURAL SOUND SYNTHESIZER ─────────────────────────────────────
   class SoundEngine {
     constructor() { this.ctx = null; }
     init() {
@@ -707,6 +747,9 @@
     playSwing() { this.playTone('sine', 340, 90, 0.12, 0.25); }
     playHit() { this.playTone('triangle', 200, 40, 0.18, 0.4); }
     playMagic() { this.playTone('sawtooth', 400, 900, 0.22, 0.25); }
+    playRoll() { this.playTone('sine', 160, 60, 0.2, 0.25); }
+    playMount() { this.playTone('triangle', 300, 480, 0.25, 0.35); }
+    playBuild() { this.playTone('square', 140, 60, 0.1, 0.25); }
     playCoin() { this.playTone('triangle', 850, 1350, 0.12, 0.3); }
     playFanfare() {
       [261.6, 329.6, 392.0, 523.2].forEach((f, i) => {
@@ -716,73 +759,55 @@
   }
   const sfx = new SoundEngine();
 
-  // ── THREE.JS SCENE SETUP ────────────────────────────────────────────────
+  // ── 2. THREE.JS SCENE SETUP & NATURALLY BALANCED LIGHTING ───────────────
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x7ec8e3);
-  scene.fog = new THREE.FogExp2(0x87ceeb, 0.0035);
+  scene.background = new THREE.Color(0x8bc4dd);
+  scene.fog = new THREE.FogExp2(0x8bc4dd, 0.0038);
 
-  const camera = new THREE.PerspectiveCamera(65, innerWidth / innerHeight, 0.1, 1000);
-  camera.position.set(0, 15, 25);
-
+  const camera = new THREE.PerspectiveCamera(65, innerWidth / innerHeight, 0.1, 900);
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
   renderer.setSize(innerWidth, innerHeight);
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.05; // Balanced, natural lighting
   document.body.appendChild(renderer.domElement);
 
-  // Bright Vibrant Lights
-  const sunLight = new THREE.DirectionalLight(0xfffaed, 2.2);
-  sunLight.position.set(80, 150, 60);
+  // Soft Natural Daylight (No Blown-Out Over-Saturation)
+  const sunLight = new THREE.DirectionalLight(0xfffaed, 1.4);
+  sunLight.position.set(90, 160, 70);
   sunLight.castShadow = true;
   sunLight.shadow.mapSize.set(2048, 2048);
   sunLight.shadow.camera.near = 10;
-  sunLight.shadow.camera.far = 400;
-  sunLight.shadow.camera.left = -200;
-  sunLight.shadow.camera.right = 200;
-  sunLight.shadow.camera.top = 200;
-  sunLight.shadow.camera.bottom = -200;
-  sunLight.shadow.bias = -0.0005;
+  sunLight.shadow.camera.far = 450;
+  sunLight.shadow.camera.left = -220;
+  sunLight.shadow.camera.right = 220;
+  sunLight.shadow.camera.top = 220;
+  sunLight.shadow.camera.bottom = -220;
+  sunLight.shadow.bias = -0.0004;
   scene.add(sunLight);
 
-  const hemiLight = new THREE.HemisphereLight(0x87ceeb, 0x4a7c38, 0.95);
+  const hemiLight = new THREE.HemisphereLight(0x8bc4dd, 0x475936, 0.55);
   scene.add(hemiLight);
-  const ambLight = new THREE.AmbientLight(0xffffff, 0.75);
+  const ambLight = new THREE.AmbientLight(0x4a4d62, 0.4);
   scene.add(ambLight);
 
-  // ── SUN & SKY ELEMENTS ──────────────────────────────────────────────────
-  const sunMesh = new THREE.Mesh(
-    new THREE.SphereGeometry(12, 16, 16),
-    new THREE.MeshBasicMaterial({ color: 0xfff3a0 })
-  );
-  sunMesh.position.set(160, 220, 120);
-  scene.add(sunMesh);
-
-  // Floating Low-Poly Clouds
-  function createCloud(x, y, z) {
-    const cg = new THREE.Group();
-    const cmat = new THREE.MeshStandardMaterial({ color: 0xffffff, flatShading: true, roughness: 0.9 });
-    for (let i = 0; i < 5; i++) {
-      const puff = new THREE.Mesh(new THREE.DodecahedronGeometry(4 + Math.random()*3, 1), cmat);
-      puff.position.set((Math.random()-0.5)*12, (Math.random()-0.5)*3, (Math.random()-0.5)*10);
-      cg.add(puff);
-    }
-    cg.position.set(x, y, z);
-    scene.add(cg);
-    return cg;
-  }
-  const clouds = [];
-  clouds.push(createCloud(-50, 65, -80));
-  clouds.push(createCloud(70, 75, -40));
-  clouds.push(createCloud(-80, 70, 60));
-  clouds.push(createCloud(90, 80, 80));
-
-  // ── 5-BIOME TERRAIN ─────────────────────────────────────────────────────
+  // ── 3. REDESIGNED 5-BIOME OPEN WORLD TERRAIN ────────────────────────────
   const terrainSize = 500;
   const terrainSegs = 90;
   const terrainGeo = new THREE.PlaneGeometry(terrainSize, terrainSize, terrainSegs, terrainSegs);
   const verts = terrainGeo.attributes.position;
   const colors = [];
+
+  // Natural Soft Low-Poly Palette
+  const C_PLAINS_GRASS   = new THREE.Color(0x4ca243);
+  const C_PLAINS_DIRT    = new THREE.Color(0x7c5a3a);
+  const C_FOREST_MOSS    = new THREE.Color(0x275949);
+  const C_SNOW_PEAK      = new THREE.Color(0xf1f5f9);
+  const C_SNOW_ROCK      = new THREE.Color(0x64748b);
+  const C_LAVA_ROCK      = new THREE.Color(0x3a2222);
+  const C_DESERT_SAND    = new THREE.Color(0xd4a373);
 
   for (let i = 0; i < verts.count; i++) {
     const x = verts.getX(i), y = verts.getY(i);
@@ -798,48 +823,68 @@
     const dVolc = Math.hypot(x - 130, y - 130);
     if (dVolc < 110) h += (dVolc < 30) ? ((30 - dVolc)*-0.3 + 12) : (Math.pow(1 - dVolc/110, 1.6) * 38);
 
+    // Desert (SW)
+    if (x < -40 && y > 40) h += Math.sin(x * 0.05 + y * 0.04) * 6;
+
+    // Forest (NW)
+    if (x < -40 && y < -40) h += Math.cos(x * 0.06) * Math.sin(y * 0.06) * 4;
+
     verts.setZ(i, h);
 
-    // Biome colors
-    let c = new THREE.Color(0x56ab3e); // Vibrant Meadow Green
-    if (x > 60 && y < -60) c = (h > 28) ? new THREE.Color(0xffffff) : new THREE.Color(0x94a3b8); // Mountain Snow
-    else if (x > 60 && y > 60) c = new THREE.Color(0x5a2318); // Volcano Rock
-    else if (x < -60 && y > 60) c = new THREE.Color(0xeab308); // Desert Gold Sand
-    else if (x < -60 && y < -60) c = new THREE.Color(0x2d6a4f); // Deep Enchanted Moss
+    // Color distribution
+    let c = C_PLAINS_GRASS.clone();
+    if (x > 60 && y < -60) c = (h > 28) ? C_SNOW_PEAK : C_SNOW_ROCK;
+    else if (x > 60 && y > 60) c = C_LAVA_ROCK;
+    else if (x < -60 && y > 60) c = C_DESERT_SAND;
+    else if (x < -60 && y < -60) c = C_FOREST_MOSS;
+    else c = (h < 0.2) ? C_PLAINS_DIRT : C_PLAINS_GRASS;
     colors.push(c.r, c.g, c.b);
   }
   terrainGeo.computeVertexNormals();
   terrainGeo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
 
-  const terrainMat = new THREE.MeshStandardMaterial({ vertexColors: true, flatShading: true, roughness: 0.8 });
+  const terrainMat = new THREE.MeshStandardMaterial({ vertexColors: true, flatShading: true, roughness: 0.85 });
   const terrain = new THREE.Mesh(terrainGeo, terrainMat);
   terrain.rotation.x = -Math.PI / 2;
   terrain.receiveShadow = true;
   scene.add(terrain);
 
+  // Silky Smooth Bilinear Terrain Interpolation (Prevents Stutter & Physics Glitches)
   function getTerrainHeight(x, z) {
     const half = terrainSize / 2;
     const seg = terrainSize / terrainSegs;
-    const col = Math.min(terrainSegs, Math.max(0, Math.floor((x + half) / seg)));
-    const row = Math.min(terrainSegs, Math.max(0, Math.floor((z + half) / seg)));
-    return verts.getZ(row * (terrainSegs + 1) + col) || 0;
+    const col = (x + half) / seg;
+    const row = (z + half) / seg;
+    const ci = Math.floor(col), ri = Math.floor(row);
+    const cf = col - ci, rf = row - ri;
+    const ci2 = Math.min(ci + 1, terrainSegs);
+    const ri2 = Math.min(ri + 1, terrainSegs);
+    const clamp = (i, j) => {
+      if (i < 0 || i > terrainSegs || j < 0 || j > terrainSegs) return 0;
+      return verts.getZ(j * (terrainSegs + 1) + i);
+    };
+    const h00 = clamp(ci, ri), h10 = clamp(ci2, ri);
+    const h01 = clamp(ci, ri2), h11 = clamp(ci2, ri2);
+    const h0 = h00 * (1 - cf) + h10 * cf;
+    const h1 = h01 * (1 - cf) + h11 * cf;
+    return h0 * (1 - rf) + h1 * rf;
   }
 
-  // Water & Lake Plane
+  // Water Plane
   const water = new THREE.Mesh(
     new THREE.PlaneGeometry(terrainSize, terrainSize),
-    new THREE.MeshStandardMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.8, roughness: 0.15 })
+    new THREE.MeshStandardMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.75, roughness: 0.2 })
   );
   water.rotation.x = -Math.PI / 2;
   water.position.y = -0.9;
   scene.add(water);
 
-  // ── STARTER VILLAGE HOUSES & PROPS ──────────────────────────────────────
+  // ── 4. VILLAGE HOUSES, TREES & RUINS ────────────────────────────────────
   function createHouse(x, z) {
     const g = new THREE.Group();
-    const walls = new THREE.Mesh(new THREE.BoxGeometry(4.5, 2.8, 4.5), new THREE.MeshStandardMaterial({ color: 0x92400e, flatShading: true }));
+    const walls = new THREE.Mesh(new THREE.BoxGeometry(4.5, 2.8, 4.5), new THREE.MeshStandardMaterial({ color: 0x854d0e, flatShading: true }));
     walls.position.y = 1.4; walls.castShadow = true; walls.receiveShadow = true; g.add(walls);
-    const roof = new THREE.Mesh(new THREE.ConeGeometry(4.2, 2.4, 4), new THREE.MeshStandardMaterial({ color: 0xb91c1c, flatShading: true }));
+    const roof = new THREE.Mesh(new THREE.ConeGeometry(4.2, 2.4, 4), new THREE.MeshStandardMaterial({ color: 0x991b1b, flatShading: true }));
     roof.position.y = 3.8; roof.rotation.y = Math.PI / 4; roof.castShadow = true; g.add(roof);
     g.position.set(x, getTerrainHeight(x, z), z);
     scene.add(g);
@@ -848,39 +893,38 @@
   createHouse(14, -8);
   createHouse(10, 16);
 
-  // Low-poly Trees
   function createTree(x, z, type = 'oak') {
     const g = new THREE.Group();
-    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.4, 2, 5), new THREE.MeshStandardMaterial({ color: 0x78350f, flatShading: true }));
+    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.4, 2, 5), new THREE.MeshStandardMaterial({ color: 0x6e4324, flatShading: true }));
     trunk.position.y = 1; trunk.castShadow = true; g.add(trunk);
-    const foliageCol = (type === 'pine') ? 0x1e3a29 : 0x22c55e;
+    const foliageCol = (type === 'pine') ? 0x1b4332 : 0x2e7d32;
     const foliage = new THREE.Mesh(new THREE.ConeGeometry(1.6, 3, 5), new THREE.MeshStandardMaterial({ color: foliageCol, flatShading: true }));
     foliage.position.y = 2.8; foliage.castShadow = true; g.add(foliage);
     g.position.set(x, getTerrainHeight(x, z), z);
     scene.add(g);
   }
-  for (let i = 0; i < 45; i++) {
-    const tx = (Math.random()-0.5)*180;
-    const tz = (Math.random()-0.5)*180;
-    if (Math.hypot(tx, tz) > 12) createTree(tx, tz);
+  for (let i = 0; i < 50; i++) {
+    const tx = (Math.random()-0.5)*200;
+    const tz = (Math.random()-0.5)*200;
+    if (Math.hypot(tx, tz) > 14) createTree(tx, tz);
   }
 
-  // ── STORYLINE NPCS ──────────────────────────────────────────────────────
+  // ── 5. NPCS & STORYLINE ─────────────────────────────────────────────────
   const npcs = [
     {
       id: 'cedric', name: 'Elder Cedric', role: 'Village Elder', icon: '🧙‍♂️',
       x: 0, z: -5,
       dialogues: [
-        "Welcome to Haven's Glade, brave traveler! Corrupted Shadow Slimes are encroaching upon our borders. Slay 3 of them to prove your strength!",
-        "Splendid victory! Next, seek out Torvin the Blacksmith to learn the craft of building village defenses.",
-        "The realm of Aethelgard honors your valor!"
+        "Welcome to Haven's Glade, brave traveler! Corrupted Shadow Slimes are spreading in the meadow. Slay 3 of them to prove your strength!",
+        "Splendid victory! Next, seek out Torvin the Blacksmith to learn base fortification.",
+        "The realm honors your deeds!"
       ]
     },
     {
       id: 'torvin', name: 'Blacksmith Torvin', role: 'Master Smith', icon: '⚒️',
       x: 10, z: -4,
       dialogues: [
-        "Need fortifications? Press [B] to construct 2 outpost structures for the village defense!",
+        "Need fortifications? Press [B] to open the build menu and place 2 outpost structures!",
         "Exceptional work! You now hold the power to face the ancient horrors.",
         "May your anvil ring loud!"
       ]
@@ -890,7 +934,7 @@
       x: -6, z: 8,
       dialogues: [
         "The Ancient Magma Titan has awoken in the volcanic caldera! Journey south-east when you are prepared for the final trial.",
-        "May the dawn guide your blade!"
+        "May the light guide your blade!"
       ]
     }
   ];
@@ -906,20 +950,24 @@
     npc.mesh = g;
   });
 
-  // ── PLAYER HERO ─────────────────────────────────────────────────────────
+  // ── 6. PLAYER HERO & MOUNT SYSTEM ───────────────────────────────────────
   const player = {
     group: new THREE.Group(),
     lvl: 1, hp: 100, maxHp: 100,
     mp: 60, maxMp: 60,
     sta: 100, maxSta: 100,
     exp: 0, expNext: 100,
-    atk: 30, matk: 20, def: 10, crit: 15,
+    atk: 30, matk: 25, def: 10, crit: 15,
     wood: 50, stone: 30, crystal: 5, gold: 120,
     kills: 0, builtCount: 0,
     heroClass: 'Warrior',
+    isMounted: false,
+    isRolling: false, rollTimer: 0, rollDir: new THREE.Vector3(),
+    combo: 0, comboTimer: 0,
+    activeCooldowns: [0, 0, 0, 0, 0, 0],
     activeQuestIndex: 0,
     quests: [
-      { name: "Act I: Haven's Trial", desc: "Speak with Elder Cedric in the village center.", goal: 'talk_cedric', done: false },
+      { name: "Act I: Haven's Trial", desc: "Speak with Elder Cedric in the village center.", done: false },
       { name: "Act II: Cleansing the Glade", desc: "Defeat 3 Shadow Slimes in the meadow (0/3).", count: 0, target: 3, done: false },
       { name: "Act III: Village Bastion", desc: "Construct 2 base structures using [B] (0/2).", count: 0, target: 2, done: false },
       { name: "Act IV: The Caldera Titan", desc: "Journey to the volcano and defeat the Ancient Titan.", done: false }
@@ -930,15 +978,95 @@
   pBody.position.y = 0.65; pBody.castShadow = true; player.group.add(pBody);
   const pHead = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.48, 0.48), new THREE.MeshStandardMaterial({ color: 0xffcc99, flatShading: true }));
   pHead.position.y = 1.35; pHead.castShadow = true; player.group.add(pHead);
-  const weapon = new THREE.Mesh(new THREE.BoxGeometry(0.1, 1.2, 0.2), new THREE.MeshStandardMaterial({ color: 0xf59e0b, emissive: 0xd97706, emissiveIntensity: 0.5 }));
-  weapon.position.set(0.45, 0.7, 0.2); weapon.rotation.x = Math.PI / 6;
-  player.group.add(weapon);
+  
+  const weaponMesh = new THREE.Mesh(
+    new THREE.BoxGeometry(0.1, 1.2, 0.25),
+    new THREE.MeshStandardMaterial({ color: 0xf59e0b, emissive: 0xd97706, emissiveIntensity: 0.5 })
+  );
+  weaponMesh.position.set(0.45, 0.7, 0.2); weaponMesh.rotation.x = Math.PI / 6;
+  player.group.add(weaponMesh);
+
+  // Direwolf Mount Mesh
+  const mountGroup = new THREE.Group();
+  const mBody = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.8, 1.8), new THREE.MeshStandardMaterial({ color: 0x475569, flatShading: true }));
+  mBody.position.y = 0.6; mountGroup.add(mBody);
+  const mHead = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.6, 0.8), new THREE.MeshStandardMaterial({ color: 0x334155, flatShading: true }));
+  mHead.position.set(0, 1.1, 1.0); mountGroup.add(mHead);
+  mountGroup.visible = false;
+  player.group.add(mountGroup);
 
   player.group.position.set(0, getTerrainHeight(0, 0), 0);
   scene.add(player.group);
 
-  // ── MONSTERS ────────────────────────────────────────────────────────────
+  // ── 7. SANDBOX BUILDING SYSTEM & COLLISION ─────────────────────────────
+  let isBuildMode = false;
+  let selectedBlueprint = 'wood_wall';
+  const placedBuildings = [];
+
+  const ghostGroup = new THREE.Group();
+  const ghostMat = new THREE.MeshBasicMaterial({ color: 0x22c55e, transparent: true, opacity: 0.5, wireframe: true });
+  const ghostBox = new THREE.Mesh(new THREE.BoxGeometry(3, 2.5, 0.4), ghostMat);
+  ghostGroup.add(ghostBox); scene.add(ghostGroup); ghostGroup.visible = false;
+
+  function createBuildingMesh(type) {
+    const g = new THREE.Group();
+    if (type === 'wood_wall') {
+      const m = new THREE.Mesh(new THREE.BoxGeometry(3, 2.5, 0.4), new THREE.MeshStandardMaterial({ color: 0x854d0e, flatShading: true }));
+      m.position.y = 1.25; m.castShadow = true; g.add(m);
+    } else if (type === 'stone_wall') {
+      const m = new THREE.Mesh(new THREE.BoxGeometry(3, 3, 0.6), new THREE.MeshStandardMaterial({ color: 0x64748b, flatShading: true }));
+      m.position.y = 1.5; m.castShadow = true; g.add(m);
+    } else if (type === 'floor') {
+      const m = new THREE.Mesh(new THREE.BoxGeometry(3, 0.3, 3), new THREE.MeshStandardMaterial({ color: 0xa16207, flatShading: true }));
+      m.position.y = 0.15; g.add(m);
+    } else if (type === 'ramp') {
+      const m = new THREE.Mesh(new THREE.BoxGeometry(3, 0.3, 3.5), new THREE.MeshStandardMaterial({ color: 0x854d0e, flatShading: true }));
+      m.rotation.x = Math.PI / 6; m.position.y = 0.8; g.add(m);
+    }
+    return g;
+  }
+
+  function placeCurrentBuilding() {
+    const mesh = createBuildingMesh(selectedBlueprint);
+    mesh.position.copy(ghostGroup.position);
+    mesh.rotation.y = ghostGroup.rotation.y;
+    scene.add(mesh);
+
+    placedBuildings.push({
+      type: selectedBlueprint, mesh: mesh,
+      x: mesh.position.x, y: mesh.position.y, z: mesh.position.z
+    });
+    player.builtCount++;
+    document.getElementById('char-quests').textContent = player.builtCount;
+    sfx.playBuild();
+    showToast("🔨 Placed " + selectedBlueprint.replace('_', ' ').toUpperCase() + "!");
+
+    if (player.activeQuestIndex === 2) {
+      player.quests[2].count++;
+      document.getElementById('hud-quest-desc').textContent = `Construct 2 base structures (${player.quests[2].count}/2).`;
+      if (player.quests[2].count >= 2) {
+        player.activeQuestIndex = 3;
+        updateQuestHUD();
+        sfx.playFanfare();
+        showToast("📜 ACT III COMPLETE! Final Quest: Slay the Titan!");
+      }
+    }
+  }
+
+  function selectBlueprint(type, cardEl) {
+    selectedBlueprint = type;
+    document.querySelectorAll('.build-card').forEach(c => c.classList.remove('selected'));
+    if (cardEl) cardEl.classList.add('selected');
+    closeModals();
+    isBuildMode = true;
+    ghostGroup.visible = true;
+  }
+
+  // ── 8. MONSTER SYSTEM & ARTICULATED COMBAT ──────────────────────────────
   const monsters = [];
+  const activeProjectiles = [];
+  const activeLootItems = [];
+
   function spawnMob(name, hp, dmg, exp, x, z, col = 0x22c55e, scale = 0.8, isBoss = false) {
     const g = new THREE.Group();
     const mat = new THREE.MeshStandardMaterial({ color: col, flatShading: true, emissive: isBoss ? 0x7f1d1d : 0x000000 });
@@ -948,16 +1076,206 @@
     const y = getTerrainHeight(x, z);
     g.position.set(x, y, z);
     scene.add(g);
-    monsters.push({ name, hp, maxHp: hp, dmg, exp, mesh: g, x, z, y, isBoss, state: 'wander' });
+    monsters.push({ name, hp, maxHp: hp, dmg, exp, mesh: g, x, z, y, isBoss, state: 'wander', atkCd: 0, speed: isBoss ? 4.5 : 4.0 });
   }
 
-  for (let i = 0; i < 16; i++) spawnMob("Shadow Slime", 60, 6, 30, (Math.random()-0.5)*70 + 20, (Math.random()-0.5)*70 + 20, 0x15803d, 0.7);
-  spawnMob("Ancient Magma Titan", 3000, 55, 2000, 130, 130, 0xb91c1c, 3.0, true);
+  for (let i = 0; i < 18; i++) spawnMob("Shadow Slime", 60, 6, 30, (Math.random()-0.5)*80 + 20, (Math.random()-0.5)*80 + 20, 0x15803d, 0.7);
+  spawnMob("Ancient Magma Titan", 3200, 50, 2000, 130, 130, 0xb91c1c, 3.0, true);
 
-  // ── GAME STATE & CAMERA TRANSITIONS ─────────────────────────────────────
+  function spawn3DLoot(x, y, z) {
+    const g = new THREE.Mesh(
+      new THREE.DodecahedronGeometry(0.3, 0),
+      new THREE.MeshStandardMaterial({ color: 0xfbbf24, emissive: 0xd97706, emissiveIntensity: 0.8 })
+    );
+    g.position.set(x, y + 0.4, z);
+    scene.add(g);
+    activeLootItems.push({ mesh: g, x: x, y: y + 0.4, z: z });
+  }
+
+  function spawnSpellProjectile(type, origin, dir) {
+    const pMesh = new THREE.Mesh(
+      new THREE.SphereGeometry(type === 'meteor' ? 0.9 : 0.35, 6, 6),
+      new THREE.MeshBasicMaterial({ color: type === 'fireball' ? 0xf97316 : (type === 'frost' ? 0x38bdf8 : 0xfacc15) })
+    );
+    pMesh.position.copy(origin); scene.add(pMesh);
+    activeProjectiles.push({ type: type, mesh: pMesh, dir: dir.clone().normalize(), speed: 24, life: 2.5 });
+    sfx.playMagic();
+  }
+
+  function castSkill(slot) {
+    if (player.activeCooldowns[slot] > 0) return;
+    const manaCosts = [0, 15, 20, 25, 30, 50];
+    const cost = manaCosts[slot] || 0;
+    if (player.mp < cost) { showToast("⚠️ Not enough Mana!"); return; }
+    player.mp -= cost;
+    updateVitalsHUD();
+
+    // Weapon Swing Animation
+    weaponMesh.rotation.x = -Math.PI / 3;
+    setTimeout(() => weaponMesh.rotation.x = Math.PI / 6, 200);
+
+    const fwd = new THREE.Vector3(-Math.sin(playerYaw), 0, -Math.cos(playerYaw));
+
+    if (slot === 0) {
+      // Primary Strike
+      sfx.playSwing();
+      player.activeCooldowns[0] = 0.4;
+      monsters.forEach(m => {
+        if (Math.hypot(m.x - player.group.position.x, m.z - player.group.position.z) < 4.8) {
+          player.combo++;
+          player.comboTimer = 3.5;
+          const isCrit = Math.random() < (player.crit / 100);
+          const dmg = Math.round(player.atk * (1 + Math.min(1.0, player.combo * 0.05)) * (isCrit ? 1.8 : 1.0));
+          damageMonster(m, dmg, isCrit);
+        }
+      });
+    } else if (slot === 1) {
+      // Fireball
+      player.activeCooldowns[1] = 1.2;
+      spawnSpellProjectile('fireball', player.group.position.clone().add(new THREE.Vector3(0, 1.2, 0)), fwd);
+    } else if (slot === 2) {
+      // Frost Nova
+      player.activeCooldowns[2] = 3.5;
+      sfx.playMagic();
+      monsters.forEach(m => {
+        if (Math.hypot(m.x - player.group.position.x, m.z - player.group.position.z) < 9.0) {
+          damageMonster(m, Math.round(player.matk * 1.0), false, '#38bdf8');
+          m.state = 'frozen';
+          setTimeout(() => { if (m.state === 'frozen') m.state = 'chase'; }, 3000);
+        }
+      });
+    } else if (slot === 3) {
+      // Chain Lightning
+      player.activeCooldowns[3] = 2.5;
+      sfx.playMagic();
+      monsters.filter(m => Math.hypot(m.x - player.group.position.x, m.z - player.group.position.z) < 14).slice(0, 3).forEach(m => {
+        damageMonster(m, Math.round(player.matk * 1.4), true, '#facc15');
+      });
+    } else if (slot === 4) {
+      // Whirlwind
+      player.activeCooldowns[4] = 4.0;
+      sfx.playSwing();
+      monsters.forEach(m => {
+        if (Math.hypot(m.x - player.group.position.x, m.z - player.group.position.z) < 7.0) {
+          damageMonster(m, Math.round(player.atk * 1.5), true, '#f59e0b');
+        }
+      });
+    } else if (slot === 5) {
+      // Meteor Strike
+      player.activeCooldowns[5] = 7.0;
+      const targetPos = player.group.position.clone().add(fwd.clone().multiplyScalar(12));
+      spawnSpellProjectile('meteor', targetPos.clone().add(new THREE.Vector3(4, 25, 4)), new THREE.Vector3(-0.2, -1, -0.2));
+    }
+  }
+
+  function damageMonster(m, dmg, isCrit = false, color = '#f59e0b') {
+    m.hp -= dmg;
+    sfx.playHit();
+    showDamage(dmg, m.mesh.position, isCrit, color);
+
+    if (m.isBoss) {
+      document.getElementById('boss-bar-wrap').style.display = 'flex';
+      document.getElementById('boss-fill').style.width = Math.max(0, (m.hp / m.maxHp * 100)) + '%';
+    }
+
+    m.state = 'chase';
+    if (m.hp <= 0) {
+      player.kills++;
+      player.exp += m.exp;
+      player.gold += 20;
+      document.getElementById('char-kills').textContent = player.kills;
+      document.getElementById('res-gold').textContent = player.gold;
+      document.getElementById('exp-ribbon-fill').style.width = Math.min(100, (player.exp / player.expNext * 100)) + '%';
+      
+      spawn3DLoot(m.x, m.y, m.z);
+      scene.remove(m.mesh);
+      monsters.splice(monsters.indexOf(m), 1);
+
+      if (m.isBoss) {
+        document.getElementById('boss-bar-wrap').style.display = 'none';
+        sfx.playFanfare();
+        showToast("🏆 VICTORY! ANCIENT MAGMA TITAN DEFEATED!");
+      } else {
+        if (player.activeQuestIndex === 1) {
+          player.quests[1].count++;
+          document.getElementById('hud-quest-desc').textContent = `Defeat 3 Shadow Slimes (${player.quests[1].count}/3).`;
+          if (player.quests[1].count >= 3) {
+            player.activeQuestIndex = 2;
+            updateQuestHUD();
+            sfx.playFanfare();
+            showToast("📜 QUEST COMPLETE! Next: Build 2 Structures!");
+          }
+        }
+      }
+    }
+  }
+
+  function showDamage(val, pos, isCrit = false, color = '#f59e0b') {
+    const v = pos.clone().project(camera);
+    if (v.z > 1) return;
+    const el = document.createElement('div');
+    el.className = 'dmg-popup';
+    el.textContent = (isCrit ? "CRIT! " : "") + val;
+    el.style.left = (v.x * 0.5 + 0.5) * innerWidth + 'px';
+    el.style.top = (-(v.y * 0.5) + 0.5) * innerHeight + 'px';
+    el.style.color = isCrit ? '#fde047' : color;
+    el.style.fontSize = isCrit ? '22px' : '15px';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 800);
+  }
+
+  function showToast(txt) {
+    const t = document.getElementById('toast-msg');
+    t.textContent = txt; t.style.display = 'block';
+    setTimeout(() => t.style.display = 'none', 3000);
+  }
+
+  function updateVitalsHUD() {
+    document.getElementById('hp-fill').style.width = (player.hp / player.maxHp * 100) + '%';
+    document.getElementById('hp-val').textContent = Math.round(player.hp) + ' / ' + player.maxHp;
+    document.getElementById('mp-fill').style.width = (player.mp / player.maxMp * 100) + '%';
+    document.getElementById('mp-val').textContent = Math.round(player.mp) + ' / ' + player.maxMp;
+    document.getElementById('sta-fill').style.width = (player.sta / player.maxSta * 100) + '%';
+  }
+
+  function usePotion(type) {
+    if (type === 'hp') {
+      player.hp = Math.min(player.maxHp, player.hp + 50);
+      sfx.playFanfare();
+      updateVitalsHUD();
+    } else if (type === 'mp') {
+      player.mp = Math.min(player.maxMp, player.mp + 40);
+      sfx.playFanfare();
+      updateVitalsHUD();
+    }
+  }
+
+  function toggleMount() {
+    player.isMounted = !player.isMounted;
+    mountGroup.visible = player.isMounted;
+    sfx.playMount();
+    showToast(player.isMounted ? "🐺 Mounted Direwolf (+60% Speed)!" : "Dismounted.");
+  }
+
+  function triggerDodgeRoll() {
+    if (player.sta >= 25 && !player.isRolling) {
+      player.sta -= 25;
+      player.isRolling = true;
+      player.rollTimer = 0.35;
+      const fwd = new THREE.Vector3(-Math.sin(playerYaw), 0, -Math.cos(playerYaw));
+      player.rollDir.copy(fwd);
+      sfx.playRoll();
+    }
+  }
+
+  // ── 9. GAME STATE & CAMERA SYSTEM ───────────────────────────────────────
   let gameState = 'MENU';
   let spawnProgress = 0;
   let yaw = 0, pitch = 0.2;
+  let playerYaw = 0;
+  let vy = 0;
+  let shiftlockMode = 1;
+  let cameraZoomDistance = 7.0;
   let activeDialogueNPC = null;
 
   function selectClass(cls) {
@@ -982,10 +1300,9 @@
       document.getElementById('cinematic-bars').classList.remove('active');
       document.getElementById('hud').classList.add('active');
       gameState = 'PLAYING';
-    }, 2000);
+    }, 1800);
   }
 
-  // ── INTERACTIVE DIALOGUE SYSTEM ─────────────────────────────────────────
   function openDialogue(npc) {
     activeDialogueNPC = npc;
     const modal = document.getElementById('dialogue-modal');
@@ -1017,73 +1334,6 @@
     }
   }
 
-  // ── COMBAT & DAMAGE ─────────────────────────────────────────────────────
-  function castSkill(slot) {
-    sfx.playSwing();
-    monsters.forEach(m => {
-      if (Math.hypot(m.x - player.group.position.x, m.z - player.group.position.z) < 5.0) {
-        m.hp -= 35;
-        sfx.playHit();
-        showDamage(35, m.mesh.position);
-        if (m.isBoss) {
-          document.getElementById('boss-bar-wrap').style.display = 'flex';
-          document.getElementById('boss-fill').style.width = (m.hp / m.maxHp * 100) + '%';
-        }
-        if (m.hp <= 0) {
-          player.kills++;
-          player.exp += m.exp;
-          document.getElementById('char-kills').textContent = player.kills;
-          document.getElementById('exp-ribbon-fill').style.width = Math.min(100, (player.exp / player.expNext * 100)) + '%';
-          scene.remove(m.mesh);
-          monsters.splice(monsters.indexOf(m), 1);
-          if (m.isBoss) {
-            document.getElementById('boss-bar-wrap').style.display = 'none';
-            showToast("🏆 VICTORY! TITAN SLAIN!");
-          } else {
-            if (player.activeQuestIndex === 1) {
-              player.quests[1].count++;
-              document.getElementById('hud-quest-desc').textContent = `Defeat 3 Shadow Slimes (${player.quests[1].count}/3).`;
-              if (player.quests[1].count >= 3) {
-                player.activeQuestIndex = 2;
-                updateQuestHUD();
-                sfx.playFanfare();
-                showToast("📜 QUEST COMPLETE! Next: Build 2 Structures!");
-              }
-            }
-          }
-        }
-      }
-    });
-  }
-
-  function showDamage(val, pos) {
-    const v = pos.clone().project(camera);
-    if (v.z > 1) return;
-    const el = document.createElement('div');
-    el.className = 'dmg-popup';
-    el.textContent = val;
-    el.style.left = (v.x * 0.5 + 0.5) * innerWidth + 'px';
-    el.style.top = (-(v.y * 0.5) + 0.5) * innerHeight + 'px';
-    el.style.color = '#f59e0b';
-    document.body.appendChild(el);
-    setTimeout(() => el.remove(), 800);
-  }
-
-  function showToast(txt) {
-    const t = document.getElementById('toast-msg');
-    t.textContent = txt; t.style.display = 'block';
-    setTimeout(() => t.style.display = 'none', 3000);
-  }
-
-  function usePotion(type) {
-    if (type === 'hp') {
-      player.hp = Math.min(player.maxHp, player.hp + 50);
-      sfx.playFanfare();
-      document.getElementById('hp-fill').style.width = (player.hp / player.maxHp * 100) + '%';
-      document.getElementById('hp-val').textContent = player.hp + ' / ' + player.maxHp;
-    }
-  }
-
   function toggleModal(id) {
     const el = document.getElementById(id);
     const isShow = el.style.display === 'block';
@@ -1095,19 +1345,7 @@
     document.querySelectorAll('.wood-modal').forEach(m => m.style.display = 'none');
   }
 
-  function toggleBuildMode() {
-    player.builtCount++;
-    document.getElementById('char-quests').textContent = player.builtCount;
-    showToast("🔨 Built Outpost Fortification!");
-    if (player.activeQuestIndex === 2 && player.builtCount >= 2) {
-      player.activeQuestIndex = 3;
-      updateQuestHUD();
-      sfx.playFanfare();
-      showToast("📜 ACT III COMPLETE! Final Quest: Slay the Titan!");
-    }
-  }
-
-  // ── INPUT CONTROLS ──────────────────────────────────────────────────────
+  // ── 10. INPUT CONTROLS & PHYSICS ────────────────────────────────────────
   const keys = {};
   document.addEventListener('keydown', e => {
     keys[e.code] = true;
@@ -1118,6 +1356,9 @@
         }
       });
     }
+    if (e.code === 'KeyR') toggleMount();
+    if (e.code === 'KeyV') triggerDodgeRoll();
+    if (e.code === 'KeyB') toggleModal('modal-build');
     if (e.code === 'KeyK') toggleModal('modal-skills');
     if (e.code === 'KeyI') toggleModal('modal-inv');
     if (e.code === 'KeyJ') toggleModal('modal-quests');
@@ -1128,70 +1369,226 @@
     if (e.code === 'Digit3') castSkill(3);
     if (e.code === 'Digit4') castSkill(4);
     if (e.code === 'Digit5') castSkill(5);
+    if (e.code === 'KeyF') castSkill(0);
+    if (e.code === 'ControlLeft' || e.code === 'ControlRight') {
+      shiftlockMode = (shiftlockMode + 1) % 3;
+      document.getElementById('crosshair').style.display = (shiftlockMode > 0) ? 'block' : 'none';
+    }
   });
   document.addEventListener('keyup', e => { keys[e.code] = false; });
-  document.addEventListener('mousedown', e => { if (gameState === 'PLAYING' && e.button === 0) castSkill(0); });
+
+  document.addEventListener('mousedown', e => {
+    if (gameState === 'PLAYING' && e.button === 0) {
+      if (isBuildMode) placeCurrentBuilding();
+      else castSkill(0);
+    }
+  });
+
   document.addEventListener('mousemove', e => {
     if (gameState === 'PLAYING' && (document.pointerLockElement || e.buttons === 2)) {
       yaw -= e.movementX * 0.0025;
       pitch = Math.max(-0.4, Math.min(1.1, pitch + e.movementY * 0.0025));
     }
   });
+
   renderer.domElement.addEventListener('click', () => {
-    if (gameState === 'PLAYING') renderer.domElement.requestPointerLock();
+    if (gameState === 'PLAYING' && shiftlockMode > 0) {
+      renderer.domElement.requestPointerLock();
+    }
   });
 
-  // ── MAIN ANIMATION LOOP ─────────────────────────────────────────────────
+  document.addEventListener('wheel', e => {
+    cameraZoomDistance = Math.max(2.5, Math.min(18.0, cameraZoomDistance + e.deltaY * 0.006));
+  });
+
+  // ── 11. MAIN ANIMATION & PHYSICS LOOP ───────────────────────────────────
   const clock = new THREE.Clock();
 
   function animate() {
     requestAnimationFrame(animate);
     const dt = Math.min(clock.getDelta(), 0.05);
 
-    // Slowly drift clouds
-    clouds.forEach((c, idx) => {
-      c.position.x += dt * (1.5 + idx * 0.5);
-      if (c.position.x > 180) c.position.x = -180;
-    });
+    // Regeneration
+    player.mp = Math.min(player.maxMp, player.mp + 4 * dt);
+    player.sta = Math.min(player.maxSta, player.sta + 15 * dt);
+
+    // Cooldown tick
+    for (let i = 0; i < player.activeCooldowns.length; i++) {
+      if (player.activeCooldowns[i] > 0) {
+        player.activeCooldowns[i] -= dt;
+        const cdEl = document.getElementById('cd-' + i);
+        if (cdEl) {
+          cdEl.style.display = 'flex';
+          cdEl.textContent = player.activeCooldowns[i].toFixed(1) + 's';
+        }
+      } else {
+        const cdEl = document.getElementById('cd-' + i);
+        if (cdEl) cdEl.style.display = 'none';
+      }
+    }
+
+    // Combo Timer
+    if (player.comboTimer > 0) {
+      player.comboTimer -= dt;
+      document.getElementById('combo-badge').style.display = 'block';
+      document.getElementById('combo-num').textContent = player.combo;
+    } else {
+      player.combo = 0;
+      document.getElementById('combo-badge').style.display = 'none';
+    }
+
+    updateVitalsHUD();
 
     if (gameState === 'MENU') {
       const t = clock.getElapsedTime() * 0.15;
       camera.position.set(Math.cos(t) * 35, 18, Math.sin(t) * 35);
       camera.lookAt(0, 1.5, 0);
     } else if (gameState === 'SPAWNING') {
-      spawnProgress += dt * 0.6;
+      spawnProgress += dt * 0.7;
       const t = Math.min(1.0, spawnProgress);
       const easeT = 1 - Math.pow(1 - t, 3);
       camera.position.lerpVectors(new THREE.Vector3(0, 45, 55), new THREE.Vector3(0, 3.5, 7.5), easeT);
       camera.lookAt(player.group.position.x, player.group.position.y + 1.2, player.group.position.z);
     } else if (gameState === 'PLAYING') {
-      const speed = (keys['ShiftLeft'] || keys['ShiftRight']) ? 14 : 7;
+      // Movement & Physics
+      let currentSpeed = (keys['ShiftLeft'] || keys['ShiftRight']) ? 14 : 7;
+      if (player.isMounted) currentSpeed *= 1.6;
+
       const fwd = new THREE.Vector3(-Math.sin(yaw), 0, -Math.cos(yaw));
       const right = new THREE.Vector3(Math.cos(yaw), 0, -Math.sin(yaw));
       const move = new THREE.Vector3();
 
-      if (keys['KeyW'] || keys['ArrowUp']) move.add(fwd);
-      if (keys['KeyS'] || keys['ArrowDown']) move.sub(fwd);
-      if (keys['KeyA'] || keys['ArrowLeft']) move.sub(right);
-      if (keys['KeyD'] || keys['ArrowRight']) move.add(right);
+      if (player.isRolling) {
+        player.rollTimer -= dt;
+        player.group.position.addScaledVector(player.rollDir, 18 * dt);
+        if (player.rollTimer <= 0) player.isRolling = false;
+      } else {
+        if (keys['KeyW'] || keys['ArrowUp']) move.add(fwd);
+        if (keys['KeyS'] || keys['ArrowDown']) move.sub(fwd);
+        if (keys['KeyA'] || keys['ArrowLeft']) move.sub(right);
+        if (keys['KeyD'] || keys['ArrowRight']) move.add(right);
 
-      if (move.length() > 0) {
-        move.normalize();
-        player.group.position.addScaledVector(move, speed * dt);
-        player.group.rotation.y = Math.atan2(move.x, move.z);
+        if (move.length() > 0) {
+          move.normalize();
+          player.group.position.addScaledVector(move, currentSpeed * dt);
+          if (shiftlockMode === 0) {
+            const targetYaw = Math.atan2(move.x, move.z);
+            let diff = targetYaw - playerYaw;
+            diff = Math.atan2(Math.sin(diff), Math.cos(diff));
+            playerYaw += diff * 10 * dt;
+          }
+        }
       }
 
-      player.group.position.y = getTerrainHeight(player.group.position.x, player.group.position.z);
+      if (shiftlockMode > 0) {
+        const targetYaw = yaw + Math.PI;
+        let diff = targetYaw - playerYaw;
+        diff = Math.atan2(Math.sin(diff), Math.cos(diff));
+        playerYaw += diff * 14 * dt;
+      }
+      player.group.quaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), playerYaw);
 
+      // Smooth Bilinear Terrain & Platform Jumping
+      const groundY = getTerrainHeight(player.group.position.x, player.group.position.z);
+      let highestStandingY = groundY;
+      placedBuildings.forEach(b => {
+        if ((b.type === 'floor' || b.type === 'ramp') && Math.hypot(b.x - player.group.position.x, b.z - player.group.position.z) < 2.2) {
+          if (b.y >= groundY && b.y <= player.group.position.y + 0.8) {
+            highestStandingY = Math.max(highestStandingY, b.y);
+          }
+        }
+      });
+
+      if (player.group.position.y > highestStandingY + 0.05) {
+        vy -= 26 * dt;
+      } else {
+        player.group.position.y = highestStandingY;
+        vy = 0;
+        if (keys['Space'] && player.sta >= 10) {
+          vy = 9.5;
+          player.sta -= 5;
+        }
+      }
+      player.group.position.y += vy * dt;
+
+      // Building Ghost Blueprint
+      if (isBuildMode) {
+        const gx = player.group.position.x - Math.sin(playerYaw) * 5.0;
+        const gz = player.group.position.z - Math.cos(playerYaw) * 5.0;
+        ghostGroup.position.set(gx, getTerrainHeight(gx, gz), gz);
+        ghostGroup.rotation.y = playerYaw;
+      }
+
+      // Update Projectiles
+      for (let i = activeProjectiles.length - 1; i >= 0; i--) {
+        const p = activeProjectiles[i];
+        p.mesh.position.addScaledVector(p.dir, p.speed * dt);
+        p.life -= dt;
+        let hit = false;
+        for (const m of monsters) {
+          if (m.mesh.position.distanceTo(p.mesh.position) < (p.type === 'meteor' ? 3.5 : 1.8)) {
+            hit = true;
+            damageMonster(m, Math.round(player.matk * 1.6), true, p.type === 'fireball' ? '#f97316' : '#38bdf8');
+            break;
+          }
+        }
+        if (hit || p.life <= 0) {
+          scene.remove(p.mesh); activeProjectiles.splice(i, 1);
+        }
+      }
+
+      // 3D Loot Magnetism Sweep
+      for (let i = activeLootItems.length - 1; i >= 0; i--) {
+        const item = activeLootItems[i];
+        item.mesh.rotation.y += 3.0 * dt;
+        if (Math.hypot(item.x - player.group.position.x, item.z - player.group.position.z) < 3.0) {
+          sfx.playCoin();
+          player.gold += 15;
+          document.getElementById('res-gold').textContent = player.gold;
+          scene.remove(item.mesh);
+          activeLootItems.splice(i, 1);
+        }
+      }
+
+      // Monster AI
+      monsters.forEach(m => {
+        const dist = Math.hypot(m.x - player.group.position.x, m.z - player.group.position.z);
+        if (dist < 12 && m.state !== 'frozen') m.state = 'chase';
+
+        if (m.state === 'chase') {
+          const dx = player.group.position.x - m.x;
+          const dz = player.group.position.z - m.z;
+          const d = Math.hypot(dx, dz);
+          if (d > 1.8) {
+            m.x += (dx / d) * m.speed * dt;
+            m.z += (dz / d) * m.speed * dt;
+          } else {
+            m.atkCd = (m.atkCd || 0) - dt;
+            if (m.atkCd <= 0 && !player.isRolling) {
+              m.atkCd = 1.4;
+              player.hp = Math.max(0, player.hp - Math.max(2, m.dmg - player.def));
+              sfx.playHit();
+              showDamage(m.dmg, player.group.position.clone().add(new THREE.Vector3(0, 1.5, 0)), false, '#ef4444');
+              updateVitalsHUD();
+            }
+          }
+        }
+        m.y = getTerrainHeight(m.x, m.z);
+        m.mesh.position.set(m.x, m.y, m.z);
+        m.mesh.lookAt(player.group.position.x, m.y, player.group.position.z);
+      });
+
+      // Camera Follow
       const head = player.group.position.clone().add(new THREE.Vector3(0, 1.4, 0));
       const camOffset = new THREE.Vector3(
-        Math.sin(yaw) * Math.cos(pitch) * 7.0,
-        Math.sin(pitch) * 7.0,
-        Math.cos(yaw) * Math.cos(pitch) * 7.0
+        Math.sin(yaw) * Math.cos(pitch) * cameraZoomDistance,
+        Math.sin(pitch) * cameraZoomDistance,
+        Math.cos(yaw) * Math.cos(pitch) * cameraZoomDistance
       );
       camera.position.copy(head).add(camOffset);
       camera.lookAt(head);
 
+      // Check near NPC prompt
       let nearNPC = false;
       npcs.forEach(npc => {
         if (Math.hypot(npc.x - player.group.position.x, npc.z - player.group.position.z) < 4.0) {
