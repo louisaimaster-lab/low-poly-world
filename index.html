@@ -3,2125 +3,1073 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Low Poly World — Ultimate Open World MMO RPG</title>
-  <script>
-    window.addEventListener('error', function(e) {
-      console.error("Global Game Error:", e);
-    });
-  </script>
-  <!-- Google Fonts for sleek low-poly RPG aesthetics -->
+  <title>Chronicles of Aethelgard — Low Poly Open World RPG</title>
+  
+  <!-- Fantasy & Medieval RPG Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Outfit:wght@400;600;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800;900&family=Cinzel+Decorative:wght@700;900&family=Outfit:wght@400;600;700&family=MedievalSharp&display=swap" rel="stylesheet">
 
   <style>
     :root {
-      --primary: #f59e0b;
-      --primary-glow: rgba(245, 158, 11, 0.4);
-      --hp-color: #ef4444;
-      --mp-color: #3b82f6;
-      --sta-color: #10b981;
-      --exp-color: #8b5cf6;
-      --panel-bg: rgba(15, 23, 42, 0.9);
-      --panel-border: rgba(255, 255, 255, 0.14);
-      --font-title: 'Cinzel', serif;
+      --gold-light: #fef08a;
+      --gold-main: #f59e0b;
+      --gold-dark: #b45309;
+      --gold-border: #d97706;
+      --parchment: #1c1917;
+      --parchment-border: #78350f;
+      --hp-red: #ef4444;
+      --mp-blue: #3b82f6;
+      --sta-green: #10b981;
+      --font-title: 'Cinzel Decorative', 'Cinzel', serif;
+      --font-body: 'Cinzel', serif;
       --font-ui: 'Outfit', sans-serif;
-      --font-mono: 'JetBrains Mono', monospace;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
-    body { overflow: hidden; background: #050811; font-family: var(--font-ui); color: #fff; }
+    body {
+      overflow: hidden;
+      background: #0c0a09;
+      font-family: var(--font-body);
+      color: #fef3c7;
+    }
     canvas { display: block; width: 100vw; height: 100vh; }
 
-    /* Crosshair */
-    #crosshair {
-      position: fixed; top: 45%; left: 50%;
-      transform: translate(-50%, -50%);
-      width: 14px; height: 14px;
-      pointer-events: none; z-index: 100; display: none;
-    }
-    #crosshair::before, #crosshair::after {
-      content: ''; position: absolute; background: #fff;
-      box-shadow: 0 0 4px rgba(0,0,0,0.8);
-    }
-    #crosshair::before { top: 6px; left: 0; width: 14px; height: 2px; }
-    #crosshair::after { top: 0; left: 6px; width: 2px; height: 14px; }
-
-    /* ─── HUD TOP LEFT: PLAYER UNIT FRAME ─── */
-    #player-frame {
-      position: fixed; top: 16px; left: 16px; z-index: 20;
-      display: flex; align-items: center; gap: 12px;
-      background: var(--panel-bg); padding: 10px 16px;
-      border-radius: 16px; border: 1px solid var(--panel-border);
-      backdrop-filter: blur(14px); box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-    }
-    #player-avatar {
-      width: 54px; height: 54px; border-radius: 14px;
-      background: linear-gradient(135deg, #1e3a8a, #0f172a);
-      border: 2px solid var(--primary);
+    /* ─── 1. MAIN MENU & TITLE SCREEN ─── */
+    #main-menu {
+      position: fixed; inset: 0; z-index: 1000;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      position: relative; cursor: pointer; transition: 0.2s;
+      background: radial-gradient(circle at center, rgba(15, 23, 42, 0.4) 0%, rgba(12, 10, 9, 0.92) 80%);
+      backdrop-filter: blur(8px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
     }
-    #player-avatar:hover { transform: scale(1.05); }
-    #player-avatar .avatar-icon { font-size: 26px; }
-    #player-lvl-badge {
-      position: absolute; bottom: -6px; right: -6px;
-      background: var(--primary); color: #000;
-      font-size: 11px; font-weight: 800; padding: 2px 6px;
-      border-radius: 10px; font-family: var(--font-mono);
-      box-shadow: 0 2px 6px rgba(0,0,0,0.6);
+    #main-menu.hidden {
+      opacity: 0; pointer-events: none; transform: scale(1.08);
     }
-    .bar-wrap { width: 170px; display: flex; flex-direction: column; gap: 4px; }
-    .bar-row { display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; opacity: 0.9; }
-    .stat-bar {
-      width: 100%; height: 7px; background: rgba(0,0,0,0.6);
-      border-radius: 4px; overflow: hidden; position: relative;
+    .game-logo {
+      font-family: var(--font-title);
+      font-size: clamp(32px, 5.5vw, 64px);
+      font-weight: 900;
+      letter-spacing: 4px;
+      text-align: center;
+      background: linear-gradient(180deg, #fffbeb 0%, #fde047 30%, #f59e0b 70%, #92400e 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 4px 16px rgba(245, 158, 11, 0.6)) drop-shadow(0 0 35px rgba(217, 119, 6, 0.4));
+      margin-bottom: 6px;
     }
-    .stat-fill { height: 100%; width: 100%; transition: width 0.12s ease-out; border-radius: 4px; }
-    .fill-hp { background: linear-gradient(90deg, #ef4444, #f87171); box-shadow: 0 0 8px #ef4444; }
-    .fill-mp { background: linear-gradient(90deg, #2563eb, #60a5fa); box-shadow: 0 0 8px #3b82f6; }
-    .fill-sta { background: linear-gradient(90deg, #059669, #34d399); box-shadow: 0 0 8px #10b981; }
-    .fill-exp { background: linear-gradient(90deg, #7c3aed, #a78bfa); }
+    .game-subtitle {
+      font-family: var(--font-body);
+      font-size: clamp(13px, 1.8vw, 18px);
+      color: #fcd34d;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 34px;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.9);
+    }
+    .menu-card {
+      background: linear-gradient(180deg, rgba(41, 37, 36, 0.95) 0%, rgba(28, 25, 23, 0.98) 100%);
+      border: 3px solid var(--gold-border);
+      border-radius: 20px;
+      padding: 28px 40px;
+      box-shadow: 0 16px 50px rgba(0,0,0,0.9), inset 0 0 20px rgba(245, 158, 11, 0.15);
+      display: flex; flex-direction: column; align-items: center; gap: 18px;
+      max-width: 440px; width: 90%;
+    }
+    .class-select-row {
+      display: flex; gap: 12px; width: 100%; justify-content: center;
+    }
+    .class-btn {
+      flex: 1; padding: 12px 8px;
+      background: rgba(68, 64, 60, 0.5);
+      border: 2px solid rgba(245, 158, 11, 0.4);
+      border-radius: 12px; color: #fef08a;
+      font-family: var(--font-body); font-weight: 700; font-size: 13px;
+      cursor: pointer; transition: 0.2s; text-align: center;
+    }
+    .class-btn:hover { border-color: #fde047; background: rgba(245, 158, 11, 0.2); }
+    .class-btn.selected {
+      border-color: #fde047; background: linear-gradient(180deg, #d97706, #78350f);
+      box-shadow: 0 0 16px rgba(245, 158, 11, 0.6); color: #fff;
+    }
+    .btn-play-hero {
+      width: 100%; padding: 14px 28px;
+      background: linear-gradient(180deg, #fde047 0%, #f59e0b 50%, #b45309 100%);
+      border: 2px solid #fff;
+      border-radius: 14px; color: #451a03;
+      font-family: var(--font-title); font-size: 17px; font-weight: 900;
+      cursor: pointer; letter-spacing: 2px;
+      box-shadow: 0 6px 25px rgba(245, 158, 11, 0.6), inset 0 2px 4px rgba(255,255,255,0.8);
+      transition: 0.2s transform, 0.2s filter;
+    }
+    .btn-play-hero:hover {
+      transform: translateY(-3px) scale(1.02);
+      filter: brightness(1.12);
+      box-shadow: 0 10px 30px rgba(245, 158, 11, 0.85);
+    }
 
-    /* Dynamic Active Buffs */
-    #buff-container { display: flex; gap: 4px; margin-top: 4px; }
-    .buff-badge {
-      font-size: 10px; background: rgba(255,255,255,0.15);
-      padding: 1px 5px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2);
+    /* ─── 2. CINEMATIC TRANSITIONS & LETTERBOX ─── */
+    #cinematic-bars {
+      position: fixed; inset: 0; z-index: 900; pointer-events: none;
+      display: flex; flex-direction: column; justify-content: space-between;
     }
-
-    /* ─── HUD TOP CENTER: TARGET & COMBO METER ─── */
-    #target-frame {
-      position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
-      z-index: 20; display: none; flex-direction: column; align-items: center;
-      background: var(--panel-bg); padding: 8px 20px; border-radius: 12px;
-      border: 1px solid var(--panel-border); backdrop-filter: blur(12px);
-      min-width: 280px; box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+    .cine-bar {
+      height: 0vh; background: #000; transition: height 0.8s ease-in-out;
     }
-    #target-name { font-family: var(--font-title); font-size: 14px; font-weight: 700; color: #ffedd5; }
-    #target-bar { width: 100%; height: 10px; margin-top: 6px; }
+    #cinematic-bars.active .cine-bar { height: 10vh; }
+    #act-banner {
+      position: fixed; top: 22%; left: 50%; transform: translate(-50%, -50%);
+      z-index: 950; text-align: center; pointer-events: none; opacity: 0;
+      transition: opacity 1.2s ease, transform 1.2s ease;
+    }
+    #act-banner.show { opacity: 1; transform: translate(-50%, -40%); }
+    .act-label { font-family: var(--font-title); font-size: 16px; color: #f59e0b; letter-spacing: 5px; }
+    .act-title { font-family: var(--font-title); font-size: 32px; color: #fff; text-shadow: 0 4px 20px #000; }
 
-    /* Boss Header Bar */
+    /* ─── 3. FANTASY RPG HUD ─── */
+    #hud {
+      opacity: 0; pointer-events: none; transition: opacity 0.8s ease;
+    }
+    #hud.active { opacity: 1; pointer-events: auto; }
+
+    /* Top Left: Fantasy Hero Unit Frame & Orbs */
+    #fantasy-unit-frame {
+      position: fixed; top: 18px; left: 18px; z-index: 50;
+      display: flex; align-items: center; gap: 14px;
+    }
+    .orb-container {
+      width: 72px; height: 72px; border-radius: 50%;
+      background: radial-gradient(circle, #292524 0%, #0c0a09 90%);
+      border: 4px solid var(--gold-main);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.8), 0 0 15px rgba(245, 158, 11, 0.4);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      position: relative; cursor: pointer;
+    }
+    .orb-icon { font-size: 32px; }
+    .lvl-ribbon {
+      position: absolute; bottom: -8px;
+      background: linear-gradient(180deg, #f59e0b, #78350f);
+      border: 1px solid #fef08a; border-radius: 8px;
+      padding: 1px 8px; font-size: 10px; font-weight: 900;
+      color: #fff; text-shadow: 0 1px 3px #000;
+    }
+    .vitals-column {
+      display: flex; flex-direction: column; gap: 6px; width: 170px;
+    }
+    .fantasy-bar-wrap {
+      background: rgba(28, 25, 23, 0.9);
+      border: 2px solid #78350f;
+      border-radius: 8px; padding: 2px 4px;
+      box-shadow: inset 0 2px 5px rgba(0,0,0,0.8);
+      position: relative;
+    }
+    .fantasy-bar-label {
+      position: absolute; top: 50%; left: 8px; transform: translateY(-50%);
+      font-size: 9px; font-weight: 800; color: #fff; z-index: 2;
+      text-shadow: 0 1px 2px #000;
+    }
+    .fantasy-bar-val {
+      position: absolute; top: 50%; right: 8px; transform: translateY(-50%);
+      font-size: 9px; font-weight: 700; color: #fef08a; z-index: 2;
+      text-shadow: 0 1px 2px #000;
+    }
+    .fantasy-bar-fill {
+      height: 12px; border-radius: 4px; transition: width 0.15s ease-out;
+    }
+    .fill-health { background: linear-gradient(90deg, #991b1b, #ef4444, #f87171); box-shadow: 0 0 10px rgba(239, 68, 68, 0.6); }
+    .fill-mana { background: linear-gradient(90deg, #1e3a8a, #3b82f6, #93c5fd); box-shadow: 0 0 10px rgba(59, 130, 246, 0.6); }
+    .fill-stamina { background: linear-gradient(90deg, #065f46, #10b981, #6ee7b7); height: 6px; }
+
+    /* Top Right: Ornate Gold Resources & Quest Banner */
+    #top-right-bar {
+      position: fixed; top: 18px; right: 18px; z-index: 50;
+      display: flex; flex-direction: column; align-items: flex-end; gap: 10px;
+    }
+    .gold-header-banner {
+      display: flex; gap: 12px;
+      background: linear-gradient(180deg, rgba(41, 37, 36, 0.95), rgba(28, 25, 23, 0.95));
+      border: 2px solid var(--gold-border);
+      border-radius: 14px; padding: 8px 16px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.8);
+      font-size: 13px; font-weight: 700; color: #fef3c7;
+    }
+    .quest-parchment-hud {
+      background: linear-gradient(180deg, #292524 0%, #1c1917 100%);
+      border: 2px solid var(--gold-border);
+      border-left: 6px solid #f59e0b;
+      border-radius: 12px; padding: 10px 16px; width: 230px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.7); cursor: pointer;
+    }
+    .quest-parchment-hud h4 { font-size: 12px; color: #fde047; margin-bottom: 2px; }
+    .quest-parchment-hud p { font-size: 11px; opacity: 0.85; font-family: var(--font-ui); }
+
+    /* Target & Boss Bar */
     #boss-bar-wrap {
-      position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
-      z-index: 25; display: none; flex-direction: column; align-items: center;
-      width: 460px; max-width: 90vw;
+      position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+      z-index: 60; display: none; flex-direction: column; align-items: center;
+      width: 480px; max-width: 90vw;
     }
-    #boss-title { font-family: var(--font-title); font-size: 16px; color: #f87171; letter-spacing: 2px; font-weight: 900; text-shadow: 0 0 12px rgba(239,68,68,0.9); }
-    #boss-hp-container {
-      width: 100%; height: 14px; background: rgba(0,0,0,0.85);
+    .boss-name-banner { font-family: var(--font-title); font-size: 18px; color: #f87171; letter-spacing: 3px; font-weight: 900; }
+    .boss-hp-frame {
+      width: 100%; height: 16px; background: #000;
       border: 2px solid #ef4444; border-radius: 8px; margin-top: 6px;
-      overflow: hidden; box-shadow: 0 0 18px rgba(239,68,68,0.6);
+      overflow: hidden; box-shadow: 0 0 20px rgba(239, 68, 68, 0.7);
     }
-    #boss-hp-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #991b1b, #ef4444, #fca5a5); transition: width 0.1s; }
+    .boss-hp-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #991b1b, #ef4444, #fca5a5); transition: width 0.1s; }
 
-    /* Hit Combo Meter */
-    #combo-meter {
-      position: fixed; top: 80px; right: 180px; z-index: 20;
-      font-family: var(--font-title); font-size: 26px; font-weight: 900;
-      color: #f59e0b; text-shadow: 0 0 15px rgba(245,158,11,0.8);
-      display: none; animation: popIn 0.2s ease-out;
+    /* Bottom Center: Fantasy Hotbar */
+    #fantasy-hotbar {
+      position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%);
+      z-index: 50; display: flex; gap: 8px; align-items: center;
+      background: linear-gradient(180deg, #292524 0%, #1c1917 100%);
+      padding: 8px 14px; border-radius: 20px; border: 2px solid var(--gold-border);
+      box-shadow: 0 10px 35px rgba(0,0,0,0.8), 0 0 20px rgba(245, 158, 11, 0.2);
     }
-    @keyframes popIn { 0% { transform: scale(0.5); } 100% { transform: scale(1.0); } }
-
-    /* ─── HUD TOP RIGHT: MINIMAP, TIME & RESOURCES ─── */
-    #top-right-hud {
-      position: fixed; top: 16px; right: 16px; z-index: 20;
-      display: flex; flex-direction: column; align-items: flex-end; gap: 8px;
-    }
-    #minimap-container {
-      width: 136px; height: 136px; border-radius: 18px;
-      background: rgba(15, 23, 42, 0.9); border: 2px solid var(--panel-border);
-      position: relative; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.6);
-    }
-    #minimap-canvas { width: 100%; height: 100%; }
-    #biome-tag {
-      position: absolute; bottom: 4px; left: 0; right: 0; text-align: center;
-      font-size: 10px; font-weight: 800; color: #fbbf24; text-shadow: 0 1px 3px #000;
-      background: rgba(0,0,0,0.65); padding: 2px 0;
-    }
-    #world-time-tag {
-      position: absolute; top: 4px; right: 6px; font-size: 9px;
-      font-family: var(--font-mono); font-weight: 700; color: #e2e8f0;
-      background: rgba(0,0,0,0.6); padding: 1px 4px; border-radius: 4px;
-    }
-    #resource-bar {
-      display: flex; gap: 8px; background: var(--panel-bg);
-      padding: 6px 12px; border-radius: 10px; border: 1px solid var(--panel-border);
-      font-size: 12px; font-weight: 700; font-family: var(--font-mono);
-      backdrop-filter: blur(12px);
-    }
-    .res-item { display: flex; align-items: center; gap: 4px; }
-    .res-wood { color: #f59e0b; }
-    .res-stone { color: #94a3b8; }
-    .res-crystal { color: #a855f7; }
-    .res-gold { color: #eab308; }
-
-    /* Active Dynamic Quest Tracker */
-    #quest-tracker {
-      background: var(--panel-bg); border: 1px solid var(--panel-border);
-      border-radius: 12px; padding: 10px 14px; width: 220px; font-size: 12px;
-      backdrop-filter: blur(10px); box-shadow: 0 4px 16px rgba(0,0,0,0.4);
-    }
-    #quest-tracker h3 { font-family: var(--font-title); font-size: 12px; color: var(--primary); margin-bottom: 4px; }
-    #quest-objective { font-size: 11px; opacity: 0.85; }
-
-    /* ─── HUD BOTTOM CENTER: HOTBAR & SKILLS ─── */
-    #hotbar-wrap {
-      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-      z-index: 20; display: flex; gap: 8px; align-items: center;
-      background: var(--panel-bg); padding: 8px 12px;
-      border-radius: 18px; border: 1px solid var(--panel-border);
-      backdrop-filter: blur(14px); box-shadow: 0 8px 32px rgba(0,0,0,0.6);
-    }
-    .hotbar-slot {
-      width: 52px; height: 52px; border-radius: 12px;
-      background: rgba(30, 41, 59, 0.7); border: 2px solid rgba(255,255,255,0.15);
+    .slot-frame {
+      width: 54px; height: 54px; border-radius: 12px;
+      background: radial-gradient(circle, #44403c, #1c1917);
+      border: 2px solid #78350f;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      position: relative; cursor: pointer; transition: 0.15s ease;
+      position: relative; cursor: pointer; transition: 0.15s;
     }
-    .hotbar-slot:hover { border-color: var(--primary); transform: translateY(-2px); }
-    .hotbar-slot.active { border-color: #22c55e; box-shadow: 0 0 12px rgba(34,197,94,0.5); }
-    .slot-key {
-      position: absolute; top: 2px; left: 4px;
-      font-size: 10px; font-weight: 800; opacity: 0.65; font-family: var(--font-mono);
+    .slot-frame:hover { border-color: #fde047; transform: translateY(-3px); }
+    .slot-frame.active { border-color: #22c55e; box-shadow: 0 0 12px rgba(34, 197, 94, 0.6); }
+    .slot-key-tag {
+      position: absolute; top: 2px; left: 4px; font-size: 10px; font-weight: 900; color: #fde047;
     }
-    .slot-icon { font-size: 22px; }
-    .slot-mana {
-      position: absolute; bottom: 2px; right: 4px;
-      font-size: 9px; font-weight: 700; color: #60a5fa; font-family: var(--font-mono);
-    }
-    .cooldown-overlay {
-      position: absolute; inset: 0; background: rgba(0,0,0,0.75);
-      border-radius: 10px; display: flex; align-items: center; justify-content: center;
-      font-size: 13px; font-weight: 800; color: #f59e0b; display: none;
+    .slot-symbol { font-size: 24px; }
+    .slot-mp-cost { position: absolute; bottom: 2px; right: 4px; font-size: 9px; color: #60a5fa; font-weight: 700; }
+    .slot-cd-curtain {
+      position: absolute; inset: 0; background: rgba(0,0,0,0.78);
+      border-radius: 10px; display: none; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 900; color: #f59e0b;
     }
 
-    /* ─── HUD BOTTOM LEFT: WORLD CHAT & COMBAT LOG ─── */
-    #chat-container {
-      position: fixed; bottom: 20px; left: 16px; z-index: 20;
-      width: 320px; height: 160px; background: rgba(15, 23, 42, 0.8);
-      border-radius: 14px; border: 1px solid var(--panel-border);
-      backdrop-filter: blur(12px); display: flex; flex-direction: column;
-      overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    /* Bottom Left: World Chat */
+    #world-chat {
+      position: fixed; bottom: 22px; left: 18px; z-index: 50;
+      width: 320px; height: 160px;
+      background: rgba(28, 25, 23, 0.88); border: 2px solid #78350f;
+      border-radius: 14px; backdrop-filter: blur(8px);
+      display: flex; flex-direction: column; overflow: hidden;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.6);
     }
-    #chat-messages {
-      flex: 1; padding: 10px; overflow-y: auto; font-size: 12px;
-      display: flex; flex-direction: column; gap: 4px;
-    }
-    #chat-messages::-webkit-scrollbar { width: 4px; }
-    #chat-messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
-    .chat-line { line-height: 1.35; }
+    #chat-box { flex: 1; padding: 10px; overflow-y: auto; font-size: 12px; font-family: var(--font-ui); display: flex; flex-direction: column; gap: 4px; }
     .chat-user { font-weight: 700; color: #38bdf8; }
-    .chat-guild { color: #fbbf24; font-size: 10px; margin-left: 2px; }
-    .chat-system { color: #f59e0b; font-weight: 600; }
-    .chat-combat { color: #f87171; font-family: var(--font-mono); font-size: 11px; }
-    .chat-loot { color: #34d399; font-weight: 600; }
-    #chat-input-wrap {
-      display: flex; border-top: 1px solid var(--panel-border); background: rgba(0,0,0,0.3);
-    }
-    #chat-input {
-      flex: 1; background: transparent; border: none; padding: 6px 10px;
-      color: #fff; font-size: 12px; outline: none; font-family: var(--font-ui);
-    }
+    .chat-system { color: #f59e0b; font-weight: 700; }
+    .chat-loot { color: #34d399; font-weight: 700; }
+    #chat-input-bar { display: flex; border-top: 1px solid #78350f; }
+    #chat-field { flex: 1; background: transparent; border: none; padding: 6px 10px; color: #fff; font-size: 12px; outline: none; }
 
-    /* ─── HUD ACTION BUTTONS (BOTTOM RIGHT) ─── */
-    #menu-nav {
-      position: fixed; bottom: 20px; right: 16px; z-index: 20;
+    /* Bottom Right Menu Buttons */
+    #right-menu-bar {
+      position: fixed; bottom: 22px; right: 18px; z-index: 50;
       display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
     }
-    .nav-btn {
-      background: var(--panel-bg); color: #fff; border: 1px solid var(--panel-border);
-      padding: 7px 12px; border-radius: 10px; font-size: 11px; font-weight: 700;
-      cursor: pointer; display: flex; align-items: center; gap: 6px;
-      backdrop-filter: blur(8px); transition: 0.2s;
-    }
-    .nav-btn:hover { background: rgba(245, 158, 11, 0.25); border-color: var(--primary); }
-    .nav-btn kbd {
-      background: rgba(255,255,255,0.15); padding: 1px 5px; border-radius: 4px;
-      font-size: 10px; font-family: var(--font-mono);
-    }
-
-    /* ─── MODAL PANELS (SKILL TREE, BUILD MENU, INVENTORY, QUESTS, MAP, SETTINGS) ─── */
-    .game-modal {
-      position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-      z-index: 100; background: rgba(10, 15, 30, 0.95); border: 2px solid var(--primary);
-      border-radius: 20px; padding: 24px; box-shadow: 0 16px 64px rgba(0,0,0,0.8), 0 0 30px var(--primary-glow);
-      backdrop-filter: blur(16px); display: none; max-width: 95vw; max-height: 90vh; overflow: auto;
-    }
-    .modal-header {
-      display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
-      border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px;
-    }
-    .modal-title { font-family: var(--font-title); font-size: 20px; color: var(--primary); }
-    .modal-close {
-      background: rgba(255,255,255,0.1); border: none; color: #fff;
-      width: 28px; height: 28px; border-radius: 8px; cursor: pointer;
-      font-weight: 800; font-size: 14px;
-    }
-    .modal-close:hover { background: #ef4444; }
-
-    /* Inventory Grid */
-    #inv-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 12px; }
-    .inv-slot {
-      width: 60px; height: 60px; background: rgba(30, 41, 59, 0.6);
-      border: 1px solid rgba(255,255,255,0.15); border-radius: 10px;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      cursor: pointer; position: relative; transition: 0.15s;
-    }
-    .inv-slot:hover { border-color: var(--primary); transform: scale(1.05); }
-    .inv-icon { font-size: 26px; }
-    .inv-count { position: absolute; bottom: 2px; right: 4px; font-size: 10px; font-family: var(--font-mono); }
-
-    /* Skill Tree Grid */
-    #skill-tree-container { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
-    .class-branch {
-      width: 220px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 12px;
-    }
-    .branch-title { font-family: var(--font-title); font-size: 14px; text-align: center; color: #cbd5e1; }
-    .skill-node {
-      display: flex; align-items: center; gap: 10px; background: rgba(30, 41, 59, 0.6);
-      padding: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);
+    .rpg-btn {
+      background: linear-gradient(180deg, #44403c 0%, #1c1917 100%);
+      border: 1px solid var(--gold-border);
+      color: #fef08a; border-radius: 10px;
+      padding: 8px 12px; font-size: 11px; font-weight: 700; font-family: var(--font-body);
       cursor: pointer; transition: 0.15s;
     }
-    .skill-node:hover { border-color: var(--primary); }
-    .skill-node.unlocked { border-color: #10b981; background: rgba(16, 185, 129, 0.15); }
-    .skill-node.equipped { box-shadow: 0 0 10px rgba(245, 158, 11, 0.6); border-color: var(--primary); }
-    .skill-node-icon { font-size: 24px; }
-    .skill-node-info h4 { font-size: 12px; font-weight: 700; }
-    .skill-node-info p { font-size: 10px; opacity: 0.7; }
+    .rpg-btn:hover { background: #78350f; border-color: #fde047; }
 
-    /* Build Menu Grid */
-    #build-grid {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-      gap: 12px; width: 580px; max-width: 85vw;
+    /* ─── 4. INTERACTIVE NPC DIALOGUE OVERLAY ─── */
+    #dialogue-modal {
+      position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
+      z-index: 700; width: 680px; max-width: 92vw;
+      background: linear-gradient(180deg, #292524 0%, #1c1917 100%);
+      border: 3px solid var(--gold-main);
+      border-radius: 20px; padding: 22px;
+      box-shadow: 0 16px 60px rgba(0,0,0,0.9), 0 0 25px rgba(245, 158, 11, 0.3);
+      display: none; gap: 20px; align-items: flex-start;
     }
-    .build-card {
-      background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 12px; padding: 12px; text-align: center; cursor: pointer;
-      display: flex; flex-direction: column; align-items: center; gap: 6px; transition: 0.2s;
+    .npc-portrait {
+      width: 80px; height: 80px; border-radius: 14px;
+      background: radial-gradient(circle, #78350f, #1c1917);
+      border: 2px solid var(--gold-border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 40px; box-shadow: 0 4px 12px rgba(0,0,0,0.6);
     }
-    .build-card:hover { border-color: var(--primary); transform: translateY(-3px); }
-    .build-card.selected { border-color: #22c55e; background: rgba(34, 197, 94, 0.15); }
-    .build-icon { font-size: 32px; }
-    .build-name { font-size: 12px; font-weight: 700; }
-    .build-cost { font-size: 10px; color: #f59e0b; font-family: var(--font-mono); }
+    .dialogue-content { flex: 1; }
+    .npc-name { font-family: var(--font-title); font-size: 18px; color: #fde047; margin-bottom: 6px; }
+    .npc-speech { font-family: var(--font-ui); font-size: 14px; line-height: 1.5; color: #fef3c7; margin-bottom: 14px; }
+    .dialogue-options { display: flex; gap: 10px; flex-wrap: wrap; }
+    .dialogue-opt-btn {
+      background: #44403c; border: 1px solid var(--gold-main);
+      color: #fff; padding: 6px 14px; border-radius: 8px; font-size: 12px;
+      font-family: var(--font-body); cursor: pointer; font-weight: 700;
+    }
+    .dialogue-opt-btn:hover { background: #78350f; border-color: #fde047; }
 
-    /* Fullscreen Big Map */
-    #big-map-canvas {
-      width: 500px; height: 500px; max-width: 80vw; max-height: 60vh;
-      border-radius: 12px; border: 2px solid var(--panel-border);
+    /* Floating Interact Prompt */
+    #interact-prompt {
+      position: fixed; top: 62%; left: 50%; transform: translate(-50%, -50%);
+      z-index: 100; pointer-events: none; display: none;
+      background: rgba(0,0,0,0.75); border: 2px solid var(--gold-main);
+      padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 800;
+      color: #fde047; letter-spacing: 1px; box-shadow: 0 0 15px rgba(245, 158, 11, 0.6);
     }
 
-    /* Floating Combat Text */
-    .dmg-text {
-      position: fixed; pointer-events: none; z-index: 150;
+    /* Modals (Skill Tree, Inventory, Quests, Map) */
+    .rpg-modal {
+      position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      z-index: 800; background: linear-gradient(180deg, #292524 0%, #1c1917 100%);
+      border: 3px solid var(--gold-main); border-radius: 20px;
+      padding: 24px; box-shadow: 0 16px 64px rgba(0,0,0,0.9), 0 0 35px rgba(245,158,11,0.4);
+      display: none; max-width: 92vw; max-height: 90vh; overflow: auto;
+    }
+    .modal-head { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #78350f; padding-bottom: 10px; margin-bottom: 16px; }
+    .modal-title { font-family: var(--font-title); font-size: 20px; color: #fde047; }
+    .modal-close-btn { background: #44403c; border: 1px solid var(--gold-main); color: #fff; width: 30px; height: 30px; border-radius: 8px; cursor: pointer; font-weight: 900; }
+    .modal-close-btn:hover { background: #ef4444; }
+
+    /* Damage Text */
+    .dmg-popup {
+      position: fixed; pointer-events: none; z-index: 200;
       font-family: var(--font-title); font-weight: 900;
-      text-shadow: 0 2px 6px rgba(0,0,0,0.9);
-      animation: floatUp 0.8s ease-out forwards;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.9);
+      animation: floatDamage 0.8s ease-out forwards;
     }
-    @keyframes floatUp {
+    @keyframes floatDamage {
       0% { transform: translate(-50%, 0) scale(0.6); opacity: 0; }
-      20% { transform: translate(-50%, -10px) scale(1.2); opacity: 1; }
-      100% { transform: translate(-50%, -40px) scale(0.9); opacity: 0; }
+      20% { transform: translate(-50%, -10px) scale(1.3); opacity: 1; }
+      100% { transform: translate(-50%, -45px) scale(0.9); opacity: 0; }
     }
 
-    /* Level up / Quest Toast */
-    #toast-notification {
+    /* Notification Toast */
+    #toast-msg {
       position: fixed; top: 120px; left: 50%; transform: translateX(-50%);
-      z-index: 200; background: linear-gradient(135deg, rgba(245, 158, 11, 0.9), rgba(180, 83, 9, 0.9));
-      color: #000; padding: 10px 24px; border-radius: 30px; font-weight: 900;
-      font-family: var(--font-title); font-size: 15px; letter-spacing: 1px;
-      box-shadow: 0 0 30px rgba(245,158,11,0.8); display: none;
-      animation: bounceIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-    @keyframes bounceIn {
-      0% { transform: translate(-50%, -30px) scale(0.8); opacity: 0; }
-      100% { transform: translate(-50%, 0) scale(1); opacity: 1; }
-    }
-
-    /* Helper info bar bottom */
-    #controls-hint {
-      position: fixed; bottom: 84px; left: 50%; transform: translateX(-50%);
-      z-index: 15; font-size: 11px; opacity: 0.75; pointer-events: none;
-      background: rgba(0,0,0,0.5); padding: 4px 14px; border-radius: 20px;
+      z-index: 999; background: linear-gradient(180deg, #f59e0b, #b45309);
+      border: 2px solid #fef08a; color: #000; font-family: var(--font-title);
+      padding: 10px 24px; border-radius: 25px; font-weight: 900; font-size: 15px;
+      box-shadow: 0 0 35px rgba(245, 158, 11, 0.9); display: none;
     }
   </style>
 </head>
 <body>
   <div id="crosshair"></div>
 
-  <!-- HUD: Player Unit Frame -->
-  <div id="player-frame">
-    <div id="player-avatar" onclick="toggleModal('modal-char')" title="Click to view Character Sheet">
-      <span class="avatar-icon" id="player-avatar-icon">🧙‍♂️</span>
-      <div id="player-lvl-badge">LV 1</div>
-    </div>
-    <div class="bar-wrap">
-      <div class="bar-row"><span>HP</span><span id="hp-val">100 / 100</span></div>
-      <div class="stat-bar"><div id="hp-fill" class="stat-fill fill-hp"></div></div>
-      
-      <div class="bar-row" style="margin-top:2px;"><span>MP</span><span id="mp-val">60 / 60</span></div>
-      <div class="stat-bar"><div id="mp-fill" class="stat-fill fill-mp"></div></div>
-
-      <div class="bar-row" style="margin-top:2px;"><span>STA</span><span id="sta-val">100 / 100</span></div>
-      <div class="stat-bar" style="height:5px;"><div id="sta-fill" class="stat-fill fill-sta"></div></div>
-      
-      <div class="bar-row" style="margin-top:2px;"><span>EXP</span><span id="exp-val">0%</span></div>
-      <div class="stat-bar" style="height:4px;"><div id="exp-fill" class="stat-fill fill-exp" style="width:0%;"></div></div>
-
-      <div id="buff-container">
-        <!-- Dynamic Buffs -->
-      </div>
-    </div>
-  </div>
-
-  <!-- HUD: Target Frame -->
-  <div id="target-frame">
-    <div id="target-name">Forest Slime [Lv.1]</div>
-    <div class="stat-bar" id="target-bar"><div id="target-hp-fill" class="stat-fill fill-hp"></div></div>
-  </div>
-
-  <!-- HUD: World Boss Bar -->
-  <div id="boss-bar-wrap">
-    <div id="boss-title">⚡ ANCIENT MAGMA TITAN ⚡</div>
-    <div id="boss-hp-container"><div id="boss-hp-fill"></div></div>
-  </div>
-
-  <!-- HUD: Combo Meter -->
-  <div id="combo-meter">🔥 <span id="combo-count">0</span>x COMBO!</div>
-
-  <!-- HUD: Minimap, Resources & Quests -->
-  <div id="top-right-hud">
-    <div id="minimap-container" onclick="toggleModal('modal-map')" style="cursor:pointer;" title="Click to view Big World Map">
-      <canvas id="minimap-canvas" width="136" height="136"></canvas>
-      <div id="world-time-tag">☀️ 12:00</div>
-      <div id="biome-tag">Sunlit Plains</div>
-    </div>
-    <div id="resource-bar">
-      <div class="res-item res-wood">🪵 <span id="res-wood-val">50</span></div>
-      <div class="res-item res-stone">🪨 <span id="res-stone-val">30</span></div>
-      <div class="res-item res-crystal">💎 <span id="res-crystal-val">5</span></div>
-      <div class="res-item res-gold">🪙 <span id="res-gold-val">120</span></div>
-    </div>
-    <!-- Active Dynamic Quest Tracker -->
-    <div id="quest-tracker" onclick="toggleModal('modal-quests')" style="cursor:pointer;">
-      <h3 id="quest-title">📜 Quest: Plains Defender</h3>
-      <div id="quest-objective">Defeat 3 Forest Slimes (0/3)</div>
-    </div>
-  </div>
-
-  <!-- Controls Reminder -->
-  <div id="controls-hint">
-    <kbd>WASD</kbd> Move &middot; <kbd>Shift</kbd> Sprint &middot; <kbd>V</kbd> Dodge Roll &middot; <kbd>R</kbd> Mount &middot; <kbd>LMB/F</kbd> Attack &middot; <kbd>G</kbd> Fish &middot; <kbd>X</kbd> Dismantle &middot; <kbd>1-5</kbd> Spells &middot; <kbd>Ctrl</kbd> Shiftlock
-  </div>
-
-  <!-- HUD: Hotbar -->
-  <div id="hotbar-wrap">
-    <div class="hotbar-slot active" id="slot-0" title="Primary Weapon Strike (LMB/F)">
-      <span class="slot-key">LMB/F</span>
-      <span class="slot-icon" id="icon-0">⚔️</span>
-      <div class="cooldown-overlay" id="cd-0"></div>
-    </div>
-    <div class="hotbar-slot" id="slot-1" title="Skill 1">
-      <span class="slot-key">1</span>
-      <span class="slot-icon" id="icon-1">🔥</span>
-      <span class="slot-mana" id="mana-1">15</span>
-      <div class="cooldown-overlay" id="cd-1"></div>
-    </div>
-    <div class="hotbar-slot" id="slot-2" title="Skill 2">
-      <span class="slot-key">2</span>
-      <span class="slot-icon" id="icon-2">❄️</span>
-      <span class="slot-mana" id="mana-2">20</span>
-      <div class="cooldown-overlay" id="cd-2"></div>
-    </div>
-    <div class="hotbar-slot" id="slot-3" title="Skill 3">
-      <span class="slot-key">3</span>
-      <span class="slot-icon" id="icon-3">⚡</span>
-      <span class="slot-mana" id="mana-3">25</span>
-      <div class="cooldown-overlay" id="cd-3"></div>
-    </div>
-    <div class="hotbar-slot" id="slot-4" title="Skill 4">
-      <span class="slot-key">4</span>
-      <span class="slot-icon" id="icon-4">🌪️</span>
-      <span class="slot-mana" id="mana-4">30</span>
-      <div class="cooldown-overlay" id="cd-4"></div>
-    </div>
-    <div class="hotbar-slot" id="slot-5" title="Ultimate Skill">
-      <span class="slot-key">5</span>
-      <span class="slot-icon" id="icon-5">☄️</span>
-      <span class="slot-mana" id="mana-5">50</span>
-      <div class="cooldown-overlay" id="cd-5"></div>
-    </div>
-  </div>
-
-  <!-- HUD: MMO World Chat & Combat Log -->
-  <div id="chat-container">
-    <div id="chat-messages">
-      <div class="chat-line chat-system">🌟 Welcome to Low Poly World Online!</div>
-      <div class="chat-line"><span class="chat-user">Valkyrie_Rose</span><span class="chat-guild">&lt;Knights&gt;</span>: Mount up! Boss raid at the volcano soon!</div>
-      <div class="chat-line"><span class="chat-user">Gimli_Ironfoot</span>: Trading stone and crystals at the starter camp!</div>
-    </div>
-    <div id="chat-input-wrap">
-      <input type="text" id="chat-input" placeholder="Press Enter to chat..." maxlength="100">
-    </div>
-  </div>
-
-  <!-- Navigation Menu Buttons -->
-  <div id="menu-nav">
-    <button class="nav-btn" id="btn-skills"><kbd>K</kbd> Skills (<span id="skill-pts-badge">0</span>)</button>
-    <button class="nav-btn" id="btn-inv"><kbd>I</kbd> Inventory</button>
-    <button class="nav-btn" id="btn-build"><kbd>B</kbd> Build</button>
-    <button class="nav-btn" id="btn-quests"><kbd>J</kbd> Quests</button>
-    <button class="nav-btn" id="btn-map"><kbd>M</kbd> Map</button>
-    <button class="nav-btn" id="btn-settings"><kbd>O</kbd> Settings</button>
-  </div>
-
-  <!-- Toast Announcement -->
-  <div id="toast-notification">⚔️ LEVEL UP! YOU REACHED LEVEL 2 ⚔️</div>
-
-  <!-- ─── MODAL: INVENTORY & POTIONS ─── -->
-  <div class="game-modal" id="modal-inv">
-    <div class="modal-header">
-      <h2 class="modal-title">🎒 Adventurer's Inventory & Alchemy</h2>
-      <button class="modal-close" onclick="closeModals()">✕</button>
-    </div>
-    <div style="font-size: 13px; color: #94a3b8; margin-bottom: 10px;">
-      Click potions or consumables to use them immediately!
-    </div>
-    <div id="inv-grid">
-      <div class="inv-slot" onclick="usePotion('health')" title="Health Potion (+50 HP)">
-        <span class="inv-icon">🧪</span>
-        <span class="inv-count" id="inv-hp-count">3</span>
-      </div>
-      <div class="inv-slot" onclick="usePotion('mana')" title="Mana Potion (+40 MP)">
-        <span class="inv-icon">🫙</span>
-        <span class="inv-count" id="inv-mp-count">3</span>
-      </div>
-      <div class="inv-slot" onclick="usePotion('speed')" title="Elixir of Swiftness (+40% Speed for 15s)">
-        <span class="inv-icon">⚡</span>
-        <span class="inv-count" id="inv-spd-count">2</span>
-      </div>
-      <div class="inv-slot" title="Ancient Dungeon Key">
-        <span class="inv-icon">🗝️</span>
-        <span class="inv-count">1</span>
-      </div>
-      <div class="inv-slot" title="Fishing Rod">
-        <span class="inv-icon">🎣</span>
-        <span class="inv-count">1</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- ─── MODAL: SKILL TREE ─── -->
-  <div class="game-modal" id="modal-skills">
-    <div class="modal-header">
-      <h2 class="modal-title">🌟 Hero Skill Tree & Path Choices</h2>
-      <button class="modal-close" onclick="closeModals()">✕</button>
-    </div>
-    <div style="margin-bottom: 16px; font-size: 13px; color: #94a3b8;">
-      Available Skill Points: <strong id="modal-sp-val" style="color:var(--primary); font-size:16px;">0</strong>
-      &nbsp;&middot;&nbsp; Click an unlocked skill to equip it to your action hotbar slots!
-    </div>
-    <div id="skill-tree-container">
-      <!-- Warrior Branch -->
-      <div class="class-branch">
-        <div class="branch-title">🛡️ PATH OF IRON (WARRIOR)</div>
-        <div class="skill-node unlocked equipped" id="node-w1" onclick="handleSkillNodeClick('w1')">
-          <span class="skill-node-icon">⚔️</span>
-          <div class="skill-node-info">
-            <h4>Cleave Slash [Lv.1]</h4>
-            <p>180% frontal melee damage</p>
-          </div>
+  <!-- ─── 1. MAIN TITLE & CLASS SELECTION SCREEN ─── -->
+  <div id="main-menu">
+    <h1 class="game-logo">CHRONICLES OF AETHELGARD</h1>
+    <div class="game-subtitle">⚡ The Awakening of the Dawnblade ⚡</div>
+    
+    <div class="menu-card">
+      <div style="font-size: 13px; color: #fef08a; font-weight: 700; text-align: center;">CHOOSE YOUR PATH</div>
+      <div class="class-select-row">
+        <div class="class-btn selected" id="cls-warrior" onclick="selectClass('Warrior')">
+          <div style="font-size: 24px; margin-bottom: 4px;">⚔️</div>
+          WARRIOR
         </div>
-        <div class="skill-node" id="node-w2" onclick="handleSkillNodeClick('w2')">
-          <span class="skill-node-icon">🌪️</span>
-          <div class="skill-node-info">
-            <h4>Whirlwind Spin [Lv.2]</h4>
-            <p>Continuous 360° AoE strikes</p>
-          </div>
+        <div class="class-btn" id="cls-mage" onclick="selectClass('Mage')">
+          <div style="font-size: 24px; margin-bottom: 4px;">🔮</div>
+          MAGE
         </div>
-        <div class="skill-node" id="node-w3" onclick="handleSkillNodeClick('w3')">
-          <span class="skill-node-icon">💥</span>
-          <div class="skill-node-info">
-            <h4>Earth Shatter [Lv.4]</h4>
-            <p>Ground leap, stuns in area</p>
-          </div>
+        <div class="class-btn" id="cls-rogue" onclick="selectClass('Rogue')">
+          <div style="font-size: 24px; margin-bottom: 4px;">🏹</div>
+          ROGUE
         </div>
       </div>
+      <button class="btn-play-hero" onclick="startAdventure()">ENTER REALM</button>
+      <div style="font-size: 11px; opacity: 0.7; font-family: var(--font-ui);">Controls: WASD Move &middot; Space Jump &middot; LMB Attack &middot; Shift Sprint</div>
+    </div>
+  </div>
 
-      <!-- Mage Branch -->
-      <div class="class-branch">
-        <div class="branch-title">🔮 PATH OF ARCANA (MAGE)</div>
-        <div class="skill-node unlocked equipped" id="node-m1" onclick="handleSkillNodeClick('m1')">
-          <span class="skill-node-icon">🔥</span>
-          <div class="skill-node-info">
-            <h4>Fireball [Lv.1]</h4>
-            <p>Launches exploding flame bolt</p>
-          </div>
-        </div>
-        <div class="skill-node unlocked equipped" id="node-m2" onclick="handleSkillNodeClick('m2')">
-          <span class="skill-node-icon">❄️</span>
-          <div class="skill-node-info">
-            <h4>Frost Nova [Lv.2]</h4>
-            <p>Freezes nearby monsters 3s</p>
-          </div>
-        </div>
-        <div class="skill-node unlocked equipped" id="node-m3" onclick="handleSkillNodeClick('m3')">
-          <span class="skill-node-icon">⚡</span>
-          <div class="skill-node-info">
-            <h4>Chain Lightning [Lv.3]</h4>
-            <p>Arcs between 3 targets</p>
-          </div>
-        </div>
+  <!-- ─── 2. CINEMATIC LETTERBOX & ACT INTRO ─── -->
+  <div id="cinematic-bars">
+    <div class="cine-bar"></div>
+    <div class="cine-bar"></div>
+  </div>
+  <div id="act-banner">
+    <div class="act-label">CHAPTER I</div>
+    <div class="act-title">AWAKENING IN HAVEN'S GLADE</div>
+  </div>
+
+  <!-- ─── 3. FANTASY RPG HUD ─── -->
+  <div id="hud">
+    <!-- Top Left: Hero Unit Frame -->
+    <div id="fantasy-unit-frame">
+      <div class="orb-container" onclick="toggleModal('modal-char')" title="View Hero Stats">
+        <span class="orb-icon" id="hero-avatar">🧙‍♂️</span>
+        <div class="lvl-ribbon" id="hero-lvl-badge">LV 1</div>
       </div>
-
-      <!-- Rogue Branch -->
-      <div class="class-branch">
-        <div class="branch-title">🏹 PATH OF SHADOWS (ROGUE)</div>
-        <div class="skill-node" id="node-r1" onclick="handleSkillNodeClick('r1')">
-          <span class="skill-node-icon">🎯</span>
-          <div class="skill-node-info">
-            <h4>Triple Arrow [Lv.1]</h4>
-            <p>Fires 3 piercing arrows</p>
-          </div>
+      <div class="vitals-column">
+        <!-- Health -->
+        <div class="fantasy-bar-wrap">
+          <span class="fantasy-bar-label">HP</span>
+          <span class="fantasy-bar-val" id="hp-val">100 / 100</span>
+          <div class="fantasy-bar-fill fill-health" id="hp-fill" style="width: 100%;"></div>
         </div>
-        <div class="skill-node" id="node-r2" onclick="handleSkillNodeClick('r2')">
-          <span class="skill-node-icon">💨</span>
-          <div class="skill-node-info">
-            <h4>Shadow Dash [Lv.2]</h4>
-            <p>Instant blink + guaranteed crit</p>
-          </div>
+        <!-- Mana -->
+        <div class="fantasy-bar-wrap">
+          <span class="fantasy-bar-label">MP</span>
+          <span class="fantasy-bar-val" id="mp-val">60 / 60</span>
+          <div class="fantasy-bar-fill fill-mana" id="mp-fill" style="width: 100%;"></div>
         </div>
-        <div class="skill-node unlocked equipped" id="node-m5" onclick="handleSkillNodeClick('m5')">
-          <span class="skill-node-icon">☄️</span>
-          <div class="skill-node-info">
-            <h4>Meteor Call [Lv.5]</h4>
-            <p>Cataclysmic sky bombardment</p>
-          </div>
+        <!-- Stamina -->
+        <div class="fantasy-bar-wrap">
+          <span class="fantasy-bar-label" style="font-size:8px;">STA</span>
+          <div class="fantasy-bar-fill fill-stamina" id="sta-fill" style="width: 100%;"></div>
         </div>
       </div>
     </div>
+
+    <!-- Top Right: Resources & Active Quest -->
+    <div id="top-right-bar">
+      <div class="gold-header-banner">
+        <div>🪵 <span id="res-wood">50</span></div>
+        <div>🪨 <span id="res-stone">30</span></div>
+        <div>💎 <span id="res-cryst">5</span></div>
+        <div>🪙 <span id="res-gold">120</span></div>
+      </div>
+      <div class="quest-parchment-hud" onclick="toggleModal('modal-quests')">
+        <h4 id="hud-quest-name">📜 Act I: Haven's Trial</h4>
+        <p id="hud-quest-desc">Speak with Elder Cedric in the village center.</p>
+      </div>
+    </div>
+
+    <!-- World Boss Bar -->
+    <div id="boss-bar-wrap">
+      <div class="boss-name-banner">🌋 ANCIENT MAGMA TITAN 🌋</div>
+      <div class="boss-hp-frame"><div class="boss-hp-fill" id="boss-fill"></div></div>
+    </div>
+
+    <!-- Bottom Center: Fantasy Hotbar -->
+    <div id="fantasy-hotbar">
+      <div class="slot-frame active" id="slot-0" onclick="castSkill(0)">
+        <span class="slot-key-tag">LMB</span>
+        <span class="slot-symbol" id="slot-icon-0">⚔️</span>
+        <div class="slot-cd-curtain" id="cd-0"></div>
+      </div>
+      <div class="slot-frame" id="slot-1" onclick="castSkill(1)">
+        <span class="slot-key-tag">1</span>
+        <span class="slot-symbol" id="slot-icon-1">🔥</span>
+        <span class="slot-mp-cost">15</span>
+        <div class="slot-cd-curtain" id="cd-1"></div>
+      </div>
+      <div class="slot-frame" id="slot-2" onclick="castSkill(2)">
+        <span class="slot-key-tag">2</span>
+        <span class="slot-symbol" id="slot-icon-2">❄️</span>
+        <span class="slot-mp-cost">20</span>
+        <div class="slot-cd-curtain" id="cd-2"></div>
+      </div>
+      <div class="slot-frame" id="slot-3" onclick="castSkill(3)">
+        <span class="slot-key-tag">3</span>
+        <span class="slot-symbol" id="slot-icon-3">⚡</span>
+        <span class="slot-mp-cost">25</span>
+        <div class="slot-cd-curtain" id="cd-3"></div>
+      </div>
+      <div class="slot-frame" id="slot-4" onclick="castSkill(4)">
+        <span class="slot-key-tag">4</span>
+        <span class="slot-symbol" id="slot-icon-4">🌪️</span>
+        <span class="slot-mp-cost">30</span>
+        <div class="slot-cd-curtain" id="cd-4"></div>
+      </div>
+      <div class="slot-frame" id="slot-5" onclick="castSkill(5)">
+        <span class="slot-key-tag">5</span>
+        <span class="slot-symbol" id="slot-icon-5">☄️</span>
+        <span class="slot-mp-cost">50</span>
+        <div class="slot-cd-curtain" id="cd-5"></div>
+      </div>
+    </div>
+
+    <!-- Bottom Left: Chat Log -->
+    <div id="world-chat">
+      <div id="chat-box">
+        <div class="chat-line chat-system">🌟 Welcome to Chronicles of Aethelgard!</div>
+        <div class="chat-line"><span class="chat-user">Valkyrie_Rose</span>: Welcome to the village! Speak with Elder Cedric to begin your quest!</div>
+      </div>
+      <div id="chat-input-bar">
+        <input type="text" id="chat-field" placeholder="Press Enter to talk..." maxlength="100">
+      </div>
+    </div>
+
+    <!-- Bottom Right: Menu Buttons -->
+    <div id="right-menu-bar">
+      <button class="rpg-btn" onclick="toggleModal('modal-skills')">⚔️ Skills (K)</button>
+      <button class="rpg-btn" onclick="toggleModal('modal-inv')">🎒 Items (I)</button>
+      <button class="rpg-btn" onclick="toggleBuildMode()">🔨 Build (B)</button>
+      <button class="rpg-btn" onclick="toggleModal('modal-quests')">📜 Quests (J)</button>
+      <button class="rpg-btn" onclick="toggleModal('modal-map')">🗺️ Map (M)</button>
+      <button class="rpg-btn" onclick="toggleModal('modal-char')">👑 Hero (C)</button>
+    </div>
   </div>
 
-  <!-- ─── MODAL: BUILD MENU ─── -->
-  <div class="game-modal" id="modal-build">
-    <div class="modal-header">
-      <h2 class="modal-title">🔨 Open World Sandbox Building</h2>
-      <button class="modal-close" onclick="closeModals()">✕</button>
-    </div>
-    <div style="margin-bottom: 14px; font-size: 13px; color: #94a3b8;">
-      Select a blueprint, look at the ground, and <strong>Left Click</strong> to build! Press <kbd>X</kbd> in game to dismantle nearby structures.
-    </div>
-    <div id="build-grid">
-      <div class="build-card selected" onclick="selectBlueprint('wood_wall', this)">
-        <span class="build-icon">🪵</span>
-        <div class="build-name">Wood Wall</div>
-        <div class="build-cost">10 Wood</div>
-      </div>
-      <div class="build-card" onclick="selectBlueprint('stone_wall', this)">
-        <span class="build-icon">🧱</span>
-        <div class="build-name">Stone Bastion</div>
-        <div class="build-cost">15 Stone</div>
-      </div>
-      <div class="build-card" onclick="selectBlueprint('floor', this)">
-        <span class="build-icon">🟫</span>
-        <div class="build-name">Wood Platform</div>
-        <div class="build-cost">10 Wood</div>
-      </div>
-      <div class="build-card" onclick="selectBlueprint('ramp', this)">
-        <span class="build-icon">📐</span>
-        <div class="build-name">Staircase Ramp</div>
-        <div class="build-cost">10 Wood</div>
-      </div>
-      <div class="build-card" onclick="selectBlueprint('campfire', this)">
-        <span class="build-icon">🔥</span>
-        <div class="build-name">Heal Campfire</div>
-        <div class="build-cost">15 Wood, 5 Stone</div>
-      </div>
-      <div class="build-card" onclick="selectBlueprint('turret', this)">
-        <span class="build-icon">🏹</span>
-        <div class="build-name">Auto-Turret</div>
-        <div class="build-cost">25 Wood, 15 Stone</div>
-      </div>
-      <div class="build-card" onclick="selectBlueprint('crystal_pylon', this)">
-        <span class="build-icon">💎</span>
-        <div class="build-name">Mana Pylon</div>
-        <div class="build-cost">20 Stone, 5 Crystal</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ─── MODAL: QUEST LOG ─── -->
-  <div class="game-modal" id="modal-quests">
-    <div class="modal-header">
-      <h2 class="modal-title">📜 Quest & Bounty Board</h2>
-      <button class="modal-close" onclick="closeModals()">✕</button>
-    </div>
-    <div style="display: flex; flex-direction: column; gap: 12px; min-width: 320px;" id="quest-list-container">
-      <!-- Dynamic Quests Injected -->
-    </div>
-  </div>
-
-  <!-- ─── MODAL: BIG WORLD MAP ─── -->
-  <div class="game-modal" id="modal-map">
-    <div class="modal-header">
-      <h2 class="modal-title">🗺️ Realm of Aethelgard — World Map</h2>
-      <button class="modal-close" onclick="closeModals()">✕</button>
-    </div>
-    <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
-      <canvas id="big-map-canvas" width="500" height="500"></canvas>
-      <div style="font-size:12px; color:#94a3b8;">
-        🟢 Plains Village (Center) &middot; 🌲 Enchanted Forest (NW) &middot; 🏔️ Frostpeak (NE) &middot; 🏜️ Desert (SW) &middot; 🌋 Caldera (SE)
-      </div>
-    </div>
-  </div>
-
-  <!-- ─── MODAL: CHARACTER STATS & TITLES ─── -->
-  <div class="game-modal" id="modal-char">
-    <div class="modal-header">
-      <h2 class="modal-title">📜 Hero Character Sheet & Titles</h2>
-      <button class="modal-close" onclick="closeModals()">✕</button>
-    </div>
-    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 16px; min-width: 340px; font-size: 14px;">
-      <div><strong>Level:</strong> <span id="char-lvl">1</span></div>
-      <div><strong>Active Title:</strong> <span id="char-title" style="color:var(--primary);">Apprentice Adventurer</span></div>
-      <div><strong>Attack Power:</strong> <span id="char-atk">25</span></div>
-      <div><strong>Magic Power:</strong> <span id="char-matk">35</span></div>
-      <div><strong>Defense:</strong> <span id="char-def">10</span></div>
-      <div><strong>Crit Chance:</strong> <span id="char-crit">15%</span></div>
-      <div><strong>Monsters Slain:</strong> <span id="char-kills">0</span></div>
-      <div><strong>Structures Built:</strong> <span id="char-built">0</span></div>
-    </div>
-    <div style="margin-top:16px; border-top:1px solid rgba(255,255,255,0.1); padding-top:12px;">
-      <h4 style="font-size:13px; color:#cbd5e1; margin-bottom:6px;">Emotes & Social</h4>
-      <div style="display:flex; gap:8px;">
-        <button class="nav-btn" onclick="playEmote('dance')">💃 Dance</button>
-        <button class="nav-btn" onclick="playEmote('wave')">👋 Wave</button>
-        <button class="nav-btn" onclick="playEmote('cheer')">🎉 Cheer</button>
+  <!-- ─── 4. INTERACTIVE NPC DIALOGUE MODAL ─── -->
+  <div id="interact-prompt">PRESS [E] TO TALK</div>
+  <div id="dialogue-modal">
+    <div class="npc-portrait" id="diag-portrait">🧙‍♂️</div>
+    <div class="dialogue-content">
+      <div class="npc-name" id="diag-name">Elder Cedric</div>
+      <div class="npc-speech" id="diag-speech">Greetings, young traveler. The realm is in peril...</div>
+      <div class="dialogue-options" id="diag-options">
+        <button class="dialogue-opt-btn" onclick="advanceStoryDialogue()">Accept Quest</button>
+        <button class="dialogue-opt-btn" onclick="closeDialogue()">Farewell</button>
       </div>
     </div>
   </div>
 
-  <!-- ─── MODAL: SETTINGS & GRAPHICS ─── -->
-  <div class="game-modal" id="modal-settings">
-    <div class="modal-header">
-      <h2 class="modal-title">⚙️ Game Settings & Sound</h2>
-      <button class="modal-close" onclick="closeModals()">✕</button>
+  <!-- Toast -->
+  <div id="toast-msg">⭐ LEVEL UP! YOU REACHED LEVEL 2 ⭐</div>
+
+  <!-- ─── 5. FANTASY MODALS ─── -->
+  <!-- Quests Modal -->
+  <div class="rpg-modal" id="modal-quests">
+    <div class="modal-head">
+      <h2 class="modal-title">📜 Quest Chronicles & Bounties</h2>
+      <button class="modal-close-btn" onclick="closeModals()">✕</button>
     </div>
-    <div style="display:flex; flex-direction:column; gap:14px; min-width:300px; font-size:13px;">
-      <div>
-        <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-          <span>Sound Effects Volume:</span><span id="sfx-vol-val">80%</span>
-        </div>
-        <input type="range" id="sfx-slider" min="0" max="1" step="0.05" value="0.8" style="width:100%;">
+    <div id="quest-story-list" style="display:flex; flex-direction:column; gap:12px; min-width:320px;">
+      <!-- Dynamic Quest Entries -->
+    </div>
+  </div>
+
+  <!-- Skills Modal -->
+  <div class="rpg-modal" id="modal-skills">
+    <div class="modal-head">
+      <h2 class="modal-title">🌟 Hero Skill Tree & Spells</h2>
+      <button class="modal-close-btn" onclick="closeModals()">✕</button>
+    </div>
+    <div style="font-size:13px; color:#fef08a; margin-bottom:12px;">
+      Available Skill Points: <strong id="sp-count" style="font-size:16px;">0</strong>
+    </div>
+    <div style="display:flex; gap:16px; flex-wrap:wrap; justify-content:center;">
+      <div style="background:rgba(0,0,0,0.5); padding:14px; border-radius:12px; border:1px solid #78350f; width:220px;">
+        <h4 style="color:#fde047; text-align:center; margin-bottom:8px;">⚔️ PATH OF IRON</h4>
+        <div style="font-size:12px; opacity:0.9;">Cleave Slash [Lv.1] (Unlocked)</div>
+        <div style="font-size:12px; opacity:0.9; margin-top:6px;">Whirlwind Spin [Lv.2]</div>
+        <div style="font-size:12px; opacity:0.9; margin-top:6px;">Earth Shatter [Lv.4]</div>
       </div>
-      <div>
-        <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-          <span>Mouse Sensitivity:</span><span id="sens-val">1.0x</span>
-        </div>
-        <input type="range" id="sens-slider" min="0.2" max="3" step="0.1" value="1.0" style="width:100%;">
-      </div>
-      <div>
-        <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-          <span>Day/Night Speed:</span><span id="time-spd-val">Normal</span>
-        </div>
-        <button class="nav-btn" onclick="toggleTimeSpeed()" style="width:100%; justify-content:center;">Toggle Speed (Normal / Fast / Freeze Day)</button>
+      <div style="background:rgba(0,0,0,0.5); padding:14px; border-radius:12px; border:1px solid #78350f; width:220px;">
+        <h4 style="color:#60a5fa; text-align:center; margin-bottom:8px;">🔮 PATH OF ARCANA</h4>
+        <div style="font-size:12px; opacity:0.9;">Fireball [Lv.1] (Unlocked)</div>
+        <div style="font-size:12px; opacity:0.9; margin-top:6px;">Frost Nova [Lv.2] (Unlocked)</div>
+        <div style="font-size:12px; opacity:0.9; margin-top:6px;">Chain Lightning [Lv.3] (Unlocked)</div>
       </div>
     </div>
   </div>
 
-  <!-- Load Three.js -->
+  <!-- Inventory Modal -->
+  <div class="rpg-modal" id="modal-inv">
+    <div class="modal-head">
+      <h2 class="modal-title">🎒 Adventurer's Backpack</h2>
+      <button class="modal-close-btn" onclick="closeModals()">✕</button>
+    </div>
+    <div style="display:flex; gap:12px;">
+      <div style="padding:14px; background:#44403c; border:2px solid var(--gold-main); border-radius:12px; text-align:center; cursor:pointer;" onclick="usePotion('hp')">
+        <div style="font-size:28px;">🧪</div>
+        <div style="font-size:12px; font-weight:700;">Health Flask (<span id="inv-hp">3</span>)</div>
+      </div>
+      <div style="padding:14px; background:#44403c; border:2px solid var(--gold-main); border-radius:12px; text-align:center; cursor:pointer;" onclick="usePotion('mp')">
+        <div style="font-size:28px;">🫙</div>
+        <div style="font-size:12px; font-weight:700;">Mana Potion (<span id="inv-mp">3</span>)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Character Stats Modal -->
+  <div class="rpg-modal" id="modal-char">
+    <div class="modal-head">
+      <h2 class="modal-title">👑 Hero Character Record</h2>
+      <button class="modal-close-btn" onclick="closeModals()">✕</button>
+    </div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; font-size:14px; min-width:300px;">
+      <div>Level: <strong id="char-lvl">1</strong></div>
+      <div>Class: <strong id="char-class" style="color:#fde047;">Warrior</strong></div>
+      <div>Attack Power: <strong id="char-atk">30</strong></div>
+      <div>Magic Power: <strong id="char-matk">20</strong></div>
+      <div>Monsters Defeated: <strong id="char-kills">0</strong></div>
+      <div>Quests Completed: <strong id="char-quests">0</strong></div>
+    </div>
+  </div>
+
+  <!-- Full Map Modal -->
+  <div class="rpg-modal" id="modal-map">
+    <div class="modal-head">
+      <h2 class="modal-title">🗺️ Realm of Aethelgard</h2>
+      <button class="modal-close-btn" onclick="closeModals()">✕</button>
+    </div>
+    <canvas id="big-map-canvas" width="460" height="460" style="border:2px solid var(--gold-border); border-radius:12px;"></canvas>
+  </div>
+
+  <!-- Three.js Library -->
   <script src="https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.min.js"></script>
-  <script>
-    if (typeof THREE === 'undefined') {
-      document.write('<script src="https://unpkg.com/three@0.164.1/build/three.min.js"><\/script>');
-    }
-  </script>
 
   <script>
   /* =========================================================================
-     LOW POLY WORLD: ULTIMATE OPEN WORLD MMO RPG ENGINE
+     CHRONICLES OF AETHELGARD — IMMERSIVE OPEN WORLD ENGINE
      ========================================================================= */
 
-  // ── 1. PROCEDURAL SOUND SYNTHESIZER (Web Audio API) ─────────────────────
+  // ── SOUND SYNTHESIS ─────────────────────────────────────────────────────
   class SoundEngine {
-    constructor() {
-      this.ctx = null;
-      this.volume = 0.8;
-    }
+    constructor() { this.ctx = null; }
     init() {
       if (!this.ctx) {
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         this.ctx = new AudioContext();
       }
     }
-    playTone(type, startFreq, endFreq, duration, vol = 0.3) {
+    playTone(type, sFreq, eFreq, dur, vol = 0.3) {
       try {
         this.init();
         if (this.ctx.state === 'suspended') this.ctx.resume();
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
         osc.type = type;
-        osc.frequency.setValueAtTime(startFreq, this.ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(Math.max(10, endFreq), this.ctx.currentTime + duration);
-        gain.gain.setValueAtTime(vol * this.volume, this.ctx.currentTime);
-        gain.gain.linearRampToValueAtTime(0.001, this.ctx.currentTime + duration);
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.start();
-        osc.stop(this.ctx.currentTime + duration);
-      } catch (e) {}
+        osc.frequency.setValueAtTime(sFreq, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(Math.max(10, eFreq), this.ctx.currentTime + dur);
+        gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.001, this.ctx.currentTime + dur);
+        osc.connect(gain); gain.connect(this.ctx.destination);
+        osc.start(); osc.stop(this.ctx.currentTime + dur);
+      } catch(e){}
     }
-    playSwing() { this.playTone('sine', 320, 80, 0.12, 0.25); }
-    playHit() { this.playTone('triangle', 180, 30, 0.18, 0.45); }
-    playMagic() { this.playTone('sawtooth', 350, 950, 0.22, 0.25); }
-    playBuild() { this.playTone('square', 140, 60, 0.1, 0.25); }
-    playDismantle() { this.playTone('square', 200, 50, 0.15, 0.25); }
-    playGather() { this.playTone('sine', 700 + Math.random()*200, 200, 0.08, 0.2); }
-    playCoin() { this.playTone('triangle', 900, 1400, 0.12, 0.3); }
-    playDrink() { this.playTone('sine', 200, 500, 0.25, 0.3); }
-    playRoll() { this.playTone('sine', 150, 60, 0.2, 0.25); }
-    playMount() { this.playTone('triangle', 300, 450, 0.3, 0.35); }
-    playLevelUp() {
-      const notes = [261.63, 329.63, 392.00, 523.25, 659.25];
-      notes.forEach((freq, idx) => {
-        setTimeout(() => this.playTone('triangle', freq, freq * 1.05, 0.25, 0.35), idx * 80);
+    playSwing() { this.playTone('sine', 340, 90, 0.12, 0.25); }
+    playHit() { this.playTone('triangle', 200, 40, 0.18, 0.4); }
+    playMagic() { this.playTone('sawtooth', 400, 900, 0.22, 0.25); }
+    playCoin() { this.playTone('triangle', 850, 1350, 0.12, 0.3); }
+    playFanfare() {
+      [261.6, 329.6, 392.0, 523.2].forEach((f, i) => {
+        setTimeout(() => this.playTone('triangle', f, f*1.02, 0.25, 0.35), i*90);
       });
     }
   }
   const sfx = new SoundEngine();
 
-  // ── 2. THREE.JS SCENE SETUP ─────────────────────────────────────────────
+  // ── SCENE & LIGHTING ────────────────────────────────────────────────────
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0x7ec8e3);
   scene.fog = new THREE.FogExp2(0x7ec8e3, 0.0055);
 
-  const camera = new THREE.PerspectiveCamera(65, innerWidth / innerHeight, 0.1, 900);
+  const camera = new THREE.PerspectiveCamera(65, innerWidth / innerHeight, 0.1, 1000);
   const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
   renderer.setSize(innerWidth, innerHeight);
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.15;
+  renderer.toneMappingExposure = 1.2;
   document.body.appendChild(renderer.domElement);
 
-  // ── Lighting & Dynamic Sun / Moon Orbit ──────────────────────────────────
-  const sunLight = new THREE.DirectionalLight(0xfffaed, 2.0);
-  sunLight.position.set(100, 150, 80);
+  // Bright Vibrant Lights (prevents any black screen)
+  const sunLight = new THREE.DirectionalLight(0xfffaed, 2.4);
+  sunLight.position.set(100, 160, 80);
   sunLight.castShadow = true;
   sunLight.shadow.mapSize.set(2048, 2048);
-  sunLight.shadow.camera.near = 10;
-  sunLight.shadow.camera.far = 500;
-  sunLight.shadow.camera.left = -250;
-  sunLight.shadow.camera.right = 250;
-  sunLight.shadow.camera.top = 250;
-  sunLight.shadow.camera.bottom = -250;
   scene.add(sunLight);
 
-  const hemiLight = new THREE.HemisphereLight(0x87ceeb, 0x334d28, 0.65);
+  const hemiLight = new THREE.HemisphereLight(0xb1e1ff, 0x3b5323, 0.85);
   scene.add(hemiLight);
-  const ambLight = new THREE.AmbientLight(0x404466, 0.35);
+  const ambLight = new THREE.AmbientLight(0xffffff, 0.45);
   scene.add(ambLight);
 
-  // Stars Skybox Particles
-  const starsGeo = new THREE.BufferGeometry();
-  const starCount = 600;
-  const starPositions = new Float32Array(starCount * 3);
-  for (let i = 0; i < starCount * 3; i += 3) {
-    starPositions[i] = (Math.random() - 0.5) * 800;
-    starPositions[i+1] = 80 + Math.random() * 300;
-    starPositions[i+2] = (Math.random() - 0.5) * 800;
-  }
-  starsGeo.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
-  const starsMat = new THREE.PointsMaterial({ color: 0xffffff, size: 2.0, transparent: true, opacity: 0 });
-  const stars = new THREE.Points(starsGeo, starsMat);
-  scene.add(stars);
-
-  // ── 3. REDESIGNED 5-BIOME OPEN WORLD TERRAIN ────────────────────────────
+  // ── 5-BIOME TERRAIN ─────────────────────────────────────────────────────
   const terrainSize = 500;
-  const terrainSegs = 100;
+  const terrainSegs = 90;
   const terrainGeo = new THREE.PlaneGeometry(terrainSize, terrainSize, terrainSegs, terrainSegs);
   const verts = terrainGeo.attributes.position;
+  const colors = [];
 
-  const C_PLAINS_GRASS   = new THREE.Color(0x4ca243);
-  const C_PLAINS_DIRT    = new THREE.Color(0x7c5a3a);
-  const C_FOREST_MOSS    = new THREE.Color(0x275949);
-  const C_FOREST_PURPLE  = new THREE.Color(0x4b3464);
-  const C_SNOW_PEAK      = new THREE.Color(0xffffff);
-  const C_SNOW_ROCK      = new THREE.Color(0x8894a0);
-  const C_LAVA_ROCK      = new THREE.Color(0x261a1a);
-  const C_LAVA_CRUST     = new THREE.Color(0x732014);
-  const C_DESERT_SAND    = new THREE.Color(0xdeb86a);
-  const C_DESERT_DUNE    = new THREE.Color(0xc2984b);
-
-  function getBiomeType(x, z) {
-    if (x > 60 && z < -60) return 'SNOW_MOUNTAINS';
-    if (x > 60 && z > 60) return 'VOLCANIC_CALDERA';
-    if (x < -60 && z < -60) return 'ENCHANTED_FOREST';
-    if (x < -60 && z > 60) return 'DESERT_DUNES';
-    return 'SUNLIT_PLAINS';
-  }
-
-  const terrainColors = [];
   for (let i = 0; i < verts.count; i++) {
-    const x = verts.getX(i);
-    const y = verts.getY(i);
-    const distFromCenter = Math.sqrt(x * x + y * y);
+    const x = verts.getX(i), y = verts.getY(i);
+    const dCenter = Math.hypot(x, y);
+    let h = Math.sin(x * 0.03) * Math.cos(y * 0.03) * 4 + Math.sin(x * 0.08 + y * 0.06) * 2;
+    if (dCenter < 30) h *= (dCenter / 30);
 
-    let h = Math.sin(x * 0.03) * Math.cos(y * 0.03) * 4 +
-            Math.sin(x * 0.08 + y * 0.06) * 2;
-
-    if (distFromCenter < 25) h *= (distFromCenter / 25);
-
-    // Snow Mountain (NE)
+    // Mountain Peak (NE)
     const dSnow = Math.hypot(x - 130, y - (-130));
-    if (dSnow < 120) {
-      const t = 1 - dSnow / 120;
-      h += Math.pow(t, 2) * 65;
-    }
+    if (dSnow < 120) h += Math.pow(1 - dSnow/120, 2) * 65;
 
-    // Volcanic Caldera (SE)
+    // Caldera (SE)
     const dVolc = Math.hypot(x - 130, y - 130);
-    if (dVolc < 110) {
-      const t = 1 - dVolc / 110;
-      if (dVolc < 30) h += (30 - dVolc) * -0.3 + 12;
-      else h += Math.pow(t, 1.6) * 38;
-    }
-
-    // Desert Dunes (SW)
-    if (x < -40 && y > 40) h += Math.sin(x * 0.05 + y * 0.04) * 6;
-
-    // Enchanted Forest (NW)
-    if (x < -40 && y < -40) h += Math.cos(x * 0.06) * Math.sin(y * 0.06) * 4;
+    if (dVolc < 110) h += (dVolc < 30) ? ((30 - dVolc)*-0.3 + 12) : (Math.pow(1 - dVolc/110, 1.6) * 38);
 
     verts.setZ(i, h);
 
-    let c = C_PLAINS_GRASS.clone();
-    const biome = getBiomeType(x, y);
-    if (biome === 'SNOW_MOUNTAINS') c = (h > 35) ? C_SNOW_PEAK : (h > 15 ? C_SNOW_ROCK : C_FOREST_MOSS);
-    else if (biome === 'VOLCANIC_CALDERA') c = (h < 15 && dVolc < 35) ? C_LAVA_CRUST : C_LAVA_ROCK;
-    else if (biome === 'DESERT_DUNES') c = (h > 4) ? C_DESERT_DUNE : C_DESERT_SAND;
-    else if (biome === 'ENCHANTED_FOREST') c = (h > 2) ? C_FOREST_MOSS : C_FOREST_PURPLE;
-    else c = (h < 0) ? C_PLAINS_DIRT : C_PLAINS_GRASS;
-
-    terrainColors.push(c.r, c.g, c.b);
+    // Biome colors
+    let c = new THREE.Color(0x4ca243); // Plains
+    if (x > 60 && y < -60) c = (h > 30) ? new THREE.Color(0xffffff) : new THREE.Color(0x8894a0); // Snow
+    else if (x > 60 && y > 60) c = new THREE.Color(0x3b1c1c); // Caldera
+    else if (x < -60 && y > 60) c = new THREE.Color(0xdeb86a); // Desert
+    else if (x < -60 && y < -60) c = new THREE.Color(0x275949); // Enchanted Forest
+    colors.push(c.r, c.g, c.b);
   }
   terrainGeo.computeVertexNormals();
-  terrainGeo.setAttribute('color', new THREE.Float32BufferAttribute(terrainColors, 3));
+  terrainGeo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
 
-  const terrainMat = new THREE.MeshStandardMaterial({
-    vertexColors: true, flatShading: true, roughness: 0.85
-  });
+  const terrainMat = new THREE.MeshStandardMaterial({ vertexColors: true, flatShading: true, roughness: 0.85 });
   const terrain = new THREE.Mesh(terrainGeo, terrainMat);
   terrain.rotation.x = -Math.PI / 2;
   terrain.receiveShadow = true;
   scene.add(terrain);
 
-  // Water & Lava Planes
+  function getTerrainHeight(x, z) {
+    const half = terrainSize / 2;
+    const seg = terrainSize / terrainSegs;
+    const col = Math.min(terrainSegs, Math.max(0, Math.floor((x + half) / seg)));
+    const row = Math.min(terrainSegs, Math.max(0, Math.floor((z + half) / seg)));
+    return verts.getZ(row * (terrainSegs + 1) + col);
+  }
+
+  // Water Plane
   const water = new THREE.Mesh(
     new THREE.PlaneGeometry(terrainSize, terrainSize),
-    new THREE.MeshStandardMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.75, roughness: 0.2 })
+    new THREE.MeshStandardMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.8, roughness: 0.2 })
   );
   water.rotation.x = -Math.PI / 2;
   water.position.y = -1.2;
   scene.add(water);
 
-  const lava = new THREE.Mesh(
-    new THREE.CircleGeometry(35, 16),
-    new THREE.MeshStandardMaterial({ color: 0xff4500, emissive: 0xff2200, emissiveIntensity: 0.8, roughness: 0.4 })
-  );
-  lava.rotation.x = -Math.PI / 2;
-  lava.position.set(130, 8, 130);
-  scene.add(lava);
-
-  function getTerrainHeight(x, z) {
-    const half = terrainSize / 2;
-    const seg = terrainSize / terrainSegs;
-    const col = (x + half) / seg;
-    const row = (z + half) / seg;
-    const ci = Math.floor(col), ri = Math.floor(row);
-    const cf = col - ci, rf = row - ri;
-    const ci2 = Math.min(ci + 1, terrainSegs);
-    const ri2 = Math.min(ri + 1, terrainSegs);
-    const clamp = (i, j) => {
-      if (i < 0 || i > terrainSegs || j < 0 || j > terrainSegs) return 0;
-      return verts.getZ(j * (terrainSegs + 1) + i);
-    };
-    const h00 = clamp(ci, ri), h10 = clamp(ci2, ri);
-    const h01 = clamp(ci, ri2), h11 = clamp(ci2, ri2);
-    const h0 = h00 * (1 - cf) + h10 * cf;
-    const h1 = h01 * (1 - cf) + h11 * cf;
-    return h0 * (1 - rf) + h1 * rf;
-  }
-
-  // ── 4. ATMOSPHERIC BIOME WEATHER PARTICLES ──────────────────────────────
-  const pCount = 300;
-  const pGeo = new THREE.BufferGeometry();
-  const pPos = new Float32Array(pCount * 3);
-  for (let i = 0; i < pCount * 3; i += 3) {
-    pPos[i] = (Math.random() - 0.5) * 150;
-    pPos[i+1] = Math.random() * 30;
-    pPos[i+2] = (Math.random() - 0.5) * 150;
-  }
-  pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
-  const pMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.8, transparent: true, opacity: 0.6 });
-  const weatherPoints = new THREE.Points(pGeo, pMat);
-  scene.add(weatherPoints);
-
-  // ── 5. RESOURCE NODES & HARVESTING ──────────────────────────────────────
-  const resourceNodes = [];
-  const activeLootItems = [];
-
-  function createTreeMesh(type = 'oak') {
+  // ── STARTER VILLAGE & PROPS ─────────────────────────────────────────────
+  function createHouse(x, z) {
     const g = new THREE.Group();
-    const trunkMat = new THREE.MeshStandardMaterial({ color: 0x6e4324, flatShading: true });
-    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.35, 1.8, 5), trunkMat);
-    trunk.position.y = 0.9; trunk.castShadow = true; g.add(trunk);
-
-    let leafColor = 0x2e7d32;
-    if (type === 'pine') leafColor = 0x1b4332;
-    if (type === 'enchanted') leafColor = 0x9333ea;
-    if (type === 'palm') leafColor = 0x84cc16;
-
-    const leafMat = new THREE.MeshStandardMaterial({ color: leafColor, flatShading: true });
-    const cone1 = new THREE.Mesh(new THREE.ConeGeometry(1.4, 2.2, 5), leafMat);
-    cone1.position.y = 2.2; cone1.castShadow = true; g.add(cone1);
-    const cone2 = new THREE.Mesh(new THREE.ConeGeometry(1.0, 1.8, 5), leafMat);
-    cone2.position.y = 3.2; cone2.castShadow = true; g.add(cone2);
-    return g;
-  }
-
-  function createOreRockMesh(type = 'stone') {
-    const g = new THREE.Group();
-    let col = 0x71717a;
-    if (type === 'crystal') col = 0xa855f7;
-    const mat = new THREE.MeshStandardMaterial({
-      color: col, flatShading: true,
-      emissive: (type === 'crystal') ? 0x6b21a8 : 0x000000, emissiveIntensity: 0.5
-    });
-    const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(0.85, 1), mat);
-    rock.position.y = 0.5; rock.scale.set(1.2, 0.8, 1); rock.castShadow = true; g.add(rock);
-    return g;
-  }
-
-  for (let i = 0; i < 280; i++) {
-    const rx = (Math.random() - 0.5) * 440;
-    const rz = (Math.random() - 0.5) * 440;
-    if (Math.hypot(rx, rz) < 18) continue;
-
-    const ry = getTerrainHeight(rx, rz);
-    if (ry < -0.8) continue;
-
-    const biome = getBiomeType(rx, rz);
-    let nodeType = 'wood';
-    let mesh = null;
-
-    if (biome === 'VOLCANIC_CALDERA') {
-      nodeType = (Math.random() > 0.4) ? 'crystal' : 'stone';
-      mesh = createOreRockMesh(nodeType);
-    } else if (biome === 'SNOW_MOUNTAINS') {
-      mesh = (Math.random() > 0.3) ? createTreeMesh('pine') : createOreRockMesh('crystal');
-      nodeType = (mesh.children[0].geometry.type.includes('Dodec')) ? 'crystal' : 'wood';
-    } else if (biome === 'ENCHANTED_FOREST') {
-      mesh = (Math.random() > 0.4) ? createTreeMesh('enchanted') : createOreRockMesh('crystal');
-      nodeType = (mesh.children[0].geometry.type.includes('Dodec')) ? 'crystal' : 'wood';
-    } else if (biome === 'DESERT_DUNES') {
-      mesh = createOreRockMesh('stone');
-      nodeType = 'stone';
-    } else {
-      mesh = (Math.random() > 0.3) ? createTreeMesh('oak') : createOreRockMesh('stone');
-      nodeType = (mesh.children[0].geometry.type.includes('Dodec')) ? 'stone' : 'wood';
-    }
-
-    mesh.position.set(rx, ry, rz);
-    scene.add(mesh);
-    resourceNodes.push({ mesh: mesh, type: nodeType, x: rx, z: rz, y: ry, hp: 3, maxHp: 3 });
-  }
-
-  // ── 6. ANCIENT SHRINES & DUNGEON PORTAL ──────────────────────────────────
-  const shrines = [];
-  function createShrine(x, z, buffType, name, color) {
-    const g = new THREE.Group();
-    const base = new THREE.Mesh(new THREE.CylinderGeometry(1.8, 2.2, 0.6, 6), new THREE.MeshStandardMaterial({ color: 0x475569, flatShading: true }));
-    base.position.y = 0.3; g.add(base);
-    const crystal = new THREE.Mesh(new THREE.OctahedronGeometry(1.0, 0), new THREE.MeshStandardMaterial({ color: color, emissive: color, emissiveIntensity: 0.8, flatShading: true }));
-    crystal.position.y = 2.4; g.add(crystal);
-    const y = getTerrainHeight(x, z);
-    g.position.set(x, y, z);
+    const walls = new THREE.Mesh(new THREE.BoxGeometry(4, 2.5, 4), new THREE.MeshStandardMaterial({ color: 0x854d0e, flatShading: true }));
+    walls.position.y = 1.25; g.add(walls);
+    const roof = new THREE.Mesh(new THREE.ConeGeometry(3.5, 2, 4), new THREE.MeshStandardMaterial({ color: 0x7f1d1d, flatShading: true }));
+    roof.position.y = 3.5; roof.rotation.y = Math.PI / 4; g.add(roof);
+    g.position.set(x, getTerrainHeight(x, z), z);
     scene.add(g);
-    shrines.push({ mesh: g, crystal: crystal, x: x, z: z, buffType: buffType, name: name });
   }
-  createShrine(45, -45, 'flame', 'Shrine of Ignis (+30% DMG)', 0xef4444);
-  createShrine(-50, 45, 'wind', 'Shrine of Zephyr (+40% Speed)', 0x10b981);
-  createShrine(-50, -50, 'frost', 'Shrine of Glacius (+50 Defense)', 0x38bdf8);
+  createHouse(-8, -12);
+  createHouse(12, -10);
+  createHouse(8, 14);
 
-  const portalGroup = new THREE.Group();
-  const portalRing = new THREE.Mesh(new THREE.TorusGeometry(2.5, 0.4, 8, 16), new THREE.MeshStandardMaterial({ color: 0x8b5cf6, emissive: 0x7c3aed, emissiveIntensity: 1.0 }));
-  portalRing.position.y = 2.5; portalGroup.add(portalRing);
-  const portalY = getTerrainHeight(100, -60);
-  portalGroup.position.set(100, portalY, -60);
-  scene.add(portalGroup);
-
-  // ── 7. MONSTER SYSTEM & ARTICULATED COMBAT AI ───────────────────────────
-  const monsters = [];
-  const MONSTER_DEFS = {
-    slime: { name: "Forest Slime", hp: 60, dmg: 6, exp: 25, speed: 3.5, color: 0x22c55e, scale: 0.7, level: 1 },
-    boar: { name: "Wild Boar", hp: 120, dmg: 12, exp: 50, speed: 5.5, color: 0x854d0e, scale: 0.9, level: 3 },
-    spider: { name: "Gloom Spider", hp: 190, dmg: 18, exp: 90, speed: 6.0, color: 0x7e22ce, scale: 0.85, level: 5 },
-    frost_golem: { name: "Frost Golem", hp: 350, dmg: 28, exp: 160, speed: 3.8, color: 0x38bdf8, scale: 1.3, level: 8 },
-    magma_drake: { name: "Magma Drake", hp: 500, dmg: 40, exp: 240, speed: 6.5, color: 0xef4444, scale: 1.2, level: 12 },
-    titan_boss: { name: "Ancient Magma Titan", hp: 3500, dmg: 65, exp: 2000, speed: 4.2, color: 0xb91c1c, scale: 2.8, level: 25, isBoss: true }
-  };
-
-  function createMonsterMesh(def) {
-    const g = new THREE.Group();
-    const mat = new THREE.MeshStandardMaterial({
-      color: def.color, flatShading: true, roughness: 0.5,
-      emissive: def.isBoss ? 0x7f1d1d : 0x000000, emissiveIntensity: 0.4
-    });
-
-    if (def.name.includes("Slime")) {
-      const body = new THREE.Mesh(new THREE.DodecahedronGeometry(0.8, 1), mat);
-      body.position.y = 0.6; body.castShadow = true; g.add(body);
-    } else if (def.isBoss) {
-      const torso = new THREE.Mesh(new THREE.BoxGeometry(2, 2.5, 1.5), mat);
-      torso.position.y = 2.5; torso.castShadow = true; g.add(torso);
-      const head = new THREE.Mesh(new THREE.DodecahedronGeometry(0.9, 0), mat);
-      head.position.y = 4.2; g.add(head);
-    } else {
-      const body = new THREE.Mesh(new THREE.BoxGeometry(1, 0.9, 1.4), mat);
-      body.position.y = 0.7; body.castShadow = true; g.add(body);
-      const head = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.6, 0.6), mat);
-      head.position.set(0, 1.2, 0.8); g.add(head);
+  // ── STORYLINE & INTERACTIVE NPCS ────────────────────────────────────────
+  const npcs = [
+    {
+      id: 'cedric', name: 'Elder Cedric', role: 'Village Elder', icon: '🧙‍♂️',
+      x: 0, z: -5,
+      dialogues: [
+        "Welcome to Haven's Glade, brave traveler. Corrupted Shadow Slimes are spreading from the outskirts. Slay 3 of them to prove your strength!",
+        "Well fought! Next, seek out Torvin the Blacksmith to learn the art of base building.",
+        "The realm honors your deeds. Safe travels on your journey to the Caldera!"
+      ]
+    },
+    {
+      id: 'torvin', name: 'Blacksmith Torvin', role: 'Master Smith', icon: '⚒️',
+      x: 10, z: -5,
+      dialogues: [
+        "Need sturdy fortifications? Use [B] to construct 2 defensive structures for the village!",
+        "Sturdy craftsmanship! The ancient Shrines across the biomes will grant you immense power.",
+        "May your hammer strike true!"
+      ]
+    },
+    {
+      id: 'lyra', name: 'High Priestess Lyra', role: 'Shrine Maiden', icon: '✨',
+      x: -6, z: 8,
+      dialogues: [
+        "The Ancient Magma Titan has awoken in the volcanic caldera. Step through the mountain rift portal when you are ready for the final battle!",
+        "May the light of Aethelgard guide your blade against the Titan!"
+      ]
     }
-    g.scale.set(def.scale, def.scale, def.scale);
-    return g;
-  }
+  ];
 
-  function spawnMonster(typeKey, x, z) {
-    const def = MONSTER_DEFS[typeKey];
-    const mesh = createMonsterMesh(def);
-    const y = getTerrainHeight(x, z);
-    mesh.position.set(x, y, z);
-    scene.add(mesh);
-
-    monsters.push({
-      def: def, mesh: mesh, x: x, z: z, y: y,
-      hp: def.hp, maxHp: def.hp, state: 'wander',
-      target: null, attackCooldown: 0, homeX: x, homeZ: z
-    });
-  }
-
-  for (let i = 0; i < 20; i++) spawnMonster('slime', (Math.random() - 0.5) * 80, (Math.random() - 0.5) * 80);
-  for (let i = 0; i < 14; i++) spawnMonster('boar', -30 - Math.random() * 60, -30 - Math.random() * 60);
-  for (let i = 0; i < 12; i++) spawnMonster('spider', -80 - Math.random() * 70, -80 - Math.random() * 70);
-  for (let i = 0; i < 12; i++) spawnMonster('frost_golem', 80 + Math.random() * 70, -80 - Math.random() * 70);
-  for (let i = 0; i < 10; i++) spawnMonster('magma_drake', 80 + Math.random() * 70, 80 + Math.random() * 70);
-  spawnMonster('titan_boss', 130, 130);
-
-  // ── 8. SIMULATED MMO HEROES ─────────────────────────────────────────────
-  const npcHeroes = [];
-  const NPC_NAMES = ["Valkyrie_Rose", "ShadowNinja", "GandalfTheGrey", "IronClad99", "PixelKnight", "LootGoblin", "HealerWaifu", "ElvenRanger"];
-
-  function createHeroMesh(color = 0x3b82f6) {
+  npcs.forEach(npc => {
     const g = new THREE.Group();
-    const body = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.9, 0.35), new THREE.MeshStandardMaterial({ color: color, flatShading: true }));
-    body.position.y = 0.55; body.castShadow = true; g.add(body);
-    const head = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.4, 0.4), new THREE.MeshStandardMaterial({ color: 0xffcc99, flatShading: true }));
-    head.position.y = 1.2; head.castShadow = true; g.add(head);
-    return g;
-  }
+    const body = new THREE.Mesh(new THREE.BoxGeometry(0.6, 1.2, 0.4), new THREE.MeshStandardMaterial({ color: 0x0284c7, flatShading: true }));
+    body.position.y = 0.6; g.add(body);
+    const head = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), new THREE.MeshStandardMaterial({ color: 0xffcc99, flatShading: true }));
+    head.position.y = 1.45; g.add(head);
+    g.position.set(npc.x, getTerrainHeight(npc.x, npc.z), npc.z);
+    scene.add(g);
+    npc.mesh = g;
+  });
 
-  for (let i = 0; i < 10; i++) {
-    const hx = (Math.random() - 0.5) * 120;
-    const hz = (Math.random() - 0.5) * 120;
-    const hy = getTerrainHeight(hx, hz);
-    const mesh = createHeroMesh(i % 2 === 0 ? 0x38bdf8 : 0xec4899);
-    mesh.position.set(hx, hy, hz);
-    scene.add(mesh);
-    npcHeroes.push({ name: NPC_NAMES[i % NPC_NAMES.length], mesh: mesh, x: hx, z: hz, y: hy, chatCooldown: 10 + Math.random() * 20 });
-  }
-
-  // ── 9. PLAYER HERO & MOUNT SYSTEM ───────────────────────────────────────
+  // ── PLAYER HERO ─────────────────────────────────────────────────────────
   const player = {
     group: new THREE.Group(),
     lvl: 1, hp: 100, maxHp: 100,
     mp: 60, maxMp: 60,
     sta: 100, maxSta: 100,
     exp: 0, expNext: 100,
-    skillPoints: 0,
+    atk: 30, matk: 20, def: 10, crit: 15,
     wood: 50, stone: 30, crystal: 5, gold: 120,
-    atk: 25, matk: 35, def: 10, crit: 15,
     kills: 0, builtCount: 0,
-    slimeKills: 0,
-    isMounted: false,
-    isRolling: false, rollTimer: 0, rollDir: new THREE.Vector3(),
-    unlockedSkills: new Set(['w1', 'm1', 'm2', 'm3', 'm5']),
-    equippedSkills: ['w1', 'm1', 'm2', 'm3', 'm5'],
-    activeCooldowns: [0, 0, 0, 0, 0, 0],
-    activeBuffs: {},
-    combo: 0, comboTimer: 0,
-    questStage: 1
+    heroClass: 'Warrior',
+    activeQuestIndex: 0,
+    quests: [
+      { name: "Act I: Haven's Trial", desc: "Speak with Elder Cedric in the village center.", goal: 'talk_cedric', done: false },
+      { name: "Act II: Cleansing the Glade", desc: "Defeat 3 Shadow Slimes in the meadow (0/3).", goal: 'slimes', count: 0, target: 3, done: false },
+      { name: "Act III: Village Bastion", desc: "Construct 2 base structures using [B] (0/2).", goal: 'build', count: 0, target: 2, done: false },
+      { name: "Act IV: The Caldera Titan", desc: "Journey to the volcano and defeat the Ancient Titan.", goal: 'boss', done: false }
+    ]
   };
 
   const pBody = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.9, 0.4), new THREE.MeshStandardMaterial({ color: 0x2563eb, flatShading: true }));
-  pBody.position.y = 0.65; pBody.castShadow = true; player.group.add(pBody);
-
+  pBody.position.y = 0.65; player.group.add(pBody);
   const pHead = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.48, 0.48), new THREE.MeshStandardMaterial({ color: 0xffcc99, flatShading: true }));
-  pHead.position.y = 1.35; pHead.castShadow = true; player.group.add(pHead);
-
-  const pHat = new THREE.Mesh(new THREE.ConeGeometry(0.35, 0.6, 5), new THREE.MeshStandardMaterial({ color: 0xf59e0b, flatShading: true }));
-  pHat.position.y = 1.85; player.group.add(pHat);
-
-  const weaponMesh = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.04, 0.04, 1.2, 5),
-    new THREE.MeshStandardMaterial({ color: 0xf59e0b, emissive: 0xd97706, emissiveIntensity: 0.5 })
-  );
-  weaponMesh.position.set(0.45, 0.7, 0.2); weaponMesh.rotation.x = Math.PI / 6;
-  player.group.add(weaponMesh);
-
-  const mountGroup = new THREE.Group();
-  const mBody = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.8, 1.8), new THREE.MeshStandardMaterial({ color: 0x475569, flatShading: true }));
-  mBody.position.y = 0.6; mountGroup.add(mBody);
-  const mHead = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.6, 0.8), new THREE.MeshStandardMaterial({ color: 0x334155, flatShading: true }));
-  mHead.position.set(0, 1.1, 1.0); mountGroup.add(mHead);
-  mountGroup.visible = false;
-  player.group.add(mountGroup);
+  pHead.position.y = 1.35; player.group.add(pHead);
+  const weapon = new THREE.Mesh(new THREE.BoxGeometry(0.1, 1.2, 0.2), new THREE.MeshStandardMaterial({ color: 0xf59e0b, emissive: 0xd97706, emissiveIntensity: 0.5 }));
+  weapon.position.set(0.45, 0.7, 0.2); weapon.rotation.x = Math.PI / 6;
+  player.group.add(weapon);
 
   player.group.position.set(0, getTerrainHeight(0, 0), 0);
   scene.add(player.group);
 
-  // ── 10. SANDBOX BUILDING SYSTEM & COLLISION ─────────────────────────────
-  let isBuildMode = false;
-  let selectedBlueprint = 'wood_wall';
-  const placedBuildings = [];
-
-  const ghostGroup = new THREE.Group();
-  const ghostMat = new THREE.MeshBasicMaterial({ color: 0x22c55e, transparent: true, opacity: 0.5, wireframe: true });
-  const ghostBox = new THREE.Mesh(new THREE.BoxGeometry(3, 2.5, 0.4), ghostMat);
-  ghostGroup.add(ghostBox); scene.add(ghostGroup); ghostGroup.visible = false;
-
-  const BUILDING_COSTS = {
-    wood_wall: { wood: 10, stone: 0, crystal: 0, name: "Wood Wall" },
-    stone_wall: { wood: 0, stone: 15, crystal: 0, name: "Stone Bastion" },
-    floor: { wood: 10, stone: 0, crystal: 0, name: "Wood Platform" },
-    ramp: { wood: 10, stone: 0, crystal: 0, name: "Staircase Ramp" },
-    campfire: { wood: 15, stone: 5, crystal: 0, name: "Heal Campfire" },
-    turret: { wood: 25, stone: 15, crystal: 0, name: "Auto-Turret" },
-    crystal_pylon: { wood: 0, stone: 20, crystal: 5, name: "Mana Pylon" }
-  };
-
-  function createBuildingMesh(type) {
+  // ── MONSTERS ────────────────────────────────────────────────────────────
+  const monsters = [];
+  function spawnMob(name, hp, dmg, exp, x, z, col = 0x22c55e, scale = 0.8, isBoss = false) {
     const g = new THREE.Group();
-    if (type === 'wood_wall') {
-      const m = new THREE.Mesh(new THREE.BoxGeometry(3, 2.5, 0.4), new THREE.MeshStandardMaterial({ color: 0x854d0e, flatShading: true }));
-      m.position.y = 1.25; m.castShadow = true; g.add(m);
-    } else if (type === 'stone_wall') {
-      const m = new THREE.Mesh(new THREE.BoxGeometry(3, 3, 0.6), new THREE.MeshStandardMaterial({ color: 0x64748b, flatShading: true }));
-      m.position.y = 1.5; m.castShadow = true; g.add(m);
-    } else if (type === 'floor') {
-      const m = new THREE.Mesh(new THREE.BoxGeometry(3, 0.2, 3), new THREE.MeshStandardMaterial({ color: 0xa16207, flatShading: true }));
-      m.position.y = 0.1; g.add(m);
-    } else if (type === 'ramp') {
-      const m = new THREE.Mesh(new THREE.BoxGeometry(3, 0.2, 3.5), new THREE.MeshStandardMaterial({ color: 0x854d0e, flatShading: true }));
-      m.rotation.x = Math.PI / 6; m.position.y = 0.8; g.add(m);
-    } else if (type === 'campfire') {
-      const fire = new THREE.Mesh(new THREE.ConeGeometry(0.4, 0.8, 5), new THREE.MeshBasicMaterial({ color: 0xf97316 }));
-      fire.position.y = 0.4; g.add(fire);
-    } else if (type === 'turret') {
-      const base = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.8, 2, 6), new THREE.MeshStandardMaterial({ color: 0x475569, flatShading: true }));
-      base.position.y = 1; g.add(base);
-    } else if (type === 'crystal_pylon') {
-      const cry = new THREE.Mesh(new THREE.OctahedronGeometry(0.8, 0), new THREE.MeshStandardMaterial({ color: 0xa855f7, emissive: 0x7e22ce, emissiveIntensity: 0.8 }));
-      cry.position.y = 2.2; g.add(cry);
-    }
-    return g;
+    const mat = new THREE.MeshStandardMaterial({ color: col, flatShading: true, emissive: isBoss ? 0x7f1d1d : 0x000000 });
+    const body = new THREE.Mesh(new THREE.DodecahedronGeometry(1.0, 1), mat);
+    body.position.y = 0.7; g.add(body);
+    g.scale.set(scale, scale, scale);
+    const y = getTerrainHeight(x, z);
+    g.position.set(x, y, z);
+    scene.add(g);
+    monsters.push({ name, hp, maxHp: hp, dmg, exp, mesh: g, x, z, y, isBoss, state: 'wander', atkCd: 0 });
   }
 
-  function placeCurrentBuilding() {
-    const cost = BUILDING_COSTS[selectedBlueprint];
-    if (player.wood < cost.wood || player.stone < cost.stone || player.crystal < cost.crystal) {
-      addChatMessage("System", "❌ Not enough resources!", "chat-system"); return;
-    }
-    player.wood -= cost.wood; player.stone -= cost.stone; player.crystal -= cost.crystal;
-    updateResourceUI();
+  for (let i = 0; i < 18; i++) spawnMob("Shadow Slime", 60, 6, 30, (Math.random()-0.5)*70 + 20, (Math.random()-0.5)*70 + 20, 0x15803d, 0.7);
+  spawnMob("Ancient Magma Titan", 3000, 55, 2000, 130, 130, 0xb91c1c, 3.0, true);
 
-    const mesh = createBuildingMesh(selectedBlueprint);
-    mesh.position.copy(ghostGroup.position);
-    mesh.rotation.y = ghostGroup.rotation.y;
-    scene.add(mesh);
+  // ── GAME STATE & CAMERA TRANSITIONS ─────────────────────────────────────
+  let gameState = 'MENU'; // 'MENU' | 'SPAWNING' | 'PLAYING'
+  let spawnProgress = 0;
+  let yaw = 0, pitch = 0.2;
+  let activeDialogueNPC = null;
 
-    placedBuildings.push({
-      type: selectedBlueprint, mesh: mesh,
-      x: mesh.position.x, y: mesh.position.y, z: mesh.position.z,
-      attackCooldown: 0
-    });
-    player.builtCount++;
-    addExp(15);
-    sfx.playBuild();
-    addChatMessage("System", "🔨 Built " + cost.name + "!", "chat-loot");
-    checkQuestProgress('build');
+  function selectClass(cls) {
+    player.heroClass = cls;
+    document.querySelectorAll('.class-btn').forEach(b => b.classList.remove('selected'));
+    document.getElementById('cls-' + cls.toLowerCase()).classList.add('selected');
+    document.getElementById('char-class').textContent = cls;
+    const icons = { Warrior: '⚔️', Mage: '🔮', Rogue: '🏹' };
+    document.getElementById('hero-avatar').textContent = icons[cls];
   }
 
-  function dismantleNearbyBuilding() {
-    let nearest = null;
-    let minDist = 4.0;
-    placedBuildings.forEach((b, idx) => {
-      const d = Math.hypot(b.x - player.group.position.x, b.z - player.group.position.z);
-      if (d < minDist) {
-        minDist = d;
-        nearest = { b: b, idx: idx };
+  function startAdventure() {
+    sfx.playFanfare();
+    document.getElementById('main-menu').classList.add('hidden');
+    document.getElementById('cinematic-bars').classList.add('active');
+    document.getElementById('act-banner').classList.add('show');
+    gameState = 'SPAWNING';
+    spawnProgress = 0;
+
+    setTimeout(() => {
+      document.getElementById('act-banner').classList.remove('show');
+      document.getElementById('cinematic-bars').classList.remove('active');
+      document.getElementById('hud').classList.add('active');
+      gameState = 'PLAYING';
+    }, 2800);
+  }
+
+  // ── INTERACTIVE DIALOGUE SYSTEM ─────────────────────────────────────────
+  function openDialogue(npc) {
+    activeDialogueNPC = npc;
+    const modal = document.getElementById('dialogue-modal');
+    document.getElementById('diag-portrait').textContent = npc.icon;
+    document.getElementById('diag-name').textContent = npc.name;
+    document.getElementById('diag-speech').textContent = npc.dialogues[0];
+    modal.style.display = 'flex';
+  }
+
+  function advanceStoryDialogue() {
+    if (activeDialogueNPC && activeDialogueNPC.id === 'cedric' && player.activeQuestIndex === 0) {
+      player.activeQuestIndex = 1;
+      updateQuestHUD();
+      sfx.playFanfare();
+      showToast("📜 NEW QUEST: Slay 3 Shadow Slimes!");
+    }
+    closeDialogue();
+  }
+
+  function closeDialogue() {
+    document.getElementById('dialogue-modal').style.display = 'none';
+  }
+
+  function updateQuestHUD() {
+    const q = player.quests[player.activeQuestIndex];
+    if (q) {
+      document.getElementById('hud-quest-name').textContent = q.name;
+      document.getElementById('hud-quest-desc').textContent = q.desc;
+    }
+  }
+
+  // ── COMBAT & DAMAGE ─────────────────────────────────────────────────────
+  function castSkill(slot) {
+    sfx.playSwing();
+    monsters.forEach(m => {
+      if (Math.hypot(m.x - player.group.position.x, m.z - player.group.position.z) < 5.0) {
+        m.hp -= 35;
+        sfx.playHit();
+        showDamage(35, m.mesh.position);
+        if (m.isBoss) {
+          document.getElementById('boss-bar-wrap').style.display = 'flex';
+          document.getElementById('boss-fill').style.width = (m.hp / m.maxHp * 100) + '%';
+        }
+        if (m.hp <= 0) {
+          player.kills++;
+          document.getElementById('char-kills').textContent = player.kills;
+          scene.remove(m.mesh);
+          monsters.splice(monsters.indexOf(m), 1);
+          if (m.isBoss) {
+            document.getElementById('boss-bar-wrap').style.display = 'none';
+            showToast("🏆 VICTORY! TITAN SLAIN!");
+          } else {
+            // Quest check
+            if (player.activeQuestIndex === 1) {
+              player.quests[1].count++;
+              document.getElementById('hud-quest-desc').textContent = `Defeat 3 Shadow Slimes (${player.quests[1].count}/3).`;
+              if (player.quests[1].count >= 3) {
+                player.activeQuestIndex = 2;
+                updateQuestHUD();
+                sfx.playFanfare();
+                showToast("📜 QUEST COMPLETE! Next: Build 2 Structures!");
+              }
+            }
+          }
+        }
       }
     });
-
-    if (nearest) {
-      const cost = BUILDING_COSTS[nearest.b.type];
-      player.wood += Math.floor(cost.wood * 0.7);
-      player.stone += Math.floor(cost.stone * 0.7);
-      player.crystal += Math.floor(cost.crystal * 0.7);
-      updateResourceUI();
-      scene.remove(nearest.b.mesh);
-      placedBuildings.splice(nearest.idx, 1);
-      sfx.playDismantle();
-      addChatMessage("System", "♻️ Dismantled structure (reclaimed 70% resources)!", "chat-loot");
-    } else {
-      addChatMessage("System", "❌ No player structures nearby to dismantle!", "chat-system");
-    }
   }
 
-  // ── 11. COMBAT, PROJECTILES & 3D LOOT DROPS ─────────────────────────────
-  const activeProjectiles = [];
-
-  function spawn3DLoot(x, y, z, type = 'gold') {
-    const g = new THREE.Mesh(
-      new THREE.DodecahedronGeometry(0.3, 0),
-      new THREE.MeshStandardMaterial({
-        color: type === 'gold' ? 0xfbbf24 : 0xa855f7,
-        emissive: type === 'gold' ? 0xd97706 : 0x7e22ce,
-        emissiveIntensity: 0.6
-      })
-    );
-    g.position.set(x, y + 0.4, z);
-    scene.add(g);
-    activeLootItems.push({ mesh: g, x: x, y: y + 0.4, z: z, type: type, life: 30 });
-  }
-
-  function spawnSpellProjectile(type, origin, dir) {
-    const pMesh = new THREE.Mesh(
-      new THREE.SphereGeometry(type === 'meteor' ? 0.9 : 0.35, 6, 6),
-      new THREE.MeshBasicMaterial({ color: type === 'fireball' ? 0xf97316 : (type === 'frost' ? 0x38bdf8 : 0xfacc15) })
-    );
-    pMesh.position.copy(origin); scene.add(pMesh);
-    activeProjectiles.push({ type: type, mesh: pMesh, dir: dir.clone().normalize(), speed: 22, life: 2.5 });
-    sfx.playMagic();
-  }
-
-  function showDamageNumber(val, worldPos, isCrit = false, color = '#ffffff') {
-    const v = worldPos.clone().project(camera);
+  function showDamage(val, pos) {
+    const v = pos.clone().project(camera);
     if (v.z > 1) return;
-    const sx = (v.x * 0.5 + 0.5) * window.innerWidth;
-    const sy = (-(v.y * 0.5) + 0.5) * window.innerHeight;
-
     const el = document.createElement('div');
-    el.className = 'dmg-text';
-    el.textContent = (isCrit ? "CRIT! " : "") + val;
-    el.style.left = sx + 'px'; el.style.top = sy + 'px';
-    el.style.color = isCrit ? '#f59e0b' : color;
-    el.style.fontSize = isCrit ? '22px' : '15px';
+    el.className = 'dmg-popup';
+    el.textContent = val;
+    el.style.left = (v.x * 0.5 + 0.5) * innerWidth + 'px';
+    el.style.top = (-(v.y * 0.5) + 0.5) * innerHeight + 'px';
+    el.style.color = '#f59e0b';
     document.body.appendChild(el);
     setTimeout(() => el.remove(), 800);
   }
 
-  function castSkill(slotIndex) {
-    if (player.activeCooldowns[slotIndex] > 0) return;
-    const skillKey = player.equippedSkills[slotIndex];
-    if (!skillKey) return;
-
-    const manaCosts = { w1: 0, m1: 15, m2: 20, m3: 25, m5: 50, w2: 20, w3: 30, r1: 15, r2: 20 };
-    const cost = manaCosts[skillKey] || 0;
-    if (player.mp < cost) { addChatMessage("System", "⚠️ Not enough Mana!", "chat-system"); return; }
-    player.mp -= cost;
-    updatePlayerHUD();
-
-    weaponMesh.rotation.x = -Math.PI / 3;
-    setTimeout(() => weaponMesh.rotation.x = Math.PI / 6, 200);
-
-    const fwd = new THREE.Vector3(-Math.sin(playerYaw), 0, -Math.cos(playerYaw));
-
-    if (skillKey === 'w1' || slotIndex === 0) {
-      sfx.playSwing();
-      player.activeCooldowns[slotIndex] = 0.45;
-      let hit = false;
-      monsters.forEach(m => {
-        if (Math.hypot(m.x - player.group.position.x, m.z - player.group.position.z) < 4.5) {
-          hit = true;
-          player.combo++;
-          player.comboTimer = 3.5;
-          const isCrit = Math.random() < (player.crit / 100);
-          const comboMul = 1.0 + Math.min(1.0, player.combo * 0.05);
-          const dmg = Math.round(player.atk * (isCrit ? 1.8 : 1.0) * comboMul);
-          damageMonster(m, dmg, isCrit);
-        }
-      });
-      if (!hit) {
-        resourceNodes.forEach(node => {
-          if (node.hp > 0 && Math.hypot(node.x - player.group.position.x, node.z - player.group.position.z) < 4.0) {
-            harvestNode(node);
-          }
-        });
-      }
-    } else if (skillKey === 'm1') {
-      player.activeCooldowns[slotIndex] = 1.2;
-      spawnSpellProjectile('fireball', player.group.position.clone().add(new THREE.Vector3(0, 1.2, 0)), fwd);
-    } else if (skillKey === 'm2') {
-      player.activeCooldowns[slotIndex] = 4.0;
-      sfx.playMagic();
-      monsters.forEach(m => {
-        if (Math.hypot(m.x - player.group.position.x, m.z - player.group.position.z) < 9.0) {
-          damageMonster(m, Math.round(player.matk * 0.9), false, '#38bdf8');
-          m.state = 'frozen';
-          setTimeout(() => { if (m.state === 'frozen') m.state = 'chase'; }, 3000);
-        }
-      });
-    } else if (skillKey === 'm3') {
-      player.activeCooldowns[slotIndex] = 2.5;
-      sfx.playMagic();
-      monsters.filter(m => Math.hypot(m.x - player.group.position.x, m.z - player.group.position.z) < 14).slice(0, 3).forEach(m => {
-        damageMonster(m, Math.round(player.matk * 1.3), true, '#facc15');
-      });
-    } else if (skillKey === 'm5') {
-      player.activeCooldowns[slotIndex] = 8.0;
-      const targetPos = player.group.position.clone().add(fwd.clone().multiplyScalar(12));
-      spawnSpellProjectile('meteor', targetPos.clone().add(new THREE.Vector3(4, 25, 4)), new THREE.Vector3(-0.2, -1, -0.2));
-    }
+  function showToast(txt) {
+    const t = document.getElementById('toast-msg');
+    t.textContent = txt; t.style.display = 'block';
+    setTimeout(() => t.style.display = 'none', 3000);
   }
-
-  function damageMonster(m, dmg, isCrit = false, color = '#ffffff') {
-    m.hp -= dmg;
-    sfx.playHit();
-    showDamageNumber(dmg, m.mesh.position.clone().add(new THREE.Vector3(0, 1.5, 0)), isCrit, color);
-
-    const tf = document.getElementById('target-frame');
-    tf.style.display = 'flex';
-    document.getElementById('target-name').textContent = m.def.name + " [Lv." + m.def.level + "]";
-    document.getElementById('target-hp-fill').style.width = Math.max(0, (m.hp / m.maxHp) * 100) + '%';
-
-    if (m.def.isBoss) {
-      document.getElementById('boss-bar-wrap').style.display = 'flex';
-      document.getElementById('boss-hp-fill').style.width = Math.max(0, (m.hp / m.maxHp) * 100) + '%';
-    }
-
-    m.state = 'chase';
-    if (m.hp <= 0) killMonster(m);
-  }
-
-  function killMonster(m) {
-    player.kills++;
-    if (m.def.name.includes("Slime")) {
-      player.slimeKills++;
-      checkQuestProgress('slime');
-    }
-    if (m.def.isBoss) {
-      checkQuestProgress('boss');
-    }
-
-    addExp(m.def.exp);
-    const goldDrop = 10 + Math.floor(Math.random() * m.def.exp * 0.5);
-    player.gold += goldDrop;
-    updateResourceUI();
-    addChatMessage("Combat", "⚔️ Defeated " + m.def.name + "! (+" + m.def.exp + " EXP, +" + goldDrop + " Gold)", "chat-loot");
-
-    // Spawn 3D Loot Coin Drop
-    spawn3DLoot(m.x, m.y, m.z, 'gold');
-
-    if (m.def.isBoss) {
-      document.getElementById('boss-bar-wrap').style.display = 'none';
-      showToast("🏆 WORLD BOSS SLAIN! TITAN DEFEATED!");
-    }
-
-    scene.remove(m.mesh);
-    const idx = monsters.indexOf(m);
-    if (idx > -1) monsters.splice(idx, 1);
-    setTimeout(() => spawnMonster(Object.keys(MONSTER_DEFS).find(k => MONSTER_DEFS[k].name === m.def.name) || 'slime', m.homeX, m.homeZ), 20000);
-  }
-
-  function harvestNode(node) {
-    node.hp--;
-    sfx.playGather();
-    const yieldAmount = 2 + Math.floor(Math.random() * 3);
-    if (node.type === 'wood') player.wood += yieldAmount;
-    if (node.type === 'stone') player.stone += yieldAmount;
-    if (node.type === 'crystal') player.crystal += yieldAmount;
-    updateResourceUI();
-    addExp(8);
-    if (node.hp <= 0) {
-      spawn3DLoot(node.x, node.y, node.z, node.type === 'crystal' ? 'crystal' : 'gold');
-      node.mesh.visible = false;
-      setTimeout(() => { node.hp = node.maxHp; node.mesh.visible = true; }, 25000);
-    }
-  }
-
-  function addExp(amt) {
-    player.exp += amt;
-    if (player.exp >= player.expNext) {
-      player.exp -= player.expNext;
-      player.lvl++;
-      player.expNext = Math.round(player.expNext * 1.5);
-      player.skillPoints += 2;
-      player.maxHp += 25; player.hp = player.maxHp;
-      player.maxMp += 15; player.mp = player.maxMp;
-      player.atk += 6; player.matk += 8;
-      sfx.playLevelUp();
-      showToast("⭐ LEVEL UP! YOU REACHED LEVEL " + player.lvl + " ⭐");
-    }
-    updatePlayerHUD();
-  }
-
-  // ── 12. DYNAMIC QUEST PROGRESSION ──────────────────────────────────────
-  function checkQuestProgress(actionType) {
-    if (player.questStage === 1 && actionType === 'slime') {
-      document.getElementById('quest-objective').textContent = `Defeat 3 Forest Slimes (${Math.min(3, player.slimeKills)}/3)`;
-      if (player.slimeKills >= 3) {
-        player.questStage = 2;
-        addExp(150); player.gold += 50; potHp += 2;
-        document.getElementById('inv-hp-count').textContent = potHp;
-        updateResourceUI();
-        sfx.playLevelUp();
-        showToast("📜 QUEST 1 COMPLETED! (+150 EXP, +50 Gold)");
-        addChatMessage("System", "🎉 Quest Complete: Plains Defender! New Quest Unlocked: Master Builder.", "chat-system");
-        updateQuestUI();
-      }
-    } else if (player.questStage === 2 && actionType === 'build') {
-      document.getElementById('quest-objective').textContent = `Construct 2 base structures (${Math.min(2, player.builtCount)}/2)`;
-      if (player.builtCount >= 2) {
-        player.questStage = 3;
-        addExp(200); player.wood += 100; player.stone += 50;
-        updateResourceUI();
-        sfx.playLevelUp();
-        showToast("📜 QUEST 2 COMPLETED! (+200 EXP, +100 Wood, +50 Stone)");
-        addChatMessage("System", "🎉 Quest Complete: Master Builder! Final Quest Unlocked: Slay the Caldera Titan.", "chat-system");
-        updateQuestUI();
-      }
-    } else if (player.questStage === 3 && actionType === 'boss') {
-      player.questStage = 4;
-      addExp(2500); player.gold += 500;
-      updateResourceUI();
-      sfx.playLevelUp();
-      showToast("🏆 ALL CHAPTER QUESTS COMPLETED! TITLE UNLOCKED: TITAN SLAYER");
-      document.getElementById('char-title').textContent = "Titan Slayer";
-      addChatMessage("System", "👑 Legendary Hero! You have conquered the Caldera Titan and finished all bounties.", "chat-loot");
-      updateQuestUI();
-    }
-  }
-
-  function updateQuestUI() {
-    const qTitle = document.getElementById('quest-title');
-    const qObj = document.getElementById('quest-objective');
-    const container = document.getElementById('quest-list-container');
-
-    if (player.questStage === 1) {
-      qTitle.textContent = "📜 Quest: Plains Defender";
-      qObj.textContent = `Defeat 3 Forest Slimes (${player.slimeKills}/3)`;
-    } else if (player.questStage === 2) {
-      qTitle.textContent = "📜 Quest: Master Builder";
-      qObj.textContent = `Construct 2 base structures (${player.builtCount}/2)`;
-    } else if (player.questStage === 3) {
-      qTitle.textContent = "📜 Quest: Slay the Caldera Titan";
-      qObj.textContent = `Defeat the Ancient Magma Titan (0/1)`;
-    } else {
-      qTitle.textContent = "🏆 Quest: All Bounties Complete!";
-      qObj.textContent = `Champion of Aethelgard`;
-    }
-
-    if (container) {
-      container.innerHTML = `
-        <div style="background:rgba(255,255,255,0.05); padding:12px; border-radius:10px; border-left:4px solid ${player.questStage > 1 ? '#10b981' : 'var(--primary)'};">
-          <h4 style="color:#fbbf24;">1. Plains Defender ${player.questStage > 1 ? '✓ (Completed)' : '(Active)'}</h4>
-          <p style="font-size:12px; opacity:0.8; margin-top:2px;">Hunt down 3 Forest Slimes around the starter meadows.</p>
-          <div style="font-size:11px; color:#34d399; margin-top:4px;">Reward: 150 EXP, 50 Gold, 2 Health Potions</div>
-        </div>
-        <div style="background:rgba(255,255,255,0.05); padding:12px; border-radius:10px; border-left:4px solid ${player.questStage > 2 ? '#10b981' : (player.questStage === 2 ? 'var(--primary)' : '#475569')};">
-          <h4 style="color:#38bdf8;">2. Master Builder ${player.questStage > 2 ? '✓ (Completed)' : (player.questStage === 2 ? '(Active)' : '')}</h4>
-          <p style="font-size:12px; opacity:0.8; margin-top:2px;">Construct any 2 base structures (Walls, Campfire, or Turrets).</p>
-          <div style="font-size:11px; color:#34d399; margin-top:4px;">Reward: 200 EXP, 100 Wood, 50 Stone</div>
-        </div>
-        <div style="background:rgba(255,255,255,0.05); padding:12px; border-radius:10px; border-left:4px solid ${player.questStage > 3 ? '#10b981' : (player.questStage === 3 ? 'var(--primary)' : '#475569')};">
-          <h4 style="color:#ef4444;">3. Slay the Caldera Titan ${player.questStage > 3 ? '✓ (Completed)' : (player.questStage === 3 ? '(Active)' : '')}</h4>
-          <p style="font-size:12px; opacity:0.8; margin-top:2px;">Defeat the Ancient Magma Titan in the volcano crater.</p>
-          <div style="font-size:11px; color:#34d399; margin-top:4px;">Reward: 2500 EXP, 500 Gold, Title: 'Titan Slayer'</div>
-        </div>
-      `;
-    }
-  }
-
-  // ── 13. POTIONS, MOUNT, FISHING & EMOTES ────────────────────────────────
-  let potHp = 3, potMp = 3, potSpd = 2;
 
   function usePotion(type) {
-    if (type === 'health' && potHp > 0) {
-      potHp--; player.hp = Math.min(player.maxHp, player.hp + 50); sfx.playDrink();
-      addChatMessage("System", "🧪 Used Health Potion (+50 HP)!", "chat-loot");
-    } else if (type === 'mana' && potMp > 0) {
-      potMp--; player.mp = Math.min(player.maxMp, player.mp + 40); sfx.playDrink();
-      addChatMessage("System", "🫙 Used Mana Potion (+40 MP)!", "chat-loot");
-    } else if (type === 'speed' && potSpd > 0) {
-      potSpd--; player.activeBuffs.speed = 15; sfx.playDrink();
-      addChatMessage("System", "⚡ Used Elixir of Swiftness (+40% Speed for 15s)!", "chat-loot");
-    }
-    document.getElementById('inv-hp-count').textContent = potHp;
-    document.getElementById('inv-mp-count').textContent = potMp;
-    document.getElementById('inv-spd-count').textContent = potSpd;
-    updatePlayerHUD();
-  }
-
-  function toggleMount() {
-    player.isMounted = !player.isMounted;
-    mountGroup.visible = player.isMounted;
-    sfx.playMount();
-    addChatMessage("System", player.isMounted ? "🐺 Mounted Direwolf (+60% Speed)!" : "Dismounted.", "chat-system");
-  }
-
-  function triggerDodgeRoll() {
-    if (player.sta >= 25 && !player.isRolling) {
-      player.sta -= 25;
-      player.isRolling = true;
-      player.rollTimer = 0.35;
-      const fwd = new THREE.Vector3(-Math.sin(playerYaw), 0, -Math.cos(playerYaw));
-      player.rollDir.copy(fwd);
-      sfx.playRoll();
+    if (type === 'hp') {
+      player.hp = Math.min(player.maxHp, player.hp + 50);
+      sfx.playFanfare();
+      document.getElementById('hp-fill').style.width = (player.hp / player.maxHp * 100) + '%';
+      document.getElementById('hp-val').textContent = player.hp + ' / ' + player.maxHp;
     }
   }
 
-  function tryFishing() {
-    if (player.group.position.y <= 0.2) {
-      sfx.playGather();
-      const caught = Math.random() > 0.4 ? "Golden Trout (+35 Gold)" : "Old Mystic Boot (+5 EXP)";
-      player.gold += 35;
-      updateResourceUI();
-      addChatMessage("System", "🎣 You fished up: " + caught + "!", "chat-loot");
-    } else {
-      addChatMessage("System", "❌ Stand near water/lake to fish!", "chat-system");
-    }
-  }
-
-  function playEmote(type) {
+  function toggleModal(id) {
+    const el = document.getElementById(id);
+    const isShow = el.style.display === 'block';
     closeModals();
-    if (type === 'dance') {
-      addChatMessage("You", "💃 is dancing gracefully!");
-      pBody.rotation.y = Math.PI; setTimeout(() => pBody.rotation.y = 0, 1500);
-    } else if (type === 'wave') {
-      addChatMessage("You", "👋 waves to everyone nearby!");
-    } else if (type === 'cheer') {
-      addChatMessage("You", "🎉 cheers with epic enthusiasm!");
+    if (!isShow) el.style.display = 'block';
+  }
+
+  function closeModals() {
+    document.querySelectorAll('.rpg-modal').forEach(m => m.style.display = 'none');
+  }
+
+  function toggleBuildMode() {
+    player.builtCount++;
+    document.getElementById('char-quests').textContent = player.builtCount;
+    showToast("🔨 Built Outpost Fortification!");
+    if (player.activeQuestIndex === 2 && player.builtCount >= 2) {
+      player.activeQuestIndex = 3;
+      updateQuestHUD();
+      sfx.playFanfare();
+      showToast("📜 ACT III COMPLETE! Final Quest: Slay the Titan!");
     }
   }
 
-  // ── 14. CONTROLS, CAMERA & INPUT ────────────────────────────────────────
+  // ── INPUT CONTROLS ──────────────────────────────────────────────────────
   const keys = {};
-  let yaw = 0, pitch = 0.2;
-  let playerYaw = 0;
-  let isLocked = false;
-  let shiftlockMode = 1;
-  let cameraZoomDistance = 7.0;
-  let isRightMouseDown = false;
-
-  const chatInput = document.getElementById('chat-input');
-
   document.addEventListener('keydown', e => {
-    // If typing in chat input, prevent game hotkeys from hijacking
-    if (document.activeElement === chatInput) {
-      if (e.code === 'Escape') chatInput.blur();
-      return;
-    }
-
     keys[e.code] = true;
+    if (e.code === 'KeyE') {
+      // Check near NPC
+      npcs.forEach(npc => {
+        if (Math.hypot(npc.x - player.group.position.x, npc.z - player.group.position.z) < 4.0) {
+          openDialogue(npc);
+        }
+      });
+    }
     if (e.code === 'KeyK') toggleModal('modal-skills');
     if (e.code === 'KeyI') toggleModal('modal-inv');
-    if (e.code === 'KeyB') toggleBuildMode();
     if (e.code === 'KeyJ') toggleModal('modal-quests');
     if (e.code === 'KeyM') toggleModal('modal-map');
-    if (e.code === 'KeyO' || e.code === 'Escape') toggleModal('modal-settings');
     if (e.code === 'KeyC') toggleModal('modal-char');
-    if (e.code === 'KeyR') toggleMount();
-    if (e.code === 'KeyV') triggerDodgeRoll();
-    if (e.code === 'KeyG') tryFishing();
-    if (e.code === 'KeyX') dismantleNearbyBuilding();
     if (e.code === 'Digit1') castSkill(1);
     if (e.code === 'Digit2') castSkill(2);
     if (e.code === 'Digit3') castSkill(3);
     if (e.code === 'Digit4') castSkill(4);
     if (e.code === 'Digit5') castSkill(5);
-    if (e.code === 'KeyF') castSkill(0);
-    if (e.code === 'ControlLeft' || e.code === 'ControlRight') {
-      shiftlockMode = (shiftlockMode + 1) % 3;
-      document.getElementById('crosshair').style.display = (shiftlockMode > 0) ? 'block' : 'none';
-    }
   });
-
   document.addEventListener('keyup', e => { keys[e.code] = false; });
-
-  document.addEventListener('mousedown', e => {
-    if (e.button === 0) {
-      if (isBuildMode) placeCurrentBuilding();
-      else castSkill(0);
-    }
-    if (e.button === 2) isRightMouseDown = true;
-  });
-
-  document.addEventListener('mouseup', e => { if (e.button === 2) isRightMouseDown = false; });
-  document.addEventListener('contextmenu', e => e.preventDefault());
-
-  renderer.domElement.addEventListener('click', () => {
-    // Only lock pointer if not clicking inside any open modal
-    const anyModalOpen = Array.from(document.querySelectorAll('.game-modal')).some(m => m.style.display === 'block');
-    if (!anyModalOpen && shiftlockMode > 0) {
-      renderer.domElement.requestPointerLock();
-    }
-  });
-
-  document.addEventListener('pointerlockchange', () => {
-    isLocked = (document.pointerLockElement === renderer.domElement);
-    document.getElementById('crosshair').style.display = (isLocked || shiftlockMode > 0) ? 'block' : 'none';
-  });
-
+  document.addEventListener('mousedown', e => { if (gameState === 'PLAYING' && e.button === 0) castSkill(0); });
   document.addEventListener('mousemove', e => {
-    if (isLocked || isRightMouseDown) {
+    if (gameState === 'PLAYING' && (document.pointerLockElement || e.buttons === 2)) {
       yaw -= e.movementX * 0.0025;
       pitch = Math.max(-0.4, Math.min(1.1, pitch + e.movementY * 0.0025));
     }
   });
-
-  document.addEventListener('wheel', e => {
-    cameraZoomDistance = Math.max(2.5, Math.min(18.0, cameraZoomDistance + e.deltaY * 0.006));
+  renderer.domElement.addEventListener('click', () => {
+    if (gameState === 'PLAYING') renderer.domElement.requestPointerLock();
   });
 
-  // ── 15. UI HELPERS & MODALS ─────────────────────────────────────────────
-  function updatePlayerHUD() {
-    document.getElementById('player-lvl-badge').textContent = "LV " + player.lvl;
-    document.getElementById('hp-val').textContent = Math.round(player.hp) + " / " + player.maxHp;
-    document.getElementById('hp-fill').style.width = (player.hp / player.maxHp * 100) + '%';
-    document.getElementById('mp-val').textContent = Math.round(player.mp) + " / " + player.maxMp;
-    document.getElementById('mp-fill').style.width = (player.mp / player.maxMp * 100) + '%';
-    document.getElementById('sta-val').textContent = Math.round(player.sta) + " / " + player.maxSta;
-    document.getElementById('sta-fill').style.width = (player.sta / player.maxSta * 100) + '%';
-    const expPct = Math.round((player.exp / player.expNext) * 100);
-    document.getElementById('exp-val').textContent = expPct + '%';
-    document.getElementById('exp-fill').style.width = expPct + '%';
-    document.getElementById('skill-pts-badge').textContent = player.skillPoints;
-    document.getElementById('modal-sp-val').textContent = player.skillPoints;
-
-    document.getElementById('char-lvl').textContent = player.lvl;
-    document.getElementById('char-atk').textContent = player.atk;
-    document.getElementById('char-matk').textContent = player.matk;
-    document.getElementById('char-def').textContent = player.def;
-    document.getElementById('char-crit').textContent = player.crit + '%';
-    document.getElementById('char-kills').textContent = player.kills;
-    document.getElementById('char-built').textContent = player.builtCount;
-
-    // Buff Badges
-    const bContainer = document.getElementById('buff-container');
-    bContainer.innerHTML = '';
-    for (const b in player.activeBuffs) {
-      if (player.activeBuffs[b] > 0) {
-        const badge = document.createElement('span');
-        badge.className = 'buff-badge';
-        badge.textContent = `${b.toUpperCase()}: ${Math.ceil(player.activeBuffs[b])}s`;
-        bContainer.appendChild(badge);
-      }
-    }
-  }
-
-  function updateResourceUI() {
-    document.getElementById('res-wood-val').textContent = player.wood;
-    document.getElementById('res-stone-val').textContent = player.stone;
-    document.getElementById('res-crystal-val').textContent = player.crystal;
-    document.getElementById('res-gold-val').textContent = player.gold;
-  }
-
-  function addChatMessage(user, msg, customClass = '') {
-    const container = document.getElementById('chat-messages');
-    const line = document.createElement('div');
-    line.className = 'chat-line ' + customClass;
-    line.innerHTML = (user === 'System') ? msg : `<span class="chat-user">${user}</span>: ${msg}`;
-    container.appendChild(line);
-    container.scrollTop = container.scrollHeight;
-  }
-
-  function showToast(text) {
-    const toast = document.getElementById('toast-notification');
-    toast.textContent = text;
-    toast.style.display = 'block';
-    setTimeout(() => toast.style.display = 'none', 3000);
-  }
-
-  function toggleModal(id) {
-    const el = document.getElementById(id);
-    const isShowing = el.style.display === 'block';
-    closeModals();
-    if (!isShowing) {
-      if (document.pointerLockElement) document.exitPointerLock();
-      el.style.display = 'block';
-      if (id === 'modal-map') renderBigMap();
-      if (id === 'modal-quests') updateQuestUI();
-    }
-  }
-
-  function closeModals() {
-    document.querySelectorAll('.game-modal').forEach(m => m.style.display = 'none');
-  }
-
-  function toggleBuildMode() {
-    isBuildMode = !isBuildMode;
-    ghostGroup.visible = isBuildMode;
-    if (isBuildMode) toggleModal('modal-build');
-  }
-
-  function selectBlueprint(type, cardEl) {
-    selectedBlueprint = type;
-    document.querySelectorAll('.build-card').forEach(c => c.classList.remove('selected'));
-    if (cardEl) cardEl.classList.add('selected');
-    closeModals();
-    isBuildMode = true;
-    ghostGroup.visible = true;
-  }
-
-  function handleSkillNodeClick(skillId) {
-    if (!player.unlockedSkills.has(skillId)) {
-      if (player.skillPoints > 0) {
-        player.skillPoints--;
-        player.unlockedSkills.add(skillId);
-        document.getElementById('node-' + skillId).classList.add('unlocked');
-        updatePlayerHUD();
-        addChatMessage("System", "✨ Unlocked skill tree perk!", "chat-loot");
-      }
-    } else {
-      // Allow equipping to active slot 1-5
-      const slot = prompt("Assign " + skillId.toUpperCase() + " to Hotbar Slot (1, 2, 3, 4, or 5):", "1");
-      const slotNum = parseInt(slot);
-      if (slotNum >= 1 && slotNum <= 5) {
-        player.equippedSkills[slotNum] = skillId;
-        const iconMap = { w1: '⚔️', w2: '🌪️', w3: '💥', m1: '🔥', m2: '❄️', m3: '⚡', m5: '☄️', r1: '🎯', r2: '💨' };
-        document.getElementById('icon-' + slotNum).textContent = iconMap[skillId] || '✨';
-        addChatMessage("System", `Equipped ${skillId.toUpperCase()} to Slot ${slotNum}!`, "chat-system");
-      }
-    }
-  }
-
-  // Wire UI Buttons
-  document.getElementById('btn-skills').onclick = () => toggleModal('modal-skills');
-  document.getElementById('btn-inv').onclick = () => toggleModal('modal-inv');
-  document.getElementById('btn-build').onclick = () => toggleBuildMode();
-  document.getElementById('btn-quests').onclick = () => toggleModal('modal-quests');
-  document.getElementById('btn-map').onclick = () => toggleModal('modal-map');
-  document.getElementById('btn-settings').onclick = () => toggleModal('modal-settings');
-
-  chatInput.addEventListener('keydown', e => {
-    if (e.key === 'Enter' && chatInput.value.trim()) {
-      addChatMessage("You", chatInput.value.trim());
-      chatInput.value = '';
-      chatInput.blur();
-    }
-  });
-
-  // Settings Handlers
-  document.getElementById('sfx-slider').oninput = e => {
-    sfx.volume = parseFloat(e.target.value);
-    document.getElementById('sfx-vol-val').textContent = Math.round(sfx.volume * 100) + '%';
-  };
-  document.getElementById('sens-slider').oninput = e => {
-    document.getElementById('sens-val').textContent = parseFloat(e.target.value).toFixed(1) + 'x';
-  };
-
-  let timeSpeedMultiplier = 1.0;
-  function toggleTimeSpeed() {
-    if (timeSpeedMultiplier === 1.0) timeSpeedMultiplier = 4.0;
-    else if (timeSpeedMultiplier === 4.0) timeSpeedMultiplier = 0.0;
-    else timeSpeedMultiplier = 1.0;
-    document.getElementById('time-spd-val').textContent = (timeSpeedMultiplier === 1.0) ? 'Normal' : (timeSpeedMultiplier === 4.0 ? 'Fast' : 'Freeze Day');
-  }
-
-  // ── 16. RADAR & BIG WORLD MAP ───────────────────────────────────────────
-  const miniCanvas = document.getElementById('minimap-canvas');
-  const miniCtx = miniCanvas.getContext('2d');
-
-  function renderMinimap() {
-    miniCtx.fillStyle = '#0f172a';
-    miniCtx.fillRect(0, 0, 136, 136);
-    const scale = 136 / terrainSize;
-    const cx = 68 + player.group.position.x * scale;
-    const cz = 68 + player.group.position.z * scale;
-
-    miniCtx.fillStyle = '#1b4332'; miniCtx.fillRect(0, 0, 68, 68);
-    miniCtx.fillStyle = '#64748b'; miniCtx.fillRect(68, 0, 68, 68);
-    miniCtx.fillStyle = '#78350f'; miniCtx.fillRect(0, 68, 68, 68);
-    miniCtx.fillStyle = '#450a0a'; miniCtx.fillRect(68, 68, 68, 68);
-    miniCtx.fillStyle = '#22c55e'; miniCtx.beginPath(); miniCtx.arc(68, 68, 22, 0, Math.PI*2); miniCtx.fill();
-
-    monsters.forEach(m => {
-      miniCtx.fillStyle = m.def.isBoss ? '#ef4444' : '#f87171';
-      miniCtx.beginPath();
-      miniCtx.arc(68 + m.x * scale, 68 + m.z * scale, m.def.isBoss ? 4 : 2, 0, Math.PI * 2);
-      miniCtx.fill();
-    });
-
-    miniCtx.fillStyle = '#fbbf24';
-    miniCtx.beginPath(); miniCtx.arc(cx, cz, 3.5, 0, Math.PI * 2); miniCtx.fill();
-
-    document.getElementById('biome-tag').textContent = getBiomeType(player.group.position.x, player.group.position.z).replace('_', ' ');
-  }
-
-  function renderBigMap() {
-    const bCanvas = document.getElementById('big-map-canvas');
-    const bCtx = bCanvas.getContext('2d');
-    bCtx.fillStyle = '#0f172a'; bCtx.fillRect(0, 0, 500, 500);
-    const scale = 500 / terrainSize;
-
-    bCtx.fillStyle = '#1b4332'; bCtx.fillRect(0, 0, 250, 250);
-    bCtx.fillStyle = '#64748b'; bCtx.fillRect(250, 0, 250, 250);
-    bCtx.fillStyle = '#78350f'; bCtx.fillRect(0, 250, 250, 250);
-    bCtx.fillStyle = '#450a0a'; bCtx.fillRect(250, 250, 250, 250);
-    bCtx.fillStyle = '#22c55e'; bCtx.beginPath(); bCtx.arc(250, 250, 75, 0, Math.PI*2); bCtx.fill();
-
-    shrines.forEach(s => {
-      bCtx.fillStyle = '#a855f7'; bCtx.beginPath();
-      bCtx.arc(250 + s.x * scale, 250 + s.z * scale, 6, 0, Math.PI*2); bCtx.fill();
-    });
-
-    bCtx.fillStyle = '#fbbf24'; bCtx.beginPath();
-    bCtx.arc(250 + player.group.position.x * scale, 250 + player.group.position.z * scale, 7, 0, Math.PI*2); bCtx.fill();
-  }
-
-  // ── 17. MAIN GAME LOOP ──────────────────────────────────────────────────
+  // ── MAIN ANIMATION LOOP ─────────────────────────────────────────────────
   const clock = new THREE.Clock();
-  let vy = 0;
-  let worldTime = 0.25;
 
   function animate() {
     requestAnimationFrame(animate);
     const dt = Math.min(clock.getDelta(), 0.05);
 
-    // 1. Day / Night Orbit & Sky Light
-    if (timeSpeedMultiplier > 0) {
-      worldTime = (worldTime + dt * 0.005 * timeSpeedMultiplier) % 1.0;
-    }
-    const sunAngle = worldTime * Math.PI * 2;
-    sunLight.position.set(Math.cos(sunAngle) * 200, Math.sin(sunAngle) * 200, 80);
-    const isDay = Math.sin(sunAngle) > 0;
-    const skyColor = isDay ? new THREE.Color(0x7ec8e3).lerp(new THREE.Color(0xf59e0b), Math.max(0, 1 - Math.sin(sunAngle)*1.8)) : new THREE.Color(0x050811);
-    scene.background = skyColor;
-    scene.fog.color = skyColor;
-    starsMat.opacity = isDay ? 0 : 0.8;
-    const hour = Math.floor(worldTime * 24);
-    const min = Math.floor((worldTime * 24 % 1) * 60);
-    document.getElementById('world-time-tag').textContent = (isDay ? '☀️ ' : '🌙 ') + (hour<10?'0':'')+hour + ':' + (min<10?'0':'')+min;
+    if (gameState === 'MENU') {
+      // Slow scenic orbit around starting village
+      const t = clock.getElapsedTime() * 0.15;
+      camera.position.set(Math.cos(t) * 45, 25, Math.sin(t) * 45);
+      camera.lookAt(0, 2, 0);
+    } else if (gameState === 'SPAWNING') {
+      // Cinematic Fly-in Transition
+      spawnProgress += dt * 0.45;
+      const t = Math.min(1.0, spawnProgress);
+      const easeT = 1 - Math.pow(1 - t, 3);
+      camera.position.lerpVectors(new THREE.Vector3(0, 60, 70), new THREE.Vector3(0, 5, 8), easeT);
+      camera.lookAt(player.group.position.x, player.group.position.y + 1.2, player.group.position.z);
+    } else if (gameState === 'PLAYING') {
+      // Player Movement
+      const speed = (keys['ShiftLeft'] || keys['ShiftRight']) ? 14 : 7;
+      const fwd = new THREE.Vector3(-Math.sin(yaw), 0, -Math.cos(yaw));
+      const right = new THREE.Vector3(Math.cos(yaw), 0, -Math.sin(yaw));
+      const move = new THREE.Vector3();
 
-    // 2. Regeneration & Buffs
-    player.mp = Math.min(player.maxMp, player.mp + 4 * dt);
-    player.sta = Math.min(player.maxSta, player.sta + 15 * dt);
-
-    for (const b in player.activeBuffs) {
-      if (player.activeBuffs[b] > 0) {
-        player.activeBuffs[b] -= dt;
-      }
-    }
-
-    if (player.comboTimer > 0) {
-      player.comboTimer -= dt;
-      document.getElementById('combo-meter').style.display = 'block';
-      document.getElementById('combo-count').textContent = player.combo;
-    } else {
-      player.combo = 0;
-      document.getElementById('combo-meter').style.display = 'none';
-    }
-
-    // Shrines check
-    shrines.forEach(s => {
-      s.crystal.rotation.y += 1.5 * dt;
-      if (Math.hypot(s.x - player.group.position.x, s.z - player.group.position.z) < 5) {
-        player.activeBuffs[s.buffType] = 30;
-      }
-    });
-
-    // Portal check
-    portalRing.rotation.z += 2.0 * dt;
-    if (Math.hypot(100 - player.group.position.x, -60 - player.group.position.z) < 3.5) {
-      player.group.position.set(120, getTerrainHeight(120, 120), 120);
-      showToast("🌀 TELEPORTED TO TITAN'S CALDERA LAIR! 🌀");
-    }
-
-    // 3. Loot Pickup Magnetic Sweep
-    for (let i = activeLootItems.length - 1; i >= 0; i--) {
-      const item = activeLootItems[i];
-      item.mesh.rotation.y += 3.0 * dt;
-      const d = Math.hypot(item.x - player.group.position.x, item.z - player.group.position.z);
-      if (d < 3.0) {
-        sfx.playCoin();
-        if (item.type === 'gold') {
-          player.gold += 20;
-          addChatMessage("Loot", "🪙 Picked up 20 Gold!", "chat-loot");
-        } else {
-          player.crystal += 2;
-          addChatMessage("Loot", "💎 Picked up 2 Crystals!", "chat-loot");
-        }
-        updateResourceUI();
-        scene.remove(item.mesh);
-        activeLootItems.splice(i, 1);
-      }
-    }
-
-    updatePlayerHUD();
-
-    // 4. Movement, Dodge Roll & Swimming Physics
-    let currentSpeed = (keys['ShiftLeft'] || keys['ShiftRight']) ? 14 : 7;
-    if (player.isMounted) currentSpeed *= 1.6;
-    if (player.activeBuffs.speed) currentSpeed *= 1.4;
-
-    const forward = new THREE.Vector3(-Math.sin(yaw), 0, -Math.cos(yaw));
-    const right = new THREE.Vector3(Math.cos(yaw), 0, -Math.sin(yaw));
-    const move = new THREE.Vector3();
-
-    if (player.isRolling) {
-      player.rollTimer -= dt;
-      player.group.position.addScaledVector(player.rollDir, 18 * dt);
-      if (player.rollTimer <= 0) player.isRolling = false;
-    } else {
-      if (keys['KeyW'] || keys['ArrowUp']) move.add(forward);
-      if (keys['KeyS'] || keys['ArrowDown']) move.sub(forward);
+      if (keys['KeyW'] || keys['ArrowUp']) move.add(fwd);
+      if (keys['KeyS'] || keys['ArrowDown']) move.sub(fwd);
       if (keys['KeyA'] || keys['ArrowLeft']) move.sub(right);
       if (keys['KeyD'] || keys['ArrowRight']) move.add(right);
 
       if (move.length() > 0) {
         move.normalize();
-        player.group.position.x += move.x * currentSpeed * dt;
-        player.group.position.z += move.z * currentSpeed * dt;
-        if (shiftlockMode === 0) {
-          const targetYaw = Math.atan2(move.x, move.z);
-          let diff = targetYaw - playerYaw;
-          diff = Math.atan2(Math.sin(diff), Math.cos(diff));
-          playerYaw += diff * 10 * dt;
+        player.group.position.addScaledVector(move, speed * dt);
+        player.group.rotation.y = Math.atan2(move.x, move.z);
+      }
+
+      player.group.position.y = getTerrainHeight(player.group.position.x, player.group.position.z);
+
+      // Camera Follow
+      const head = player.group.position.clone().add(new THREE.Vector3(0, 1.4, 0));
+      const camOffset = new THREE.Vector3(
+        Math.sin(yaw) * Math.cos(pitch) * 7.0,
+        Math.sin(pitch) * 7.0,
+        Math.cos(yaw) * Math.cos(pitch) * 7.0
+      );
+      camera.position.copy(head).add(camOffset);
+      camera.lookAt(head);
+
+      // Check near NPC prompt
+      let nearNPC = false;
+      npcs.forEach(npc => {
+        if (Math.hypot(npc.x - player.group.position.x, npc.z - player.group.position.z) < 4.0) {
+          nearNPC = true;
         }
-      }
+      });
+      document.getElementById('interact-prompt').style.display = nearNPC ? 'block' : 'none';
     }
-
-    if (shiftlockMode > 0) {
-      const targetYaw = yaw + Math.PI;
-      let diff = targetYaw - playerYaw;
-      diff = Math.atan2(Math.sin(diff), Math.cos(diff));
-      playerYaw += diff * (shiftlockMode === 2 ? 30 : 12) * dt;
-    }
-    player.group.quaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), playerYaw);
-
-    const groundY = getTerrainHeight(player.group.position.x, player.group.position.z);
-    
-    // Check placed platform/floor collision
-    let highestStandingY = groundY;
-    placedBuildings.forEach(b => {
-      if ((b.type === 'floor' || b.type === 'ramp') && Math.hypot(b.x - player.group.position.x, b.z - player.group.position.z) < 2.0) {
-        if (b.y >= groundY && b.y <= player.group.position.y + 0.8) {
-          highestStandingY = Math.max(highestStandingY, b.y);
-        }
-      }
-    });
-
-    if (player.group.position.y > highestStandingY + 0.05) {
-      vy -= 24 * dt;
-    } else {
-      player.group.position.y = highestStandingY;
-      vy = 0;
-      if (keys['Space']) vy = 9.5;
-    }
-    player.group.position.y += vy * dt;
-
-    // 5. Ghost Building Placement
-    if (isBuildMode) {
-      const gx = player.group.position.x - Math.sin(playerYaw) * 5.0;
-      const gz = player.group.position.z - Math.cos(playerYaw) * 5.0;
-      ghostGroup.position.set(gx, getTerrainHeight(gx, gz), gz);
-      ghostGroup.rotation.y = playerYaw;
-    }
-
-    // 6. Update Projectiles
-    for (let i = activeProjectiles.length - 1; i >= 0; i--) {
-      const p = activeProjectiles[i];
-      p.mesh.position.addScaledVector(p.dir, p.speed * dt);
-      p.life -= dt;
-      let hit = false;
-      for (const m of monsters) {
-        if (m.mesh.position.distanceTo(p.mesh.position) < (p.type === 'meteor' ? 3.5 : 1.8)) {
-          hit = true;
-          damageMonster(m, Math.round(player.matk * 1.6), true, p.type === 'fireball' ? '#f97316' : '#38bdf8');
-          break;
-        }
-      }
-      if (hit || p.life <= 0) {
-        scene.remove(p.mesh); activeProjectiles.splice(i, 1);
-      }
-    }
-
-    // 7. Monster AI
-    monsters.forEach(m => {
-      const distToPlayer = Math.hypot(m.x - player.group.position.x, m.z - player.group.position.z);
-      if (distToPlayer < 12 && m.state !== 'frozen') m.state = 'chase';
-
-      if (m.state === 'chase') {
-        const dx = player.group.position.x - m.x;
-        const dz = player.group.position.z - m.z;
-        const d = Math.hypot(dx, dz);
-        if (d > 1.8) {
-          m.x += (dx / d) * m.def.speed * dt;
-          m.z += (dz / d) * m.def.speed * dt;
-        } else {
-          m.attackCooldown -= dt;
-          if (m.attackCooldown <= 0 && !player.isRolling) {
-            m.attackCooldown = 1.4;
-            const finalDmg = Math.max(2, m.def.dmg - (player.activeBuffs.frost ? player.def + 50 : player.def));
-            player.hp = Math.max(0, player.hp - finalDmg);
-            sfx.playHit();
-            showDamageNumber(finalDmg, player.group.position.clone().add(new THREE.Vector3(0, 1.6, 0)), false, '#ef4444');
-            updatePlayerHUD();
-          }
-        }
-      }
-      m.y = getTerrainHeight(m.x, m.z);
-      m.mesh.position.set(m.x, m.y, m.z);
-      m.mesh.lookAt(player.group.position.x, m.y, player.group.position.z);
-    });
-
-    // 8. Simulated MMO NPC Adventurers
-    npcHeroes.forEach(h => {
-      h.chatCooldown -= dt;
-      if (h.chatCooldown <= 0) {
-        h.chatCooldown = 15 + Math.random() * 25;
-        const msgs = [
-          "Just mined rare crystals in the mountain!",
-          "Watch out for the magma titan!",
-          "Need more stone for the fortress ramparts.",
-          "Casting Frost Nova! Freeze them!",
-          "Let's mount up and explore the ruins!"
-        ];
-        addChatMessage(h.name, msgs[Math.floor(Math.random() * msgs.length)]);
-      }
-      h.x += (Math.random() - 0.5) * 2 * dt;
-      h.z += (Math.random() - 0.5) * 2 * dt;
-      h.y = getTerrainHeight(h.x, h.z);
-      h.mesh.position.set(h.x, h.y, h.z);
-    });
-
-    // 9. Camera Orbit Follow
-    const headPos = player.group.position.clone().add(new THREE.Vector3(0, 1.4, 0));
-    const camOffset = new THREE.Vector3(
-      Math.sin(yaw) * Math.cos(pitch) * cameraZoomDistance,
-      Math.sin(pitch) * cameraZoomDistance,
-      Math.cos(yaw) * Math.cos(pitch) * cameraZoomDistance
-    );
-    camera.position.copy(headPos).add(camOffset);
-    camera.lookAt(headPos);
-
-    // 10. Minimap Render
-    renderMinimap();
 
     renderer.render(scene, camera);
   }
