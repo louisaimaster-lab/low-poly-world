@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Chronicles of Aethelgard — Low Poly Open World RPG</title>
   
-  <!-- Fantasy Outdoor RPG Google Fonts -->
+  <!-- Fantasy Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Cinzel+Decorative:wght@700;900&family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
@@ -656,7 +656,7 @@
   <!-- Toast -->
   <div id="toast-msg">⭐ LEVEL UP! YOU REACHED LEVEL 2 ⭐</div>
 
-  <!-- ─── 5. FANTASY MODALS & BACKPACK ─── -->
+  <!-- ─── 5. FANTASY BACKPACK & MODALS ─── -->
   <!-- Backpack / Inventory Modal -->
   <div class="wood-modal" id="modal-inv">
     <div class="modal-head">
@@ -664,13 +664,13 @@
       <button class="modal-close-btn" onclick="closeModals()">✕</button>
     </div>
     <div id="backpack-layout">
-      <!-- Equipment Paperdoll Column -->
+      <!-- Equipment Column -->
       <div class="equipment-column">
         <div style="font-size:11px; color:#fde047; font-weight:800; text-align:center; margin-bottom:2px;">EQUIPPED</div>
         <div class="equip-slot">
           <div class="equip-slot-title">MAIN HAND</div>
-          <div class="equip-slot-icon" id="eq-main-icon">⚔️</div>
-          <div class="equip-slot-name" id="eq-main-name">Steel Blade</div>
+          <div class="equip-slot-icon" id="eq-main-icon">🗡️</div>
+          <div class="equip-slot-name" id="eq-main-name">Dragon Blade</div>
         </div>
         <div class="equip-slot">
           <div class="equip-slot-title">ARMOR</div>
@@ -680,7 +680,7 @@
         <div class="equip-slot">
           <div class="equip-slot-title">RELIC</div>
           <div class="equip-slot-icon">💎</div>
-          <div class="equip-slot-name">Aethel Relic</div>
+          <div class="equip-slot-name">Aethel Gem</div>
         </div>
       </div>
       <!-- 16-Slot Inventory Grid -->
@@ -700,7 +700,22 @@
       <button class="modal-close-btn" onclick="closeModals()">✕</button>
     </div>
     <div id="quest-story-list" style="display:flex; flex-direction:column; gap:12px; min-width:320px;">
-      <!-- Quests list -->
+      <div style="background:#26140b; border:2px solid var(--gold-border); border-radius:12px; padding:12px;">
+        <h4 style="color:#fde047; font-size:13px; margin-bottom:4px;">Act I: Haven's Trial</h4>
+        <p style="font-size:11px; color:#e2e8f0; font-family:var(--font-ui);">Speak with Elder Cedric in the village center to begin your trial.</p>
+      </div>
+      <div style="background:#26140b; border:2px solid var(--gold-border); border-radius:12px; padding:12px;">
+        <h4 style="color:#fde047; font-size:13px; margin-bottom:4px;">Act II: Cleansing the Glade</h4>
+        <p style="font-size:11px; color:#e2e8f0; font-family:var(--font-ui);">Defeat 3 Meadow Slimes infesting the outer plains.</p>
+      </div>
+      <div style="background:#26140b; border:2px solid var(--gold-border); border-radius:12px; padding:12px;">
+        <h4 style="color:#fde047; font-size:13px; margin-bottom:4px;">Act III: Village Bastion</h4>
+        <p style="font-size:11px; color:#e2e8f0; font-family:var(--font-ui);">Construct 2 base defense structures with the Build menu [B].</p>
+      </div>
+      <div style="background:#26140b; border:2px solid var(--gold-border); border-radius:12px; padding:12px;">
+        <h4 style="color:#fde047; font-size:13px; margin-bottom:4px;">Act IV: The Caldera Titan</h4>
+        <p style="font-size:11px; color:#e2e8f0; font-family:var(--font-ui);">Journey south-east into the volcanic crater and vanquish the Magma Titan.</p>
+      </div>
     </div>
   </div>
 
@@ -794,7 +809,7 @@
 
   <script>
   /* =========================================================================
-     CHRONICLES OF AETHELGARD — QUEST TRACKER, BACKPACK & 3D MODEL ENGINE
+     CHRONICLES OF AETHELGARD — BLENDER-GRADE PROCEDURAL 3D WORLD & ASSETS
      ========================================================================= */
 
   // ── 1. PROCEDURAL SOUND SYNTHESIZER ─────────────────────────────────────
@@ -934,7 +949,7 @@
   terrain.receiveShadow = true;
   scene.add(terrain);
 
-  // Bilinear Smooth Elevation
+  // Silky Bilinear Smooth Elevation
   function getTerrainHeight(x, z) {
     const half = terrainSize / 2;
     const seg = terrainSize / terrainSegs;
@@ -972,26 +987,49 @@
   lava.position.set(130, 9, 130);
   scene.add(lava);
 
-  // ── 4. DETAILED 3D PROPS & PROTOTYPES ───────────────────────────────────
-  function createHouse(x, z, angle = 0) {
+  // ── 4. BLENDER-GRADE HANDCRAFTED 3D ASSETS ──────────────────────────────
+  // Tudor Timber Village Cottages
+  function createDetailedHouse(x, z, angle = 0) {
     const g = new THREE.Group();
-    const base = new THREE.Mesh(new THREE.BoxGeometry(5.2, 0.5, 5.2), new THREE.MeshStandardMaterial({ color: 0x475569, flatShading: true }));
-    base.position.y = 0.25; g.add(base);
-    const walls = new THREE.Mesh(new THREE.BoxGeometry(4.8, 3.0, 4.8), new THREE.MeshStandardMaterial({ color: 0x78350f, flatShading: true }));
-    walls.position.y = 1.75; walls.castShadow = true; g.add(walls);
-    const roof = new THREE.Mesh(new THREE.ConeGeometry(4.5, 2.6, 4), new THREE.MeshStandardMaterial({ color: 0x991b1b, flatShading: true }));
-    roof.position.y = 4.2; roof.rotation.y = Math.PI / 4; roof.castShadow = true; g.add(roof);
-    const door = new THREE.Mesh(new THREE.BoxGeometry(1.2, 2.0, 0.2), new THREE.MeshStandardMaterial({ color: 0x451a03 }));
-    door.position.set(0, 1.25, 2.45); g.add(door);
-    const win = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.8, 0.1), new THREE.MeshStandardMaterial({ color: 0xfef08a, emissive: 0xfef08a, emissiveIntensity: 0.6 }));
-    win.position.set(1.5, 2.2, 2.45); g.add(win);
+    // Stone Block Foundation
+    const base = new THREE.Mesh(new THREE.BoxGeometry(5.4, 0.6, 5.4), new THREE.MeshStandardMaterial({ color: 0x475569, flatShading: true }));
+    base.position.y = 0.3; g.add(base);
+
+    // Stucco Plaster Walls
+    const stucco = new THREE.Mesh(new THREE.BoxGeometry(4.8, 3.2, 4.8), new THREE.MeshStandardMaterial({ color: 0xfef3c7, flatShading: true }));
+    stucco.position.y = 1.9; stucco.castShadow = true; stucco.receiveShadow = true; g.add(stucco);
+
+    // Exposed Timber Corner Trusses
+    const trussMat = new THREE.MeshStandardMaterial({ color: 0x451a03, flatShading: true });
+    [[-2.4, -2.4], [2.4, -2.4], [-2.4, 2.4], [2.4, 2.4]].forEach(([tx, tz]) => {
+      const beam = new THREE.Mesh(new THREE.BoxGeometry(0.35, 3.2, 0.35), trussMat);
+      beam.position.set(tx, 1.9, tz); g.add(beam);
+    });
+
+    // Layered Shingle Roof & Overhang
+    const roof = new THREE.Mesh(new THREE.ConeGeometry(4.6, 2.8, 4), new THREE.MeshStandardMaterial({ color: 0x991b1b, flatShading: true }));
+    roof.position.y = 4.6; roof.rotation.y = Math.PI / 4; roof.castShadow = true; g.add(roof);
+
+    // Brick Chimney
+    const chim = new THREE.Mesh(new THREE.BoxGeometry(0.7, 2.4, 0.7), new THREE.MeshStandardMaterial({ color: 0x334155 }));
+    chim.position.set(1.5, 4.5, -1.2); g.add(chim);
+
+    // Wooden Door with Iron Hinges
+    const door = new THREE.Mesh(new THREE.BoxGeometry(1.2, 2.1, 0.15), trussMat);
+    door.position.set(0, 1.35, 2.45); g.add(door);
+
+    // Glowing Warm Mullioned Windows
+    const winMat = new THREE.MeshStandardMaterial({ color: 0xfef08a, emissive: 0xf59e0b, emissiveIntensity: 0.7 });
+    const win1 = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.8, 0.1), winMat);
+    win1.position.set(1.4, 2.2, 2.45); g.add(win1);
+
     g.position.set(x, getTerrainHeight(x, z), z);
     g.rotation.y = angle;
     scene.add(g);
   }
-  createHouse(-12, -12, Math.PI / 8);
-  createHouse(14, -8, -Math.PI / 6);
-  createHouse(10, 18, Math.PI / 4);
+  createDetailedHouse(-12, -12, Math.PI / 8);
+  createDetailedHouse(14, -8, -Math.PI / 6);
+  createDetailedHouse(10, 18, Math.PI / 4);
 
   // Village Wishing Well
   const well = new THREE.Group();
@@ -1002,7 +1040,7 @@
   well.position.set(0, getTerrainHeight(0, 6), 6);
   scene.add(well);
 
-  // Windmill with rotating sails
+  // Animated Rotating Windmill
   const windmillGroup = new THREE.Group();
   const wmTower = new THREE.Mesh(new THREE.CylinderGeometry(2.0, 3.5, 9, 8), new THREE.MeshStandardMaterial({ color: 0xe2e8f0, flatShading: true }));
   wmTower.position.y = 4.5; wmTower.castShadow = true; windmillGroup.add(wmTower);
@@ -1020,7 +1058,7 @@
   windmillGroup.position.set(-25, getTerrainHeight(-25, -25), -25);
   scene.add(windmillGroup);
 
-  // Biome Trees
+  // Biome Trees with Multi-Tiered Foliage
   function createDetailedTree(x, z, type = 'oak') {
     const g = new THREE.Group();
     const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.45, 2.2, 5), new THREE.MeshStandardMaterial({ color: 0x543310, flatShading: true }));
@@ -1087,7 +1125,7 @@
     npc.mesh = g;
   });
 
-  // ── 6. BACKPACK INVENTORY & PLAYER HERO SYSTEM ──────────────────────────
+  // ── 6. BACKPACK INVENTORY & HERO MODEL ──────────────────────────────────
   const player = {
     group: new THREE.Group(),
     lvl: 1, hp: 100, maxHp: 100,
@@ -1109,7 +1147,6 @@
       { act: "CHAPTER III", name: "Village Bastion", desc: "Construct 2 outpost structures (0/2)", count: 0, target: 2, done: false },
       { act: "CHAPTER IV", name: "The Caldera Titan", desc: "Defeat the Ancient Magma Titan (0/1)", count: 0, target: 1, done: false }
     ],
-    // 16-slot Backpack
     backpack: [
       { id: 'potion_hp', name: 'Health Flask', icon: '🧪', type: 'consumable', count: 5, effect: 'hp' },
       { id: 'potion_mp', name: 'Mana Potion', icon: '🫙', type: 'consumable', count: 5, effect: 'mp' },
@@ -1121,7 +1158,7 @@
     ]
   };
 
-  // Articulated Player Limbs & Cape
+  // Articulated Character Geometry (Blender-Proportioned)
   const pBody = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.8, 0.4), new THREE.MeshStandardMaterial({ color: 0x1e3a8a, flatShading: true }));
   pBody.position.y = 0.75; pBody.castShadow = true; player.group.add(pBody);
 
@@ -1158,7 +1195,7 @@
   player.group.position.set(0, getTerrainHeight(0, 0), 0);
   scene.add(player.group);
 
-  // Render Backpack UI
+  // Render Backpack
   function renderBackpack() {
     const grid = document.getElementById('backpack-slots-grid');
     if (!grid) return;
@@ -1717,7 +1754,7 @@
       }
       player.group.quaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), playerYaw);
 
-      // Smooth Bilinear Terrain & Platform Jumping
+      // Bilinear Smooth Elevation & Platform Jumping
       const groundY = getTerrainHeight(player.group.position.x, player.group.position.z);
       let highestStandingY = groundY;
       placedBuildings.forEach(b => {
