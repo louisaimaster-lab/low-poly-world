@@ -3,291 +3,940 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Low Poly World — Built with Hermes</title>
+  <title>Low Poly World — Ultimate Open World MMO RPG</title>
   <script>
     window.addEventListener('error', function(e) {
-      document.body.innerHTML = '<div style="color:#ff3333;background:#111;padding:40px;font-family:monospace;z-index:9999;position:absolute;top:0;left:0;width:100%;height:100%;overflow:auto;"><h2>JavaScript Error:</h2><pre>' + e.message + '\nat ' + e.filename + ':' + e.lineno + ':' + e.colno + '\n\nStack:\n' + (e.error ? e.error.stack : 'N/A') + '</pre></div>';
-    });
-    window.addEventListener('unhandledrejection', function(e) {
-      document.body.innerHTML = '<div style="color:#ff3333;background:#111;padding:40px;font-family:monospace;z-index:9999;position:absolute;top:0;left:0;width:100%;height:100%;overflow:auto;"><h2>Unhandled Promise Rejection:</h2><pre>' + e.reason + '</pre></div>';
+      console.error("Global Game Error:", e);
     });
   </script>
+  <!-- Google Fonts for sleek low-poly RPG aesthetics -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Outfit:wght@400;600;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { overflow: hidden; background: #000; font-family: 'Segoe UI', Arial, sans-serif; }
-    canvas { display: block; }
-    #ui {
-      position: fixed; top: 20px; left: 20px; z-index: 10;
-      color: #fff; font-size: 14px;
-      background: rgba(0,0,0,0.5); padding: 16px 22px;
-      border-radius: 12px; backdrop-filter: blur(8px);
+    :root {
+      --primary: #f59e0b;
+      --primary-glow: rgba(245, 158, 11, 0.4);
+      --hp-color: #ef4444;
+      --mp-color: #3b82f6;
+      --sta-color: #10b981;
+      --exp-color: #8b5cf6;
+      --panel-bg: rgba(15, 23, 42, 0.9);
+      --panel-border: rgba(255, 255, 255, 0.14);
+      --font-title: 'Cinzel', serif;
+      --font-ui: 'Outfit', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
     }
-    #ui h1 { font-size: 18px; margin-bottom: 6px; font-weight: 600; }
-    #ui p { opacity: 0.7; font-size: 13px; line-height: 1.5; }
-    #ui kbd {
-      background: #fff2; padding: 2px 8px; border-radius: 4px;
-      font-family: monospace; font-size: 12px;
-    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
+    body { overflow: hidden; background: #050811; font-family: var(--font-ui); color: #fff; }
+    canvas { display: block; width: 100vw; height: 100vh; }
+
+    /* Crosshair */
     #crosshair {
-      position: fixed;
-      top: 40%; /* slightly above center, positioned perfectly above Bob's head! */
-      left: 50%;
+      position: fixed; top: 45%; left: 50%;
       transform: translate(-50%, -50%);
-      width: 12px;
-      height: 12px;
-      pointer-events: none;
-      z-index: 100;
-      display: none;
+      width: 14px; height: 14px;
+      pointer-events: none; z-index: 100; display: none;
     }
     #crosshair::before, #crosshair::after {
-      content: '';
-      position: absolute;
-      background: #ffffff;
-      box-shadow: 0px 0px 2px rgba(0,0,0,0.8);
+      content: ''; position: absolute; background: #fff;
+      box-shadow: 0 0 4px rgba(0,0,0,0.8);
     }
-    /* Horizontal crosshair line */
-    #crosshair::before {
-      top: 5px;
-      left: 0;
-      width: 12px;
-      height: 2px;
+    #crosshair::before { top: 6px; left: 0; width: 14px; height: 2px; }
+    #crosshair::after { top: 0; left: 6px; width: 2px; height: 14px; }
+
+    /* ─── HUD TOP LEFT: PLAYER UNIT FRAME ─── */
+    #player-frame {
+      position: fixed; top: 16px; left: 16px; z-index: 20;
+      display: flex; align-items: center; gap: 12px;
+      background: var(--panel-bg); padding: 10px 16px;
+      border-radius: 16px; border: 1px solid var(--panel-border);
+      backdrop-filter: blur(14px); box-shadow: 0 8px 32px rgba(0,0,0,0.5);
     }
-    /* Vertical crosshair line */
-    #crosshair::after {
-      top: 0;
-      left: 5px;
-      width: 2px;
-      height: 12px;
+    #player-avatar {
+      width: 54px; height: 54px; border-radius: 14px;
+      background: linear-gradient(135deg, #1e3a8a, #0f172a);
+      border: 2px solid var(--primary);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      position: relative; cursor: pointer; transition: 0.2s;
+    }
+    #player-avatar:hover { transform: scale(1.05); }
+    #player-avatar .avatar-icon { font-size: 26px; }
+    #player-lvl-badge {
+      position: absolute; bottom: -6px; right: -6px;
+      background: var(--primary); color: #000;
+      font-size: 11px; font-weight: 800; padding: 2px 6px;
+      border-radius: 10px; font-family: var(--font-mono);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.6);
+    }
+    .bar-wrap { width: 170px; display: flex; flex-direction: column; gap: 4px; }
+    .bar-row { display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; opacity: 0.9; }
+    .stat-bar {
+      width: 100%; height: 7px; background: rgba(0,0,0,0.6);
+      border-radius: 4px; overflow: hidden; position: relative;
+    }
+    .stat-fill { height: 100%; width: 100%; transition: width 0.12s ease-out; border-radius: 4px; }
+    .fill-hp { background: linear-gradient(90deg, #ef4444, #f87171); box-shadow: 0 0 8px #ef4444; }
+    .fill-mp { background: linear-gradient(90deg, #2563eb, #60a5fa); box-shadow: 0 0 8px #3b82f6; }
+    .fill-sta { background: linear-gradient(90deg, #059669, #34d399); box-shadow: 0 0 8px #10b981; }
+    .fill-exp { background: linear-gradient(90deg, #7c3aed, #a78bfa); }
+
+    /* Dynamic Active Buffs */
+    #buff-container { display: flex; gap: 4px; margin-top: 4px; }
+    .buff-badge {
+      font-size: 10px; background: rgba(255,255,255,0.15);
+      padding: 1px 5px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    /* ─── HUD TOP CENTER: TARGET & COMBO METER ─── */
+    #target-frame {
+      position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+      z-index: 20; display: none; flex-direction: column; align-items: center;
+      background: var(--panel-bg); padding: 8px 20px; border-radius: 12px;
+      border: 1px solid var(--panel-border); backdrop-filter: blur(12px);
+      min-width: 280px; box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+    }
+    #target-name { font-family: var(--font-title); font-size: 14px; font-weight: 700; color: #ffedd5; }
+    #target-bar { width: 100%; height: 10px; margin-top: 6px; }
+
+    /* Boss Header Bar */
+    #boss-bar-wrap {
+      position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+      z-index: 25; display: none; flex-direction: column; align-items: center;
+      width: 460px; max-width: 90vw;
+    }
+    #boss-title { font-family: var(--font-title); font-size: 16px; color: #f87171; letter-spacing: 2px; font-weight: 900; text-shadow: 0 0 12px rgba(239,68,68,0.9); }
+    #boss-hp-container {
+      width: 100%; height: 14px; background: rgba(0,0,0,0.85);
+      border: 2px solid #ef4444; border-radius: 8px; margin-top: 6px;
+      overflow: hidden; box-shadow: 0 0 18px rgba(239,68,68,0.6);
+    }
+    #boss-hp-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #991b1b, #ef4444, #fca5a5); transition: width 0.1s; }
+
+    /* Hit Combo Meter */
+    #combo-meter {
+      position: fixed; top: 80px; right: 180px; z-index: 20;
+      font-family: var(--font-title); font-size: 26px; font-weight: 900;
+      color: #f59e0b; text-shadow: 0 0 15px rgba(245,158,11,0.8);
+      display: none; animation: popIn 0.2s ease-out;
+    }
+    @keyframes popIn { 0% { transform: scale(0.5); } 100% { transform: scale(1.0); } }
+
+    /* ─── HUD TOP RIGHT: MINIMAP, TIME & RESOURCES ─── */
+    #top-right-hud {
+      position: fixed; top: 16px; right: 16px; z-index: 20;
+      display: flex; flex-direction: column; align-items: flex-end; gap: 8px;
+    }
+    #minimap-container {
+      width: 136px; height: 136px; border-radius: 18px;
+      background: rgba(15, 23, 42, 0.9); border: 2px solid var(--panel-border);
+      position: relative; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+    }
+    #minimap-canvas { width: 100%; height: 100%; }
+    #biome-tag {
+      position: absolute; bottom: 4px; left: 0; right: 0; text-align: center;
+      font-size: 10px; font-weight: 800; color: #fbbf24; text-shadow: 0 1px 3px #000;
+      background: rgba(0,0,0,0.65); padding: 2px 0;
+    }
+    #world-time-tag {
+      position: absolute; top: 4px; right: 6px; font-size: 9px;
+      font-family: var(--font-mono); font-weight: 700; color: #e2e8f0;
+      background: rgba(0,0,0,0.6); padding: 1px 4px; border-radius: 4px;
+    }
+    #resource-bar {
+      display: flex; gap: 8px; background: var(--panel-bg);
+      padding: 6px 12px; border-radius: 10px; border: 1px solid var(--panel-border);
+      font-size: 12px; font-weight: 700; font-family: var(--font-mono);
+      backdrop-filter: blur(12px);
+    }
+    .res-item { display: flex; align-items: center; gap: 4px; }
+    .res-wood { color: #f59e0b; }
+    .res-stone { color: #94a3b8; }
+    .res-crystal { color: #a855f7; }
+    .res-gold { color: #eab308; }
+
+    /* Active Dynamic Quest Tracker */
+    #quest-tracker {
+      background: var(--panel-bg); border: 1px solid var(--panel-border);
+      border-radius: 12px; padding: 10px 14px; width: 220px; font-size: 12px;
+      backdrop-filter: blur(10px); box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+    }
+    #quest-tracker h3 { font-family: var(--font-title); font-size: 12px; color: var(--primary); margin-bottom: 4px; }
+    #quest-objective { font-size: 11px; opacity: 0.85; }
+
+    /* ─── HUD BOTTOM CENTER: HOTBAR & SKILLS ─── */
+    #hotbar-wrap {
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+      z-index: 20; display: flex; gap: 8px; align-items: center;
+      background: var(--panel-bg); padding: 8px 12px;
+      border-radius: 18px; border: 1px solid var(--panel-border);
+      backdrop-filter: blur(14px); box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+    }
+    .hotbar-slot {
+      width: 52px; height: 52px; border-radius: 12px;
+      background: rgba(30, 41, 59, 0.7); border: 2px solid rgba(255,255,255,0.15);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      position: relative; cursor: pointer; transition: 0.15s ease;
+    }
+    .hotbar-slot:hover { border-color: var(--primary); transform: translateY(-2px); }
+    .hotbar-slot.active { border-color: #22c55e; box-shadow: 0 0 12px rgba(34,197,94,0.5); }
+    .slot-key {
+      position: absolute; top: 2px; left: 4px;
+      font-size: 10px; font-weight: 800; opacity: 0.65; font-family: var(--font-mono);
+    }
+    .slot-icon { font-size: 22px; }
+    .slot-mana {
+      position: absolute; bottom: 2px; right: 4px;
+      font-size: 9px; font-weight: 700; color: #60a5fa; font-family: var(--font-mono);
+    }
+    .cooldown-overlay {
+      position: absolute; inset: 0; background: rgba(0,0,0,0.75);
+      border-radius: 10px; display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 800; color: #f59e0b; display: none;
+    }
+
+    /* ─── HUD BOTTOM LEFT: WORLD CHAT & COMBAT LOG ─── */
+    #chat-container {
+      position: fixed; bottom: 20px; left: 16px; z-index: 20;
+      width: 320px; height: 160px; background: rgba(15, 23, 42, 0.8);
+      border-radius: 14px; border: 1px solid var(--panel-border);
+      backdrop-filter: blur(12px); display: flex; flex-direction: column;
+      overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+    #chat-messages {
+      flex: 1; padding: 10px; overflow-y: auto; font-size: 12px;
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    #chat-messages::-webkit-scrollbar { width: 4px; }
+    #chat-messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+    .chat-line { line-height: 1.35; }
+    .chat-user { font-weight: 700; color: #38bdf8; }
+    .chat-guild { color: #fbbf24; font-size: 10px; margin-left: 2px; }
+    .chat-system { color: #f59e0b; font-weight: 600; }
+    .chat-combat { color: #f87171; font-family: var(--font-mono); font-size: 11px; }
+    .chat-loot { color: #34d399; font-weight: 600; }
+    #chat-input-wrap {
+      display: flex; border-top: 1px solid var(--panel-border); background: rgba(0,0,0,0.3);
+    }
+    #chat-input {
+      flex: 1; background: transparent; border: none; padding: 6px 10px;
+      color: #fff; font-size: 12px; outline: none; font-family: var(--font-ui);
+    }
+
+    /* ─── HUD ACTION BUTTONS (BOTTOM RIGHT) ─── */
+    #menu-nav {
+      position: fixed; bottom: 20px; right: 16px; z-index: 20;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+    }
+    .nav-btn {
+      background: var(--panel-bg); color: #fff; border: 1px solid var(--panel-border);
+      padding: 7px 12px; border-radius: 10px; font-size: 11px; font-weight: 700;
+      cursor: pointer; display: flex; align-items: center; gap: 6px;
+      backdrop-filter: blur(8px); transition: 0.2s;
+    }
+    .nav-btn:hover { background: rgba(245, 158, 11, 0.25); border-color: var(--primary); }
+    .nav-btn kbd {
+      background: rgba(255,255,255,0.15); padding: 1px 5px; border-radius: 4px;
+      font-size: 10px; font-family: var(--font-mono);
+    }
+
+    /* ─── MODAL PANELS (SKILL TREE, BUILD MENU, INVENTORY, QUESTS, MAP, SETTINGS) ─── */
+    .game-modal {
+      position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      z-index: 100; background: rgba(10, 15, 30, 0.95); border: 2px solid var(--primary);
+      border-radius: 20px; padding: 24px; box-shadow: 0 16px 64px rgba(0,0,0,0.8), 0 0 30px var(--primary-glow);
+      backdrop-filter: blur(16px); display: none; max-width: 95vw; max-height: 90vh; overflow: auto;
+    }
+    .modal-header {
+      display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px;
+    }
+    .modal-title { font-family: var(--font-title); font-size: 20px; color: var(--primary); }
+    .modal-close {
+      background: rgba(255,255,255,0.1); border: none; color: #fff;
+      width: 28px; height: 28px; border-radius: 8px; cursor: pointer;
+      font-weight: 800; font-size: 14px;
+    }
+    .modal-close:hover { background: #ef4444; }
+
+    /* Inventory Grid */
+    #inv-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 12px; }
+    .inv-slot {
+      width: 60px; height: 60px; background: rgba(30, 41, 59, 0.6);
+      border: 1px solid rgba(255,255,255,0.15); border-radius: 10px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      cursor: pointer; position: relative; transition: 0.15s;
+    }
+    .inv-slot:hover { border-color: var(--primary); transform: scale(1.05); }
+    .inv-icon { font-size: 26px; }
+    .inv-count { position: absolute; bottom: 2px; right: 4px; font-size: 10px; font-family: var(--font-mono); }
+
+    /* Skill Tree Grid */
+    #skill-tree-container { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
+    .class-branch {
+      width: 220px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 12px;
+    }
+    .branch-title { font-family: var(--font-title); font-size: 14px; text-align: center; color: #cbd5e1; }
+    .skill-node {
+      display: flex; align-items: center; gap: 10px; background: rgba(30, 41, 59, 0.6);
+      padding: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);
+      cursor: pointer; transition: 0.15s;
+    }
+    .skill-node:hover { border-color: var(--primary); }
+    .skill-node.unlocked { border-color: #10b981; background: rgba(16, 185, 129, 0.15); }
+    .skill-node.equipped { box-shadow: 0 0 10px rgba(245, 158, 11, 0.6); border-color: var(--primary); }
+    .skill-node-icon { font-size: 24px; }
+    .skill-node-info h4 { font-size: 12px; font-weight: 700; }
+    .skill-node-info p { font-size: 10px; opacity: 0.7; }
+
+    /* Build Menu Grid */
+    #build-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 12px; width: 580px; max-width: 85vw;
+    }
+    .build-card {
+      background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px; padding: 12px; text-align: center; cursor: pointer;
+      display: flex; flex-direction: column; align-items: center; gap: 6px; transition: 0.2s;
+    }
+    .build-card:hover { border-color: var(--primary); transform: translateY(-3px); }
+    .build-card.selected { border-color: #22c55e; background: rgba(34, 197, 94, 0.15); }
+    .build-icon { font-size: 32px; }
+    .build-name { font-size: 12px; font-weight: 700; }
+    .build-cost { font-size: 10px; color: #f59e0b; font-family: var(--font-mono); }
+
+    /* Fullscreen Big Map */
+    #big-map-canvas {
+      width: 500px; height: 500px; max-width: 80vw; max-height: 60vh;
+      border-radius: 12px; border: 2px solid var(--panel-border);
+    }
+
+    /* Floating Combat Text */
+    .dmg-text {
+      position: fixed; pointer-events: none; z-index: 150;
+      font-family: var(--font-title); font-weight: 900;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.9);
+      animation: floatUp 0.8s ease-out forwards;
+    }
+    @keyframes floatUp {
+      0% { transform: translate(-50%, 0) scale(0.6); opacity: 0; }
+      20% { transform: translate(-50%, -10px) scale(1.2); opacity: 1; }
+      100% { transform: translate(-50%, -40px) scale(0.9); opacity: 0; }
+    }
+
+    /* Level up / Quest Toast */
+    #toast-notification {
+      position: fixed; top: 120px; left: 50%; transform: translateX(-50%);
+      z-index: 200; background: linear-gradient(135deg, rgba(245, 158, 11, 0.9), rgba(180, 83, 9, 0.9));
+      color: #000; padding: 10px 24px; border-radius: 30px; font-weight: 900;
+      font-family: var(--font-title); font-size: 15px; letter-spacing: 1px;
+      box-shadow: 0 0 30px rgba(245,158,11,0.8); display: none;
+      animation: bounceIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes bounceIn {
+      0% { transform: translate(-50%, -30px) scale(0.8); opacity: 0; }
+      100% { transform: translate(-50%, 0) scale(1); opacity: 1; }
+    }
+
+    /* Helper info bar bottom */
+    #controls-hint {
+      position: fixed; bottom: 84px; left: 50%; transform: translateX(-50%);
+      z-index: 15; font-size: 11px; opacity: 0.75; pointer-events: none;
+      background: rgba(0,0,0,0.5); padding: 4px 14px; border-radius: 20px;
     }
   </style>
 </head>
 <body>
   <div id="crosshair"></div>
 
-  <div id="ui">
-    <h1>🌍 Low Poly World</h1>
-    <p>
-      <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> Move &middot; <kbd>E</kbd> Climb Up<br/>
-      <kbd>Shift</kbd> Run &middot; <kbd>Space</kbd> Jump<br/>
-      <span id="sprint-key-label"><kbd>Ctrl</kbd></span> Switch Shiftlock Mode<br/>
-      <kbd>Mouse</kbd> Look (Right-Click Drag without Shiftlock)
-    </p>
-    <div id="shiftlock-indicator" style="margin-top: 8px; font-size: 12px; font-weight: bold; color: #ffcc00; letter-spacing: 0.5px;">
-      Shiftlock: Off (None)
+  <!-- HUD: Player Unit Frame -->
+  <div id="player-frame">
+    <div id="player-avatar" onclick="toggleModal('modal-char')" title="Click to view Character Sheet">
+      <span class="avatar-icon" id="player-avatar-icon">🧙‍♂️</span>
+      <div id="player-lvl-badge">LV 1</div>
     </div>
-    
-    <!-- Beautiful low-poly styled settings panel! -->
-    <div style="margin-top: 14px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 10px;">
-      <h3 style="font-size: 13px; margin-bottom: 8px; color: #e0f7fa;">⚙️ Settings</h3>
+    <div class="bar-wrap">
+      <div class="bar-row"><span>HP</span><span id="hp-val">100 / 100</span></div>
+      <div class="stat-bar"><div id="hp-fill" class="stat-fill fill-hp"></div></div>
       
-      <!-- Sensitivity Bar -->
-      <div style="margin-bottom: 10px;">
-        <div style="display: flex; justify-content: space-between; font-size: 12px; opacity: 0.8; margin-bottom: 3px;">
-          <span>Look Sensitivity:</span>
-          <span id="sens-val">1.0x</span>
-        </div>
-        <input type="range" id="sens-slider" min="0.2" max="3.0" step="0.1" value="1.0" 
-               style="width: 100%; accent-color: #ffcc00; cursor: pointer; background: rgba(255,255,255,0.2); height: 5px; border-radius: 3px; appearance: none; outline: none;">
+      <div class="bar-row" style="margin-top:2px;"><span>MP</span><span id="mp-val">60 / 60</span></div>
+      <div class="stat-bar"><div id="mp-fill" class="stat-fill fill-mp"></div></div>
+
+      <div class="bar-row" style="margin-top:2px;"><span>STA</span><span id="sta-val">100 / 100</span></div>
+      <div class="stat-bar" style="height:5px;"><div id="sta-fill" class="stat-fill fill-sta"></div></div>
+      
+      <div class="bar-row" style="margin-top:2px;"><span>EXP</span><span id="exp-val">0%</span></div>
+      <div class="stat-bar" style="height:4px;"><div id="exp-fill" class="stat-fill fill-exp" style="width:0%;"></div></div>
+
+      <div id="buff-container">
+        <!-- Dynamic Buffs -->
       </div>
-      
-      <!-- Sprint Key OS Toggle -->
-      <div>
-        <div style="font-size: 12px; opacity: 0.8; margin-bottom: 4px;">Keyboard Layout:</div>
-        <div style="display: flex; gap: 6px;">
-          <button id="layout-win-btn" style="flex: 1; padding: 4px; font-size: 11px; font-weight: bold; border-radius: 4px; border: none; cursor: pointer; background: #ffcc00; color: #111; outline: none; transition: 0.2s;">Windows (Ctrl)</button>
-          <button id="layout-mac-btn" style="flex: 1; padding: 4px; font-size: 11px; font-weight: bold; border-radius: 4px; border: none; cursor: pointer; background: rgba(255,255,255,0.15); color: #fff; outline: none; transition: 0.2s;">macOS (Control)</button>
+    </div>
+  </div>
+
+  <!-- HUD: Target Frame -->
+  <div id="target-frame">
+    <div id="target-name">Forest Slime [Lv.1]</div>
+    <div class="stat-bar" id="target-bar"><div id="target-hp-fill" class="stat-fill fill-hp"></div></div>
+  </div>
+
+  <!-- HUD: World Boss Bar -->
+  <div id="boss-bar-wrap">
+    <div id="boss-title">⚡ ANCIENT MAGMA TITAN ⚡</div>
+    <div id="boss-hp-container"><div id="boss-hp-fill"></div></div>
+  </div>
+
+  <!-- HUD: Combo Meter -->
+  <div id="combo-meter">🔥 <span id="combo-count">0</span>x COMBO!</div>
+
+  <!-- HUD: Minimap, Resources & Quests -->
+  <div id="top-right-hud">
+    <div id="minimap-container" onclick="toggleModal('modal-map')" style="cursor:pointer;" title="Click to view Big World Map">
+      <canvas id="minimap-canvas" width="136" height="136"></canvas>
+      <div id="world-time-tag">☀️ 12:00</div>
+      <div id="biome-tag">Sunlit Plains</div>
+    </div>
+    <div id="resource-bar">
+      <div class="res-item res-wood">🪵 <span id="res-wood-val">50</span></div>
+      <div class="res-item res-stone">🪨 <span id="res-stone-val">30</span></div>
+      <div class="res-item res-crystal">💎 <span id="res-crystal-val">5</span></div>
+      <div class="res-item res-gold">🪙 <span id="res-gold-val">120</span></div>
+    </div>
+    <!-- Active Dynamic Quest Tracker -->
+    <div id="quest-tracker" onclick="toggleModal('modal-quests')" style="cursor:pointer;">
+      <h3 id="quest-title">📜 Quest: Plains Defender</h3>
+      <div id="quest-objective">Defeat 3 Forest Slimes (0/3)</div>
+    </div>
+  </div>
+
+  <!-- Controls Reminder -->
+  <div id="controls-hint">
+    <kbd>WASD</kbd> Move &middot; <kbd>Shift</kbd> Sprint &middot; <kbd>V</kbd> Dodge Roll &middot; <kbd>R</kbd> Mount &middot; <kbd>LMB/F</kbd> Attack &middot; <kbd>G</kbd> Fish &middot; <kbd>X</kbd> Dismantle &middot; <kbd>1-5</kbd> Spells &middot; <kbd>Ctrl</kbd> Shiftlock
+  </div>
+
+  <!-- HUD: Hotbar -->
+  <div id="hotbar-wrap">
+    <div class="hotbar-slot active" id="slot-0" title="Primary Weapon Strike (LMB/F)">
+      <span class="slot-key">LMB/F</span>
+      <span class="slot-icon" id="icon-0">⚔️</span>
+      <div class="cooldown-overlay" id="cd-0"></div>
+    </div>
+    <div class="hotbar-slot" id="slot-1" title="Skill 1">
+      <span class="slot-key">1</span>
+      <span class="slot-icon" id="icon-1">🔥</span>
+      <span class="slot-mana" id="mana-1">15</span>
+      <div class="cooldown-overlay" id="cd-1"></div>
+    </div>
+    <div class="hotbar-slot" id="slot-2" title="Skill 2">
+      <span class="slot-key">2</span>
+      <span class="slot-icon" id="icon-2">❄️</span>
+      <span class="slot-mana" id="mana-2">20</span>
+      <div class="cooldown-overlay" id="cd-2"></div>
+    </div>
+    <div class="hotbar-slot" id="slot-3" title="Skill 3">
+      <span class="slot-key">3</span>
+      <span class="slot-icon" id="icon-3">⚡</span>
+      <span class="slot-mana" id="mana-3">25</span>
+      <div class="cooldown-overlay" id="cd-3"></div>
+    </div>
+    <div class="hotbar-slot" id="slot-4" title="Skill 4">
+      <span class="slot-key">4</span>
+      <span class="slot-icon" id="icon-4">🌪️</span>
+      <span class="slot-mana" id="mana-4">30</span>
+      <div class="cooldown-overlay" id="cd-4"></div>
+    </div>
+    <div class="hotbar-slot" id="slot-5" title="Ultimate Skill">
+      <span class="slot-key">5</span>
+      <span class="slot-icon" id="icon-5">☄️</span>
+      <span class="slot-mana" id="mana-5">50</span>
+      <div class="cooldown-overlay" id="cd-5"></div>
+    </div>
+  </div>
+
+  <!-- HUD: MMO World Chat & Combat Log -->
+  <div id="chat-container">
+    <div id="chat-messages">
+      <div class="chat-line chat-system">🌟 Welcome to Low Poly World Online!</div>
+      <div class="chat-line"><span class="chat-user">Valkyrie_Rose</span><span class="chat-guild">&lt;Knights&gt;</span>: Mount up! Boss raid at the volcano soon!</div>
+      <div class="chat-line"><span class="chat-user">Gimli_Ironfoot</span>: Trading stone and crystals at the starter camp!</div>
+    </div>
+    <div id="chat-input-wrap">
+      <input type="text" id="chat-input" placeholder="Press Enter to chat..." maxlength="100">
+    </div>
+  </div>
+
+  <!-- Navigation Menu Buttons -->
+  <div id="menu-nav">
+    <button class="nav-btn" id="btn-skills"><kbd>K</kbd> Skills (<span id="skill-pts-badge">0</span>)</button>
+    <button class="nav-btn" id="btn-inv"><kbd>I</kbd> Inventory</button>
+    <button class="nav-btn" id="btn-build"><kbd>B</kbd> Build</button>
+    <button class="nav-btn" id="btn-quests"><kbd>J</kbd> Quests</button>
+    <button class="nav-btn" id="btn-map"><kbd>M</kbd> Map</button>
+    <button class="nav-btn" id="btn-settings"><kbd>O</kbd> Settings</button>
+  </div>
+
+  <!-- Toast Announcement -->
+  <div id="toast-notification">⚔️ LEVEL UP! YOU REACHED LEVEL 2 ⚔️</div>
+
+  <!-- ─── MODAL: INVENTORY & POTIONS ─── -->
+  <div class="game-modal" id="modal-inv">
+    <div class="modal-header">
+      <h2 class="modal-title">🎒 Adventurer's Inventory & Alchemy</h2>
+      <button class="modal-close" onclick="closeModals()">✕</button>
+    </div>
+    <div style="font-size: 13px; color: #94a3b8; margin-bottom: 10px;">
+      Click potions or consumables to use them immediately!
+    </div>
+    <div id="inv-grid">
+      <div class="inv-slot" onclick="usePotion('health')" title="Health Potion (+50 HP)">
+        <span class="inv-icon">🧪</span>
+        <span class="inv-count" id="inv-hp-count">3</span>
+      </div>
+      <div class="inv-slot" onclick="usePotion('mana')" title="Mana Potion (+40 MP)">
+        <span class="inv-icon">🫙</span>
+        <span class="inv-count" id="inv-mp-count">3</span>
+      </div>
+      <div class="inv-slot" onclick="usePotion('speed')" title="Elixir of Swiftness (+40% Speed for 15s)">
+        <span class="inv-icon">⚡</span>
+        <span class="inv-count" id="inv-spd-count">2</span>
+      </div>
+      <div class="inv-slot" title="Ancient Dungeon Key">
+        <span class="inv-icon">🗝️</span>
+        <span class="inv-count">1</span>
+      </div>
+      <div class="inv-slot" title="Fishing Rod">
+        <span class="inv-icon">🎣</span>
+        <span class="inv-count">1</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── MODAL: SKILL TREE ─── -->
+  <div class="game-modal" id="modal-skills">
+    <div class="modal-header">
+      <h2 class="modal-title">🌟 Hero Skill Tree & Path Choices</h2>
+      <button class="modal-close" onclick="closeModals()">✕</button>
+    </div>
+    <div style="margin-bottom: 16px; font-size: 13px; color: #94a3b8;">
+      Available Skill Points: <strong id="modal-sp-val" style="color:var(--primary); font-size:16px;">0</strong>
+      &nbsp;&middot;&nbsp; Click an unlocked skill to equip it to your action hotbar slots!
+    </div>
+    <div id="skill-tree-container">
+      <!-- Warrior Branch -->
+      <div class="class-branch">
+        <div class="branch-title">🛡️ PATH OF IRON (WARRIOR)</div>
+        <div class="skill-node unlocked equipped" id="node-w1" onclick="handleSkillNodeClick('w1')">
+          <span class="skill-node-icon">⚔️</span>
+          <div class="skill-node-info">
+            <h4>Cleave Slash [Lv.1]</h4>
+            <p>180% frontal melee damage</p>
+          </div>
+        </div>
+        <div class="skill-node" id="node-w2" onclick="handleSkillNodeClick('w2')">
+          <span class="skill-node-icon">🌪️</span>
+          <div class="skill-node-info">
+            <h4>Whirlwind Spin [Lv.2]</h4>
+            <p>Continuous 360° AoE strikes</p>
+          </div>
+        </div>
+        <div class="skill-node" id="node-w3" onclick="handleSkillNodeClick('w3')">
+          <span class="skill-node-icon">💥</span>
+          <div class="skill-node-info">
+            <h4>Earth Shatter [Lv.4]</h4>
+            <p>Ground leap, stuns in area</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mage Branch -->
+      <div class="class-branch">
+        <div class="branch-title">🔮 PATH OF ARCANA (MAGE)</div>
+        <div class="skill-node unlocked equipped" id="node-m1" onclick="handleSkillNodeClick('m1')">
+          <span class="skill-node-icon">🔥</span>
+          <div class="skill-node-info">
+            <h4>Fireball [Lv.1]</h4>
+            <p>Launches exploding flame bolt</p>
+          </div>
+        </div>
+        <div class="skill-node unlocked equipped" id="node-m2" onclick="handleSkillNodeClick('m2')">
+          <span class="skill-node-icon">❄️</span>
+          <div class="skill-node-info">
+            <h4>Frost Nova [Lv.2]</h4>
+            <p>Freezes nearby monsters 3s</p>
+          </div>
+        </div>
+        <div class="skill-node unlocked equipped" id="node-m3" onclick="handleSkillNodeClick('m3')">
+          <span class="skill-node-icon">⚡</span>
+          <div class="skill-node-info">
+            <h4>Chain Lightning [Lv.3]</h4>
+            <p>Arcs between 3 targets</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rogue Branch -->
+      <div class="class-branch">
+        <div class="branch-title">🏹 PATH OF SHADOWS (ROGUE)</div>
+        <div class="skill-node" id="node-r1" onclick="handleSkillNodeClick('r1')">
+          <span class="skill-node-icon">🎯</span>
+          <div class="skill-node-info">
+            <h4>Triple Arrow [Lv.1]</h4>
+            <p>Fires 3 piercing arrows</p>
+          </div>
+        </div>
+        <div class="skill-node" id="node-r2" onclick="handleSkillNodeClick('r2')">
+          <span class="skill-node-icon">💨</span>
+          <div class="skill-node-info">
+            <h4>Shadow Dash [Lv.2]</h4>
+            <p>Instant blink + guaranteed crit</p>
+          </div>
+        </div>
+        <div class="skill-node unlocked equipped" id="node-m5" onclick="handleSkillNodeClick('m5')">
+          <span class="skill-node-icon">☄️</span>
+          <div class="skill-node-info">
+            <h4>Meteor Call [Lv.5]</h4>
+            <p>Cataclysmic sky bombardment</p>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Load Three.js with robust CDN fallbacks (essential when jsDelivr is blocked by DNS/adblockers) -->
+  <!-- ─── MODAL: BUILD MENU ─── -->
+  <div class="game-modal" id="modal-build">
+    <div class="modal-header">
+      <h2 class="modal-title">🔨 Open World Sandbox Building</h2>
+      <button class="modal-close" onclick="closeModals()">✕</button>
+    </div>
+    <div style="margin-bottom: 14px; font-size: 13px; color: #94a3b8;">
+      Select a blueprint, look at the ground, and <strong>Left Click</strong> to build! Press <kbd>X</kbd> in game to dismantle nearby structures.
+    </div>
+    <div id="build-grid">
+      <div class="build-card selected" onclick="selectBlueprint('wood_wall', this)">
+        <span class="build-icon">🪵</span>
+        <div class="build-name">Wood Wall</div>
+        <div class="build-cost">10 Wood</div>
+      </div>
+      <div class="build-card" onclick="selectBlueprint('stone_wall', this)">
+        <span class="build-icon">🧱</span>
+        <div class="build-name">Stone Bastion</div>
+        <div class="build-cost">15 Stone</div>
+      </div>
+      <div class="build-card" onclick="selectBlueprint('floor', this)">
+        <span class="build-icon">🟫</span>
+        <div class="build-name">Wood Platform</div>
+        <div class="build-cost">10 Wood</div>
+      </div>
+      <div class="build-card" onclick="selectBlueprint('ramp', this)">
+        <span class="build-icon">📐</span>
+        <div class="build-name">Staircase Ramp</div>
+        <div class="build-cost">10 Wood</div>
+      </div>
+      <div class="build-card" onclick="selectBlueprint('campfire', this)">
+        <span class="build-icon">🔥</span>
+        <div class="build-name">Heal Campfire</div>
+        <div class="build-cost">15 Wood, 5 Stone</div>
+      </div>
+      <div class="build-card" onclick="selectBlueprint('turret', this)">
+        <span class="build-icon">🏹</span>
+        <div class="build-name">Auto-Turret</div>
+        <div class="build-cost">25 Wood, 15 Stone</div>
+      </div>
+      <div class="build-card" onclick="selectBlueprint('crystal_pylon', this)">
+        <span class="build-icon">💎</span>
+        <div class="build-name">Mana Pylon</div>
+        <div class="build-cost">20 Stone, 5 Crystal</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── MODAL: QUEST LOG ─── -->
+  <div class="game-modal" id="modal-quests">
+    <div class="modal-header">
+      <h2 class="modal-title">📜 Quest & Bounty Board</h2>
+      <button class="modal-close" onclick="closeModals()">✕</button>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 12px; min-width: 320px;" id="quest-list-container">
+      <!-- Dynamic Quests Injected -->
+    </div>
+  </div>
+
+  <!-- ─── MODAL: BIG WORLD MAP ─── -->
+  <div class="game-modal" id="modal-map">
+    <div class="modal-header">
+      <h2 class="modal-title">🗺️ Realm of Aethelgard — World Map</h2>
+      <button class="modal-close" onclick="closeModals()">✕</button>
+    </div>
+    <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
+      <canvas id="big-map-canvas" width="500" height="500"></canvas>
+      <div style="font-size:12px; color:#94a3b8;">
+        🟢 Plains Village (Center) &middot; 🌲 Enchanted Forest (NW) &middot; 🏔️ Frostpeak (NE) &middot; 🏜️ Desert (SW) &middot; 🌋 Caldera (SE)
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── MODAL: CHARACTER STATS & TITLES ─── -->
+  <div class="game-modal" id="modal-char">
+    <div class="modal-header">
+      <h2 class="modal-title">📜 Hero Character Sheet & Titles</h2>
+      <button class="modal-close" onclick="closeModals()">✕</button>
+    </div>
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 16px; min-width: 340px; font-size: 14px;">
+      <div><strong>Level:</strong> <span id="char-lvl">1</span></div>
+      <div><strong>Active Title:</strong> <span id="char-title" style="color:var(--primary);">Apprentice Adventurer</span></div>
+      <div><strong>Attack Power:</strong> <span id="char-atk">25</span></div>
+      <div><strong>Magic Power:</strong> <span id="char-matk">35</span></div>
+      <div><strong>Defense:</strong> <span id="char-def">10</span></div>
+      <div><strong>Crit Chance:</strong> <span id="char-crit">15%</span></div>
+      <div><strong>Monsters Slain:</strong> <span id="char-kills">0</span></div>
+      <div><strong>Structures Built:</strong> <span id="char-built">0</span></div>
+    </div>
+    <div style="margin-top:16px; border-top:1px solid rgba(255,255,255,0.1); padding-top:12px;">
+      <h4 style="font-size:13px; color:#cbd5e1; margin-bottom:6px;">Emotes & Social</h4>
+      <div style="display:flex; gap:8px;">
+        <button class="nav-btn" onclick="playEmote('dance')">💃 Dance</button>
+        <button class="nav-btn" onclick="playEmote('wave')">👋 Wave</button>
+        <button class="nav-btn" onclick="playEmote('cheer')">🎉 Cheer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── MODAL: SETTINGS & GRAPHICS ─── -->
+  <div class="game-modal" id="modal-settings">
+    <div class="modal-header">
+      <h2 class="modal-title">⚙️ Game Settings & Sound</h2>
+      <button class="modal-close" onclick="closeModals()">✕</button>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:14px; min-width:300px; font-size:13px;">
+      <div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+          <span>Sound Effects Volume:</span><span id="sfx-vol-val">80%</span>
+        </div>
+        <input type="range" id="sfx-slider" min="0" max="1" step="0.05" value="0.8" style="width:100%;">
+      </div>
+      <div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+          <span>Mouse Sensitivity:</span><span id="sens-val">1.0x</span>
+        </div>
+        <input type="range" id="sens-slider" min="0.2" max="3" step="0.1" value="1.0" style="width:100%;">
+      </div>
+      <div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+          <span>Day/Night Speed:</span><span id="time-spd-val">Normal</span>
+        </div>
+        <button class="nav-btn" onclick="toggleTimeSpeed()" style="width:100%; justify-content:center;">Toggle Speed (Normal / Fast / Freeze Day)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Load Three.js -->
   <script src="https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.min.js"></script>
   <script>
     if (typeof THREE === 'undefined') {
-      console.warn('jsDelivr failed to load Three.js, attempting unpkg fallback...');
       document.write('<script src="https://unpkg.com/three@0.164.1/build/three.min.js"><\/script>');
     }
   </script>
+
   <script>
-    if (typeof THREE === 'undefined') {
-      console.warn('unpkg failed to load Three.js, attempting cdnjs fallback...');
-      document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"><\/script>');
+  /* =========================================================================
+     LOW POLY WORLD: ULTIMATE OPEN WORLD MMO RPG ENGINE
+     ========================================================================= */
+
+  // ── 1. PROCEDURAL SOUND SYNTHESIZER (Web Audio API) ─────────────────────
+  class SoundEngine {
+    constructor() {
+      this.ctx = null;
+      this.volume = 0.8;
     }
-  </script>
+    init() {
+      if (!this.ctx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        this.ctx = new AudioContext();
+      }
+    }
+    playTone(type, startFreq, endFreq, duration, vol = 0.3) {
+      try {
+        this.init();
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(startFreq, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(Math.max(10, endFreq), this.ctx.currentTime + duration);
+        gain.gain.setValueAtTime(vol * this.volume, this.ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + duration);
+      } catch (e) {}
+    }
+    playSwing() { this.playTone('sine', 320, 80, 0.12, 0.25); }
+    playHit() { this.playTone('triangle', 180, 30, 0.18, 0.45); }
+    playMagic() { this.playTone('sawtooth', 350, 950, 0.22, 0.25); }
+    playBuild() { this.playTone('square', 140, 60, 0.1, 0.25); }
+    playDismantle() { this.playTone('square', 200, 50, 0.15, 0.25); }
+    playGather() { this.playTone('sine', 700 + Math.random()*200, 200, 0.08, 0.2); }
+    playCoin() { this.playTone('triangle', 900, 1400, 0.12, 0.3); }
+    playDrink() { this.playTone('sine', 200, 500, 0.25, 0.3); }
+    playRoll() { this.playTone('sine', 150, 60, 0.2, 0.25); }
+    playMount() { this.playTone('triangle', 300, 450, 0.3, 0.35); }
+    playLevelUp() {
+      const notes = [261.63, 329.63, 392.00, 523.25, 659.25];
+      notes.forEach((freq, idx) => {
+        setTimeout(() => this.playTone('triangle', freq, freq * 1.05, 0.25, 0.35), idx * 80);
+      });
+    }
+  }
+  const sfx = new SoundEngine();
 
-  <script>
-
-  // ── Scene Setup ──────────────────────────────────────────
+  // ── 2. THREE.JS SCENE SETUP ─────────────────────────────────────────────
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0x7ec8e3);
-  scene.fog = new THREE.FogExp2(0x7ec8e3, 0.008);
+  scene.fog = new THREE.FogExp2(0x7ec8e3, 0.0055);
 
-  const camera = new THREE.PerspectiveCamera(70, innerWidth / innerHeight, 0.1, 500);
-  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  const camera = new THREE.PerspectiveCamera(65, innerWidth / innerHeight, 0.1, 900);
+  const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
   renderer.setSize(innerWidth, innerHeight);
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.1;
+  renderer.toneMappingExposure = 1.15;
   document.body.appendChild(renderer.domElement);
 
-  // ── Lights ───────────────────────────────────────────────
-  const sun = new THREE.DirectionalLight(0xfff4e0, 2);
-  sun.position.set(50, 80, 30);
-  sun.castShadow = true;
-  sun.shadow.mapSize.set(2048, 2048);
-  sun.shadow.camera.near = 1;
-  sun.shadow.camera.far = 400;
-  sun.shadow.camera.left = -200;
-  sun.shadow.camera.right = 200;
-  sun.shadow.camera.top = 200;
-  sun.shadow.camera.bottom = -200;
-  scene.add(sun);
+  // ── Lighting & Dynamic Sun / Moon Orbit ──────────────────────────────────
+  const sunLight = new THREE.DirectionalLight(0xfffaed, 2.0);
+  sunLight.position.set(100, 150, 80);
+  sunLight.castShadow = true;
+  sunLight.shadow.mapSize.set(2048, 2048);
+  sunLight.shadow.camera.near = 10;
+  sunLight.shadow.camera.far = 500;
+  sunLight.shadow.camera.left = -250;
+  sunLight.shadow.camera.right = 250;
+  sunLight.shadow.camera.top = 250;
+  sunLight.shadow.camera.bottom = -250;
+  scene.add(sunLight);
 
-  scene.add(new THREE.HemisphereLight(0x87ceeb, 0x3a7d2c, 0.6));
-  scene.add(new THREE.AmbientLight(0x404060, 0.3));
+  const hemiLight = new THREE.HemisphereLight(0x87ceeb, 0x334d28, 0.65);
+  scene.add(hemiLight);
+  const ambLight = new THREE.AmbientLight(0x404466, 0.35);
+  scene.add(ambLight);
 
-  // ── Low-Poly Terrain ─────────────────────────────────────
-  const terrainSize = 400;
-  const terrainSegs = 80;
+  // Stars Skybox Particles
+  const starsGeo = new THREE.BufferGeometry();
+  const starCount = 600;
+  const starPositions = new Float32Array(starCount * 3);
+  for (let i = 0; i < starCount * 3; i += 3) {
+    starPositions[i] = (Math.random() - 0.5) * 800;
+    starPositions[i+1] = 80 + Math.random() * 300;
+    starPositions[i+2] = (Math.random() - 0.5) * 800;
+  }
+  starsGeo.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+  const starsMat = new THREE.PointsMaterial({ color: 0xffffff, size: 2.0, transparent: true, opacity: 0 });
+  const stars = new THREE.Points(starsGeo, starsMat);
+  scene.add(stars);
+
+  // ── 3. REDESIGNED 5-BIOME OPEN WORLD TERRAIN ────────────────────────────
+  const terrainSize = 500;
+  const terrainSegs = 100;
   const terrainGeo = new THREE.PlaneGeometry(terrainSize, terrainSize, terrainSegs, terrainSegs);
   const verts = terrainGeo.attributes.position;
-  for (let i = 0; i < verts.count; i++) {
-    const x = verts.getX(i), y = verts.getY(i);
-    const dist = Math.sqrt(x * x + y * y);
-    let h = (Math.sin(x * 0.05) * Math.cos(y * 0.07) * 3 +
-             Math.sin(x * 0.12 + y * 0.09) * 2 +
-             Math.random() * 0.3);
-    // Flatten center area for player start
-    if (dist < 10) h *= dist / 10;
 
-    // Snowy Mountains Biome creation
-    const dx = x - 120;
-    const dy = y - 120;
-    const distToPeak = Math.sqrt(dx * dx + dy * dy);
-    if (distToPeak < 130) {
-      const t = 1 - distToPeak / 130;
-      let mountH = Math.pow(t, 1.8) * 75;
-      
-      // Cliff terraces
-      if (distToPeak > 40 && distToPeak < 70) {
-        const cliffFactor = (distToPeak - 40) / 30; // 0 to 1
-        mountH -= Math.sin(cliffFactor * Math.PI) * 12;
-      }
-      h = Math.max(h, mountH);
-    }
+  const C_PLAINS_GRASS   = new THREE.Color(0x4ca243);
+  const C_PLAINS_DIRT    = new THREE.Color(0x7c5a3a);
+  const C_FOREST_MOSS    = new THREE.Color(0x275949);
+  const C_FOREST_PURPLE  = new THREE.Color(0x4b3464);
+  const C_SNOW_PEAK      = new THREE.Color(0xffffff);
+  const C_SNOW_ROCK      = new THREE.Color(0x8894a0);
+  const C_LAVA_ROCK      = new THREE.Color(0x261a1a);
+  const C_LAVA_CRUST     = new THREE.Color(0x732014);
+  const C_DESERT_SAND    = new THREE.Color(0xdeb86a);
+  const C_DESERT_DUNE    = new THREE.Color(0xc2984b);
 
-    verts.setZ(i, h);
+  function getBiomeType(x, z) {
+    if (x > 60 && z < -60) return 'SNOW_MOUNTAINS';
+    if (x > 60 && z > 60) return 'VOLCANIC_CALDERA';
+    if (x < -60 && z < -60) return 'ENCHANTED_FOREST';
+    if (x < -60 && z > 60) return 'DESERT_DUNES';
+    return 'SUNLIT_PLAINS';
   }
-  terrainGeo.computeVertexNormals();
 
-  // Low-poly coloring by height & location (Snowy Mountains Biome)
-  const colors = [];
+  const terrainColors = [];
   for (let i = 0; i < verts.count; i++) {
     const x = verts.getX(i);
     const y = verts.getY(i);
-    const h = verts.getZ(i);
-    let c;
-    
-    // Check if vertex lies in the Snowy Mountains biome quadrant
-    if (x > 30 && y > 30) {
-      if (h > 22) {
-        c = new THREE.Color(0xffffff); // Pure white snow caps
-      } else if (h > 14) {
-        c = new THREE.Color(0xdcdcdc); // Rocky snowy gray
-      } else if (h > 6) {
-        c = new THREE.Color(0x7a7f80); // Slate mountain gray
-      } else if (h > 1.5) {
-        c = new THREE.Color(0x3a5d38); // Dark evergreen/pine green
-      } else {
-        c = new THREE.Color(0x4a7c3f); // Normal valley grass
-      }
-    } else {
-      // Normal biome coloring
-      if (h < -1.5) c = new THREE.Color(0x5a3a1a);    // low ground
-      else if (h < 0) c = new THREE.Color(0x4a7c3f);     // grass
-      else if (h < 2) c = new THREE.Color(0x5cb85c);     // light grass
-      else if (h < 4) c = new THREE.Color(0x7bc950);     // high grass
-      else c = new THREE.Color(0x8fbc8f);                // hill top
+    const distFromCenter = Math.sqrt(x * x + y * y);
+
+    let h = Math.sin(x * 0.03) * Math.cos(y * 0.03) * 4 +
+            Math.sin(x * 0.08 + y * 0.06) * 2;
+
+    if (distFromCenter < 25) h *= (distFromCenter / 25);
+
+    // Snow Mountain (NE)
+    const dSnow = Math.hypot(x - 130, y - (-130));
+    if (dSnow < 120) {
+      const t = 1 - dSnow / 120;
+      h += Math.pow(t, 2) * 65;
     }
-    colors.push(c.r, c.g, c.b);
+
+    // Volcanic Caldera (SE)
+    const dVolc = Math.hypot(x - 130, y - 130);
+    if (dVolc < 110) {
+      const t = 1 - dVolc / 110;
+      if (dVolc < 30) h += (30 - dVolc) * -0.3 + 12;
+      else h += Math.pow(t, 1.6) * 38;
+    }
+
+    // Desert Dunes (SW)
+    if (x < -40 && y > 40) h += Math.sin(x * 0.05 + y * 0.04) * 6;
+
+    // Enchanted Forest (NW)
+    if (x < -40 && y < -40) h += Math.cos(x * 0.06) * Math.sin(y * 0.06) * 4;
+
+    verts.setZ(i, h);
+
+    let c = C_PLAINS_GRASS.clone();
+    const biome = getBiomeType(x, y);
+    if (biome === 'SNOW_MOUNTAINS') c = (h > 35) ? C_SNOW_PEAK : (h > 15 ? C_SNOW_ROCK : C_FOREST_MOSS);
+    else if (biome === 'VOLCANIC_CALDERA') c = (h < 15 && dVolc < 35) ? C_LAVA_CRUST : C_LAVA_ROCK;
+    else if (biome === 'DESERT_DUNES') c = (h > 4) ? C_DESERT_DUNE : C_DESERT_SAND;
+    else if (biome === 'ENCHANTED_FOREST') c = (h > 2) ? C_FOREST_MOSS : C_FOREST_PURPLE;
+    else c = (h < 0) ? C_PLAINS_DIRT : C_PLAINS_GRASS;
+
+    terrainColors.push(c.r, c.g, c.b);
   }
-  terrainGeo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+  terrainGeo.computeVertexNormals();
+  terrainGeo.setAttribute('color', new THREE.Float32BufferAttribute(terrainColors, 3));
 
   const terrainMat = new THREE.MeshStandardMaterial({
-    vertexColors: true, flatShading: true, roughness: 0.9
+    vertexColors: true, flatShading: true, roughness: 0.85
   });
   const terrain = new THREE.Mesh(terrainGeo, terrainMat);
   terrain.rotation.x = -Math.PI / 2;
   terrain.receiveShadow = true;
   scene.add(terrain);
 
-  // ── Water (flat blue plane) ──────────────────────────────
+  // Water & Lava Planes
   const water = new THREE.Mesh(
-    new THREE.CircleGeometry(300, 5),
-    new THREE.MeshStandardMaterial({ color: 0x5b91c6, flatShading: true, transparent: true, opacity: 0.8 })
+    new THREE.PlaneGeometry(terrainSize, terrainSize),
+    new THREE.MeshStandardMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.75, roughness: 0.2 })
   );
   water.rotation.x = -Math.PI / 2;
-  water.position.y = -2;
+  water.position.y = -1.2;
   scene.add(water);
 
-  // ── Low-Poly Tree Generator ──────────────────────────────
-  function createTree(x, z) {
-    const g = new THREE.Group();
+  const lava = new THREE.Mesh(
+    new THREE.CircleGeometry(35, 16),
+    new THREE.MeshStandardMaterial({ color: 0xff4500, emissive: 0xff2200, emissiveIntensity: 0.8, roughness: 0.4 })
+  );
+  lava.rotation.x = -Math.PI / 2;
+  lava.position.set(130, 8, 130);
+  scene.add(lava);
 
-    // Trunk sits ON the terrain, not at center
-    const trunkH = 0.8 + Math.random() * 0.8;
-    const trunk = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.12, 0.20, trunkH, 5),
-      new THREE.MeshStandardMaterial({ color: 0x8b5a2b, flatShading: true })
-    );
-    trunk.position.y = trunkH / 2;
-    trunk.castShadow = true;
-    g.add(trunk);
-
-    // Foliage layers
-    const foliagePalettes = [0x2d8b4a, 0x3aa85e, 0x2e7d32, 0x4caf50, 0x388e3c];
-    const r1 = 0.9 + Math.random() * 0.3;
-    const h1 = r1 * 1.4;
-    const ry = Math.random() * Math.PI * 2;
-
-    const mat1 = new THREE.MeshStandardMaterial({
-      color: foliagePalettes[Math.floor(Math.random() * foliagePalettes.length)],
-      flatShading: true
-    });
-    const cone1 = new THREE.Mesh(new THREE.ConeGeometry(r1, h1, 5 + Math.floor(Math.random() * 3)), mat1);
-    cone1.position.y = 0.15 + h1 / 2; // ponytail: leaves near ground but not touching
-    cone1.rotation.y = ry;
-    cone1.castShadow = true;
-    g.add(cone1);
-
-    const r2 = r1 * 0.8;
-    const h2 = h1 * 0.8;
-    const mat2 = new THREE.MeshStandardMaterial({
-      color: foliagePalettes[Math.floor(Math.random() * foliagePalettes.length)],
-      flatShading: true
-    });
-    const cone2 = new THREE.Mesh(new THREE.ConeGeometry(r2, h2, 5 + Math.floor(Math.random() * 3)), mat2);
-    cone2.position.y = cone1.position.y + h1 * 0.5;
-    cone2.rotation.y = ry;
-    cone2.castShadow = true;
-    g.add(cone2);
-
-    // Position tree so its base sits on the terrain
-    const ty = getTerrainHeight(x, z);
-    g.position.set(x, ty, z);
-
-    // Rotate tree to match the terrain normal with a gentle tilt so it grows mostly upwards (not bugged/falling over)
-    const normal = getTerrainNormal(x, z);
-    const dampedNormal = new THREE.Vector3(normal.x * 0.2, normal.y, normal.z * 0.2).normalize();
-    g.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dampedNormal);
-
-    return g;
-  }
-
-  // ── Utility: get terrain height at (x,z) with bilinear interpolation ─
   function getTerrainHeight(x, z) {
     const half = terrainSize / 2;
     const seg = terrainSize / terrainSegs;
@@ -308,1123 +957,1177 @@
     return h0 * (1 - rf) + h1 * rf;
   }
 
-    // ── Terrain normal: tilt player to match slope ─────────────
-  function getTerrainNormal(x, z) {
-    const s = 0.2; // smaller sample = more accurate slope detection for sharp peaks/ridges
-    const hl = getTerrainHeight(x - s, z);
-    const hr = getTerrainHeight(x + s, z);
-    const hf = getTerrainHeight(x, z - s);
-    const hb = getTerrainHeight(x, z + s);
-    const dx = (hr - hl) / (s * 2);
-    const dz = (hf - hb) / (s * 2);
-    return new THREE.Vector3(-dx, 1, dz).normalize();
+  // ── 4. ATMOSPHERIC BIOME WEATHER PARTICLES ──────────────────────────────
+  const pCount = 300;
+  const pGeo = new THREE.BufferGeometry();
+  const pPos = new Float32Array(pCount * 3);
+  for (let i = 0; i < pCount * 3; i += 3) {
+    pPos[i] = (Math.random() - 0.5) * 150;
+    pPos[i+1] = Math.random() * 30;
+    pPos[i+2] = (Math.random() - 0.5) * 150;
   }
+  pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+  const pMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.8, transparent: true, opacity: 0.6 });
+  const weatherPoints = new THREE.Points(pGeo, pMat);
+  scene.add(weatherPoints);
 
-  // ── Ladders and Pathways Definitions ──────────────────────
-  const laddersData = [];
-  const pathwaysData = [];
+  // ── 5. RESOURCE NODES & HARVESTING ──────────────────────────────────────
+  const resourceNodes = [];
+  const activeLootItems = [];
 
-  function createLadder(x, yMin, yMax, z, rotationY = 0) {
+  function createTreeMesh(type = 'oak') {
     const g = new THREE.Group();
-    const height = yMax - yMin;
-    const midY = yMin + height / 2;
-    
-    const railMat = new THREE.MeshStandardMaterial({ color: 0x5c4033, flatShading: true, roughness: 0.9 });
-    const rungMat = new THREE.MeshStandardMaterial({ color: 0x8b5a2b, flatShading: true, roughness: 0.8 });
-    
-    // Left side rail
-    const railL = new THREE.Mesh(new THREE.BoxGeometry(0.1, height, 0.1), railMat);
-    railL.position.set(-0.35, 0, 0);
-    railL.castShadow = true;
-    railL.receiveShadow = true;
-    g.add(railL);
-    
-    // Right side rail
-    const railR = new THREE.Mesh(new THREE.BoxGeometry(0.1, height, 0.1), railMat);
-    railR.position.set(0.35, 0, 0);
-    railR.castShadow = true;
-    railR.receiveShadow = true;
-    g.add(railR);
-    
-    // Rungs spaced 0.4 units apart
-    const spacing = 0.4;
-    const rungsCount = Math.floor(height / spacing);
-    for (let i = 0; i <= rungsCount; i++) {
-      const rungY = -height / 2 + i * spacing;
-      const rung = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.6, 4), rungMat);
-      rung.rotation.z = Math.PI / 2;
-      rung.position.set(0, rungY, 0);
-      rung.castShadow = true;
-      rung.receiveShadow = true;
-      g.add(rung);
-    }
-    
-    g.position.set(x, midY, z);
-    g.rotation.y = rotationY;
-    scene.add(g);
-    
-    laddersData.push({ x, z, yMin, yMax });
-  }
+    const trunkMat = new THREE.MeshStandardMaterial({ color: 0x6e4324, flatShading: true });
+    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.35, 1.8, 5), trunkMat);
+    trunk.position.y = 0.9; trunk.castShadow = true; g.add(trunk);
 
-  function createPathway(x, y, z, rx, ry, rz, width = 2.8, length = 6.0, isCloudPath = false) {
-    const g = new THREE.Group();
-    
-    // Cloud platforms are styled in highly visible glowing low-poly orange (matching user's diagram!)
-    const woodColor = isCloudPath ? 0xff7f00 : 0x6e473b;
-    const roughness = isCloudPath ? 0.3 : 0.9;
-    const metalness = isCloudPath ? 0.5 : 0.0;
-    
-    const woodMat = new THREE.MeshStandardMaterial({ 
-      color: woodColor, 
-      flatShading: true, 
-      roughness: roughness,
-      metalness: metalness
-    });
-    const supportMat = new THREE.MeshStandardMaterial({ 
-      color: isCloudPath ? 0xcc6600 : 0x4a312a, 
-      flatShading: true 
-    });
-    
-    // Horizontal planks
-    const plankGeo = new THREE.BoxGeometry(width, 0.15, length);
-    const plank = new THREE.Mesh(plankGeo, woodMat);
-    plank.castShadow = !isCloudPath;
-    plank.receiveShadow = !isCloudPath;
-    g.add(plank);
-    
-    // Left Support Beam
-    const beamL = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.25, length), supportMat);
-    beamL.position.set(-width / 2 + 0.25, -0.2, 0);
-    beamL.castShadow = !isCloudPath;
-    g.add(beamL);
-    
-    // Right Support Beam
-    const beamR = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.25, length), supportMat);
-    beamR.position.set(width / 2 - 0.25, -0.2, 0);
-    beamR.castShadow = !isCloudPath;
-    g.add(beamR);
-    
-    g.position.set(x, y, z);
-    g.rotation.set(rx, ry, rz);
-    
-    // If it is a cloud path, hide the solid rectangular meshes completely!
-    // Bob will walk on flat invisible hitboxes embedded seamlessly in the fluffy clouds.
-    if (isCloudPath) {
-      g.visible = false;
-    }
-    
-    scene.add(g);
-    
-    pathwaysData.push({ x, y, z, width, length, rx, ry, rz });
-  }
+    let leafColor = 0x2e7d32;
+    if (type === 'pine') leafColor = 0x1b4332;
+    if (type === 'enchanted') leafColor = 0x9333ea;
+    if (type === 'palm') leafColor = 0x84cc16;
 
-  // ── Scatter Trees ────────────────────────────────────────
-  const treePositions = [];
-  for (let i = 0; i < 600; i++) {
-    const tx = (Math.random() - 0.5) * 365;
-    const tz = (Math.random() - 0.5) * 365;
-    const td = Math.sqrt(tx * tx + tz * tz);
-    if (td < 5) continue; // keep center clear
-    if (td < 80 && Math.random() > 0.7) continue;
-
-    const terrainH = getTerrainHeight(tx, tz);
-    const normal = getTerrainNormal(tx, tz);
-    
-    // Enforce spawning rules:
-    // 1. Cannot spawn on water (height <= -1.5)
-    // 2. Cannot spawn on steep ground (slope > 30 degrees, normal.y < 0.866)
-    if (terrainH > -1.5 && normal.y >= 0.866) {
-      scene.add(createTree(tx, tz));
-      treePositions.push({ x: tx, z: tz });
-    }
-  }
-
-  // ── Spawn Pathways, Ladders & Peak Flag ──────────────────
-  // Lower pathway ramp leading from mountain base upwards
-  createPathway(72, getTerrainHeight(72, -72) + 0.1, -72, 0.16, -Math.PI / 4, 0);
-  createPathway(80, getTerrainHeight(80, -80) + 0.1, -80, 0.18, -Math.PI / 4, 0);
-  createPathway(88, getTerrainHeight(88, -88) + 0.1, -88, 0.20, -Math.PI / 4, 0);
-
-  // First climbable ladder scaling the lower cliff terrace
-  createLadder(95.5, 28.75, 45.83, -95.5, -Math.PI / 4);
-
-  // Mid-level transition pathway and bridge
-  createPathway(101, getTerrainHeight(101, -101) + 0.1, -101, 0.05, -Math.PI / 4, 0);
-  createPathway(107, getTerrainHeight(107, -107) + 0.1, -107, 0.08, -Math.PI / 4, 0);
-
-  // Second climbable ladder scaling the final vertical summit cliff (scaled by 75/36)
-  createLadder(112.5, 45.42, 64.58, -112.5, -Math.PI / 4);
-
-  // Upper summit pathways leading to the very peak
-  createPathway(117, getTerrainHeight(117, -117) + 0.1, -117, 0.12, -Math.PI / 4, 0);
-  createPathway(123, getTerrainHeight(123, -123) + 0.1, -123, 0.08, -Math.PI / 4, 0);
-
-  // Summit Flag pole and flag waving on the mountain top
-  const peakH = getTerrainHeight(130, -130);
-  
-  const flagPole = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.08, 0.08, 6.0, 6),
-    new THREE.MeshStandardMaterial({ color: 0xdddddd, metalness: 0.8, roughness: 0.2 })
-  );
-  flagPole.position.set(130, peakH + 3.0, -130);
-  flagPole.castShadow = true;
-  flagPole.receiveShadow = true;
-  scene.add(flagPole);
-
-  const flagGroup = new THREE.Group();
-  
-  // Outer border & fabric of flag
-  const flagFabric = new THREE.Mesh(
-    new THREE.BoxGeometry(2.0, 1.0, 0.06),
-    new THREE.MeshStandardMaterial({ color: 0xff3333, flatShading: true, roughness: 0.6 })
-  );
-  flagFabric.position.set(1.0, 0, 0);
-  flagFabric.castShadow = true;
-  flagGroup.add(flagFabric);
-
-  // Golden low-poly crown/star dodecahedron emblem
-  const emblem = new THREE.Mesh(
-    new THREE.DodecahedronGeometry(0.3, 0),
-    new THREE.MeshStandardMaterial({ color: 0xffd700, flatShading: true, roughness: 0.3, metalness: 0.8 })
-  );
-  emblem.position.set(1.0, 0, 0.04);
-  emblem.castShadow = true;
-  flagGroup.add(emblem);
-
-  flagGroup.position.set(130, peakH + 5.0, -130);
-  scene.add(flagGroup);
-
-  // ── Above the Clouds Biome (Visual Cloud Generator & Spawning) ──
-  function createVisualCloudPlatform(x, y, z, width, length) {
-    const g = new THREE.Group();
-    const cloudMat = new THREE.MeshStandardMaterial({
-      color: 0xffffff,
-      flatShading: true,
-      transparent: true,
-      opacity: 0.96,
-      roughness: 0.9
-    });
-    
-    // Spawn overlapping low-poly puffs around the border and slightly overlapping the top
-    const puffCount = 14;
-    for (let i = 0; i < puffCount; i++) {
-      const angle = (i / puffCount) * Math.PI * 2;
-      const radiusX = (width / 2) * (0.8 + Math.random() * 0.25);
-      const radiusZ = (length / 2) * (0.8 + Math.random() * 0.25);
-      
-      const px = Math.cos(angle) * radiusX;
-      const pz = Math.sin(angle) * radiusZ;
-      const py = -0.3 + (Math.random() - 0.5) * 0.3; // overlapping the flat hitbox
-      
-      const size = 2.0 + Math.random() * 1.5;
-      const puff = new THREE.Mesh(new THREE.DodecahedronGeometry(size, 1), cloudMat);
-      puff.position.set(px, py, pz);
-      puff.castShadow = true;
-      puff.receiveShadow = true;
-      g.add(puff);
-    }
-    
-    // Cloud underside fluffy base
-    for (let i = 0; i < 5; i++) {
-      const size = 3.0 + Math.random() * 2.0;
-      const puff = new THREE.Mesh(new THREE.DodecahedronGeometry(size, 1), cloudMat);
-      puff.position.set((Math.random() - 0.5) * width * 0.4, -1.0, (Math.random() - 0.5) * length * 0.4);
-      g.add(puff);
-    }
-    
-    g.position.set(x, y - 1.9, z);
-    scene.add(g);
-  }
-
-  // 45% chance to spawn the secret sky biome in any given session!
-  const hasCloudBiome = Math.random() < 0.45;
-  if (hasCloudBiome) {
-    console.log("☁️ Secret cloud biome spawned at (-110, -110)!");
-    const indicator = document.createElement('div');
-    indicator.style.marginTop = '6px';
-    indicator.style.fontSize = '12px';
-    indicator.style.color = '#e0f7fa';
-    indicator.style.fontWeight = 'bold';
-    indicator.textContent = '☁️ Secret: Sky Clouds Biome spawned!';
-    const uiBox = document.getElementById('ui');
-    if (uiBox) uiBox.appendChild(indicator);
-
-    // 1. Spans a massive vertical ladder from ground level to 48.0 height
-    const groundHeight = getTerrainHeight(-110, -110);
-    createLadder(-110, groundHeight, 48.0, -110, 0);
-
-    // 2. Spawn 3 connected flat ground hitbox pathways (orange platforms) at height 48
-    // Width and Length acts as the physical collision box!
-    createPathway(-110, 48.0, -110, 0, 0, 0, 10, 10, true);
-    createPathway(-110, 48.0, -120, 0, 0, 0, 8, 8, true);
-    createPathway(-100, 48.0, -110, 0, 0, 0, 8, 8, true);
-
-    // 3. Cover them with fluffy visual cloud puffs (which overlap the flat hitbox)
-    createVisualCloudPlatform(-110, 48.0, -110, 10, 10);
-    createVisualCloudPlatform(-110, 48.0, -120, 8, 8);
-    createVisualCloudPlatform(-100, 48.0, -110, 8, 8);
-  }
-
-  // ── Clouds ───────────────────────────────────────────────
-  function createCloud() {
-    const g = new THREE.Group();
-    const count = 3 + Math.floor(Math.random() * 4);
-    for (let i = 0; i < count; i++) {
-      const cb = new THREE.Mesh(
-        new THREE.DodecahedronGeometry(2 + Math.random() * 3, 1),
-        new THREE.MeshStandardMaterial({ color: 0xffffff, flatShading: true, transparent: true, opacity: 0.9 })
-      );
-      cb.position.set(i * 3 - count, Math.random() * 1, Math.random() * 2);
-      g.add(cb);
-    }
-    g.position.set(
-      (Math.random() - 0.5) * 200,
-      30 + Math.random() * 15,
-      (Math.random() - 0.5) * 200
-    );
-    g.userData.speed = 0.2 + Math.random() * 0.5;
+    const leafMat = new THREE.MeshStandardMaterial({ color: leafColor, flatShading: true });
+    const cone1 = new THREE.Mesh(new THREE.ConeGeometry(1.4, 2.2, 5), leafMat);
+    cone1.position.y = 2.2; cone1.castShadow = true; g.add(cone1);
+    const cone2 = new THREE.Mesh(new THREE.ConeGeometry(1.0, 1.8, 5), leafMat);
+    cone2.position.y = 3.2; cone2.castShadow = true; g.add(cone2);
     return g;
   }
-  const clouds = [];
-  for (let i = 0; i < 12; i++) {
-    const cloud = createCloud();
-    clouds.push(cloud);
-    scene.add(cloud);
+
+  function createOreRockMesh(type = 'stone') {
+    const g = new THREE.Group();
+    let col = 0x71717a;
+    if (type === 'crystal') col = 0xa855f7;
+    const mat = new THREE.MeshStandardMaterial({
+      color: col, flatShading: true,
+      emissive: (type === 'crystal') ? 0x6b21a8 : 0x000000, emissiveIntensity: 0.5
+    });
+    const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(0.85, 1), mat);
+    rock.position.y = 0.5; rock.scale.set(1.2, 0.8, 1); rock.castShadow = true; g.add(rock);
+    return g;
   }
 
-  // ── Player Character ─────────────────────────────────────
-  const player = new THREE.Group();
-  player.scale.set(0.5, 0.5, 0.5);
-  const PLAYER_RADIUS = 0.2;   // collision radius
-  const PLAYER_HEIGHT = 1.1;   // collision height (ground to hat top)
-  const FEET_OFFSET = 0.0;     // hover clearance so feet don't clip into slopes
+  for (let i = 0; i < 280; i++) {
+    const rx = (Math.random() - 0.5) * 440;
+    const rz = (Math.random() - 0.5) * 440;
+    if (Math.hypot(rx, rz) < 18) continue;
 
-  // Body
-  const body = new THREE.Mesh(
-    new THREE.BoxGeometry(0.6, 1.2, 0.4),
-    new THREE.MeshStandardMaterial({ color: 0x4488cc, flatShading: true })
+    const ry = getTerrainHeight(rx, rz);
+    if (ry < -0.8) continue;
+
+    const biome = getBiomeType(rx, rz);
+    let nodeType = 'wood';
+    let mesh = null;
+
+    if (biome === 'VOLCANIC_CALDERA') {
+      nodeType = (Math.random() > 0.4) ? 'crystal' : 'stone';
+      mesh = createOreRockMesh(nodeType);
+    } else if (biome === 'SNOW_MOUNTAINS') {
+      mesh = (Math.random() > 0.3) ? createTreeMesh('pine') : createOreRockMesh('crystal');
+      nodeType = (mesh.children[0].geometry.type.includes('Dodec')) ? 'crystal' : 'wood';
+    } else if (biome === 'ENCHANTED_FOREST') {
+      mesh = (Math.random() > 0.4) ? createTreeMesh('enchanted') : createOreRockMesh('crystal');
+      nodeType = (mesh.children[0].geometry.type.includes('Dodec')) ? 'crystal' : 'wood';
+    } else if (biome === 'DESERT_DUNES') {
+      mesh = createOreRockMesh('stone');
+      nodeType = 'stone';
+    } else {
+      mesh = (Math.random() > 0.3) ? createTreeMesh('oak') : createOreRockMesh('stone');
+      nodeType = (mesh.children[0].geometry.type.includes('Dodec')) ? 'stone' : 'wood';
+    }
+
+    mesh.position.set(rx, ry, rz);
+    scene.add(mesh);
+    resourceNodes.push({ mesh: mesh, type: nodeType, x: rx, z: rz, y: ry, hp: 3, maxHp: 3 });
+  }
+
+  // ── 6. ANCIENT SHRINES & DUNGEON PORTAL ──────────────────────────────────
+  const shrines = [];
+  function createShrine(x, z, buffType, name, color) {
+    const g = new THREE.Group();
+    const base = new THREE.Mesh(new THREE.CylinderGeometry(1.8, 2.2, 0.6, 6), new THREE.MeshStandardMaterial({ color: 0x475569, flatShading: true }));
+    base.position.y = 0.3; g.add(base);
+    const crystal = new THREE.Mesh(new THREE.OctahedronGeometry(1.0, 0), new THREE.MeshStandardMaterial({ color: color, emissive: color, emissiveIntensity: 0.8, flatShading: true }));
+    crystal.position.y = 2.4; g.add(crystal);
+    const y = getTerrainHeight(x, z);
+    g.position.set(x, y, z);
+    scene.add(g);
+    shrines.push({ mesh: g, crystal: crystal, x: x, z: z, buffType: buffType, name: name });
+  }
+  createShrine(45, -45, 'flame', 'Shrine of Ignis (+30% DMG)', 0xef4444);
+  createShrine(-50, 45, 'wind', 'Shrine of Zephyr (+40% Speed)', 0x10b981);
+  createShrine(-50, -50, 'frost', 'Shrine of Glacius (+50 Defense)', 0x38bdf8);
+
+  const portalGroup = new THREE.Group();
+  const portalRing = new THREE.Mesh(new THREE.TorusGeometry(2.5, 0.4, 8, 16), new THREE.MeshStandardMaterial({ color: 0x8b5cf6, emissive: 0x7c3aed, emissiveIntensity: 1.0 }));
+  portalRing.position.y = 2.5; portalGroup.add(portalRing);
+  const portalY = getTerrainHeight(100, -60);
+  portalGroup.position.set(100, portalY, -60);
+  scene.add(portalGroup);
+
+  // ── 7. MONSTER SYSTEM & ARTICULATED COMBAT AI ───────────────────────────
+  const monsters = [];
+  const MONSTER_DEFS = {
+    slime: { name: "Forest Slime", hp: 60, dmg: 6, exp: 25, speed: 3.5, color: 0x22c55e, scale: 0.7, level: 1 },
+    boar: { name: "Wild Boar", hp: 120, dmg: 12, exp: 50, speed: 5.5, color: 0x854d0e, scale: 0.9, level: 3 },
+    spider: { name: "Gloom Spider", hp: 190, dmg: 18, exp: 90, speed: 6.0, color: 0x7e22ce, scale: 0.85, level: 5 },
+    frost_golem: { name: "Frost Golem", hp: 350, dmg: 28, exp: 160, speed: 3.8, color: 0x38bdf8, scale: 1.3, level: 8 },
+    magma_drake: { name: "Magma Drake", hp: 500, dmg: 40, exp: 240, speed: 6.5, color: 0xef4444, scale: 1.2, level: 12 },
+    titan_boss: { name: "Ancient Magma Titan", hp: 3500, dmg: 65, exp: 2000, speed: 4.2, color: 0xb91c1c, scale: 2.8, level: 25, isBoss: true }
+  };
+
+  function createMonsterMesh(def) {
+    const g = new THREE.Group();
+    const mat = new THREE.MeshStandardMaterial({
+      color: def.color, flatShading: true, roughness: 0.5,
+      emissive: def.isBoss ? 0x7f1d1d : 0x000000, emissiveIntensity: 0.4
+    });
+
+    if (def.name.includes("Slime")) {
+      const body = new THREE.Mesh(new THREE.DodecahedronGeometry(0.8, 1), mat);
+      body.position.y = 0.6; body.castShadow = true; g.add(body);
+    } else if (def.isBoss) {
+      const torso = new THREE.Mesh(new THREE.BoxGeometry(2, 2.5, 1.5), mat);
+      torso.position.y = 2.5; torso.castShadow = true; g.add(torso);
+      const head = new THREE.Mesh(new THREE.DodecahedronGeometry(0.9, 0), mat);
+      head.position.y = 4.2; g.add(head);
+    } else {
+      const body = new THREE.Mesh(new THREE.BoxGeometry(1, 0.9, 1.4), mat);
+      body.position.y = 0.7; body.castShadow = true; g.add(body);
+      const head = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.6, 0.6), mat);
+      head.position.set(0, 1.2, 0.8); g.add(head);
+    }
+    g.scale.set(def.scale, def.scale, def.scale);
+    return g;
+  }
+
+  function spawnMonster(typeKey, x, z) {
+    const def = MONSTER_DEFS[typeKey];
+    const mesh = createMonsterMesh(def);
+    const y = getTerrainHeight(x, z);
+    mesh.position.set(x, y, z);
+    scene.add(mesh);
+
+    monsters.push({
+      def: def, mesh: mesh, x: x, z: z, y: y,
+      hp: def.hp, maxHp: def.hp, state: 'wander',
+      target: null, attackCooldown: 0, homeX: x, homeZ: z
+    });
+  }
+
+  for (let i = 0; i < 20; i++) spawnMonster('slime', (Math.random() - 0.5) * 80, (Math.random() - 0.5) * 80);
+  for (let i = 0; i < 14; i++) spawnMonster('boar', -30 - Math.random() * 60, -30 - Math.random() * 60);
+  for (let i = 0; i < 12; i++) spawnMonster('spider', -80 - Math.random() * 70, -80 - Math.random() * 70);
+  for (let i = 0; i < 12; i++) spawnMonster('frost_golem', 80 + Math.random() * 70, -80 - Math.random() * 70);
+  for (let i = 0; i < 10; i++) spawnMonster('magma_drake', 80 + Math.random() * 70, 80 + Math.random() * 70);
+  spawnMonster('titan_boss', 130, 130);
+
+  // ── 8. SIMULATED MMO HEROES ─────────────────────────────────────────────
+  const npcHeroes = [];
+  const NPC_NAMES = ["Valkyrie_Rose", "ShadowNinja", "GandalfTheGrey", "IronClad99", "PixelKnight", "LootGoblin", "HealerWaifu", "ElvenRanger"];
+
+  function createHeroMesh(color = 0x3b82f6) {
+    const g = new THREE.Group();
+    const body = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.9, 0.35), new THREE.MeshStandardMaterial({ color: color, flatShading: true }));
+    body.position.y = 0.55; body.castShadow = true; g.add(body);
+    const head = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.4, 0.4), new THREE.MeshStandardMaterial({ color: 0xffcc99, flatShading: true }));
+    head.position.y = 1.2; head.castShadow = true; g.add(head);
+    return g;
+  }
+
+  for (let i = 0; i < 10; i++) {
+    const hx = (Math.random() - 0.5) * 120;
+    const hz = (Math.random() - 0.5) * 120;
+    const hy = getTerrainHeight(hx, hz);
+    const mesh = createHeroMesh(i % 2 === 0 ? 0x38bdf8 : 0xec4899);
+    mesh.position.set(hx, hy, hz);
+    scene.add(mesh);
+    npcHeroes.push({ name: NPC_NAMES[i % NPC_NAMES.length], mesh: mesh, x: hx, z: hz, y: hy, chatCooldown: 10 + Math.random() * 20 });
+  }
+
+  // ── 9. PLAYER HERO & MOUNT SYSTEM ───────────────────────────────────────
+  const player = {
+    group: new THREE.Group(),
+    lvl: 1, hp: 100, maxHp: 100,
+    mp: 60, maxMp: 60,
+    sta: 100, maxSta: 100,
+    exp: 0, expNext: 100,
+    skillPoints: 0,
+    wood: 50, stone: 30, crystal: 5, gold: 120,
+    atk: 25, matk: 35, def: 10, crit: 15,
+    kills: 0, builtCount: 0,
+    slimeKills: 0,
+    isMounted: false,
+    isRolling: false, rollTimer: 0, rollDir: new THREE.Vector3(),
+    unlockedSkills: new Set(['w1', 'm1', 'm2', 'm3', 'm5']),
+    equippedSkills: ['w1', 'm1', 'm2', 'm3', 'm5'],
+    activeCooldowns: [0, 0, 0, 0, 0, 0],
+    activeBuffs: {},
+    combo: 0, comboTimer: 0,
+    questStage: 1
+  };
+
+  const pBody = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.9, 0.4), new THREE.MeshStandardMaterial({ color: 0x2563eb, flatShading: true }));
+  pBody.position.y = 0.65; pBody.castShadow = true; player.group.add(pBody);
+
+  const pHead = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.48, 0.48), new THREE.MeshStandardMaterial({ color: 0xffcc99, flatShading: true }));
+  pHead.position.y = 1.35; pHead.castShadow = true; player.group.add(pHead);
+
+  const pHat = new THREE.Mesh(new THREE.ConeGeometry(0.35, 0.6, 5), new THREE.MeshStandardMaterial({ color: 0xf59e0b, flatShading: true }));
+  pHat.position.y = 1.85; player.group.add(pHat);
+
+  const weaponMesh = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.04, 0.04, 1.2, 5),
+    new THREE.MeshStandardMaterial({ color: 0xf59e0b, emissive: 0xd97706, emissiveIntensity: 0.5 })
   );
-  body.position.y = 0.6;
-  body.castShadow = true;
-  player.add(body);
+  weaponMesh.position.set(0.45, 0.7, 0.2); weaponMesh.rotation.x = Math.PI / 6;
+  player.group.add(weaponMesh);
 
-  // Create a cute :3 face texture using Canvas
-  const faceCanvas = document.createElement('canvas');
-  faceCanvas.width = 128;
-  faceCanvas.height = 128;
-  const fCtx = faceCanvas.getContext('2d');
+  const mountGroup = new THREE.Group();
+  const mBody = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.8, 1.8), new THREE.MeshStandardMaterial({ color: 0x475569, flatShading: true }));
+  mBody.position.y = 0.6; mountGroup.add(mBody);
+  const mHead = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.6, 0.8), new THREE.MeshStandardMaterial({ color: 0x334155, flatShading: true }));
+  mHead.position.set(0, 1.1, 1.0); mountGroup.add(mHead);
+  mountGroup.visible = false;
+  player.group.add(mountGroup);
 
-  // Face background (skin tone matching skinMat color #ffcc99)
-  fCtx.fillStyle = '#ffcc99';
-  fCtx.fillRect(0, 0, 128, 128);
+  player.group.position.set(0, getTerrainHeight(0, 0), 0);
+  scene.add(player.group);
 
-  // Cute eyes
-  fCtx.fillStyle = '#222222';
-  fCtx.beginPath();
-  fCtx.arc(38, 52, 6, 0, Math.PI * 2);
-  fCtx.fill();
-  fCtx.beginPath();
-  fCtx.arc(90, 52, 6, 0, Math.PI * 2);
-  fCtx.fill();
+  // ── 10. SANDBOX BUILDING SYSTEM & COLLISION ─────────────────────────────
+  let isBuildMode = false;
+  let selectedBlueprint = 'wood_wall';
+  const placedBuildings = [];
 
-  // Cute :3 cat smile mouth
-  fCtx.strokeStyle = '#222222';
-  fCtx.lineWidth = 5;
-  fCtx.lineCap = 'round';
-  
-  // Left smile loop
-  fCtx.beginPath();
-  fCtx.arc(50, 76, 11, 0, Math.PI, false);
-  fCtx.stroke();
-  
-  // Right smile loop
-  fCtx.beginPath();
-  fCtx.arc(72, 76, 11, 0, Math.PI, false);
-  fCtx.stroke();
+  const ghostGroup = new THREE.Group();
+  const ghostMat = new THREE.MeshBasicMaterial({ color: 0x22c55e, transparent: true, opacity: 0.5, wireframe: true });
+  const ghostBox = new THREE.Mesh(new THREE.BoxGeometry(3, 2.5, 0.4), ghostMat);
+  ghostGroup.add(ghostBox); scene.add(ghostGroup); ghostGroup.visible = false;
 
-  const faceTexture = new THREE.CanvasTexture(faceCanvas);
-  faceTexture.colorSpace = THREE.SRGBColorSpace;
+  const BUILDING_COSTS = {
+    wood_wall: { wood: 10, stone: 0, crystal: 0, name: "Wood Wall" },
+    stone_wall: { wood: 0, stone: 15, crystal: 0, name: "Stone Bastion" },
+    floor: { wood: 10, stone: 0, crystal: 0, name: "Wood Platform" },
+    ramp: { wood: 10, stone: 0, crystal: 0, name: "Staircase Ramp" },
+    campfire: { wood: 15, stone: 5, crystal: 0, name: "Heal Campfire" },
+    turret: { wood: 25, stone: 15, crystal: 0, name: "Auto-Turret" },
+    crystal_pylon: { wood: 0, stone: 20, crystal: 5, name: "Mana Pylon" }
+  };
 
-  // Materials array for the 6 faces of the head [right, left, top, bottom, front, back]
-  const skinMat = new THREE.MeshStandardMaterial({ color: 0xffcc99, flatShading: true });
-  const faceMat = new THREE.MeshStandardMaterial({ map: faceTexture, flatShading: true });
-  
-  const headMats = [
-    skinMat, // right (+X)
-    skinMat, // left (-X)
-    skinMat, // top (+Y)
-    skinMat, // bottom (-Y)
-    faceMat, // front (+Z) - facing forward locally
-    skinMat  // back (-Z)
-  ];
+  function createBuildingMesh(type) {
+    const g = new THREE.Group();
+    if (type === 'wood_wall') {
+      const m = new THREE.Mesh(new THREE.BoxGeometry(3, 2.5, 0.4), new THREE.MeshStandardMaterial({ color: 0x854d0e, flatShading: true }));
+      m.position.y = 1.25; m.castShadow = true; g.add(m);
+    } else if (type === 'stone_wall') {
+      const m = new THREE.Mesh(new THREE.BoxGeometry(3, 3, 0.6), new THREE.MeshStandardMaterial({ color: 0x64748b, flatShading: true }));
+      m.position.y = 1.5; m.castShadow = true; g.add(m);
+    } else if (type === 'floor') {
+      const m = new THREE.Mesh(new THREE.BoxGeometry(3, 0.2, 3), new THREE.MeshStandardMaterial({ color: 0xa16207, flatShading: true }));
+      m.position.y = 0.1; g.add(m);
+    } else if (type === 'ramp') {
+      const m = new THREE.Mesh(new THREE.BoxGeometry(3, 0.2, 3.5), new THREE.MeshStandardMaterial({ color: 0x854d0e, flatShading: true }));
+      m.rotation.x = Math.PI / 6; m.position.y = 0.8; g.add(m);
+    } else if (type === 'campfire') {
+      const fire = new THREE.Mesh(new THREE.ConeGeometry(0.4, 0.8, 5), new THREE.MeshBasicMaterial({ color: 0xf97316 }));
+      fire.position.y = 0.4; g.add(fire);
+    } else if (type === 'turret') {
+      const base = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.8, 2, 6), new THREE.MeshStandardMaterial({ color: 0x475569, flatShading: true }));
+      base.position.y = 1; g.add(base);
+    } else if (type === 'crystal_pylon') {
+      const cry = new THREE.Mesh(new THREE.OctahedronGeometry(0.8, 0), new THREE.MeshStandardMaterial({ color: 0xa855f7, emissive: 0x7e22ce, emissiveIntensity: 0.8 }));
+      cry.position.y = 2.2; g.add(cry);
+    }
+    return g;
+  }
 
-  // Head
-  const head = new THREE.Mesh(
-    new THREE.BoxGeometry(0.5, 0.5, 0.5),
-    headMats
-  );
-  head.position.y = 1.45;
-  head.castShadow = true;
-  player.add(head);
+  function placeCurrentBuilding() {
+    const cost = BUILDING_COSTS[selectedBlueprint];
+    if (player.wood < cost.wood || player.stone < cost.stone || player.crystal < cost.crystal) {
+      addChatMessage("System", "❌ Not enough resources!", "chat-system"); return;
+    }
+    player.wood -= cost.wood; player.stone -= cost.stone; player.crystal -= cost.crystal;
+    updateResourceUI();
 
-  player.position.set(0, getTerrainHeight(0, 0) + FEET_OFFSET, 0);
-  scene.add(player);
+    const mesh = createBuildingMesh(selectedBlueprint);
+    mesh.position.copy(ghostGroup.position);
+    mesh.rotation.y = ghostGroup.rotation.y;
+    scene.add(mesh);
 
-  // ── Controls ─────────────────────────────────────────────
+    placedBuildings.push({
+      type: selectedBlueprint, mesh: mesh,
+      x: mesh.position.x, y: mesh.position.y, z: mesh.position.z,
+      attackCooldown: 0
+    });
+    player.builtCount++;
+    addExp(15);
+    sfx.playBuild();
+    addChatMessage("System", "🔨 Built " + cost.name + "!", "chat-loot");
+    checkQuestProgress('build');
+  }
+
+  function dismantleNearbyBuilding() {
+    let nearest = null;
+    let minDist = 4.0;
+    placedBuildings.forEach((b, idx) => {
+      const d = Math.hypot(b.x - player.group.position.x, b.z - player.group.position.z);
+      if (d < minDist) {
+        minDist = d;
+        nearest = { b: b, idx: idx };
+      }
+    });
+
+    if (nearest) {
+      const cost = BUILDING_COSTS[nearest.b.type];
+      player.wood += Math.floor(cost.wood * 0.7);
+      player.stone += Math.floor(cost.stone * 0.7);
+      player.crystal += Math.floor(cost.crystal * 0.7);
+      updateResourceUI();
+      scene.remove(nearest.b.mesh);
+      placedBuildings.splice(nearest.idx, 1);
+      sfx.playDismantle();
+      addChatMessage("System", "♻️ Dismantled structure (reclaimed 70% resources)!", "chat-loot");
+    } else {
+      addChatMessage("System", "❌ No player structures nearby to dismantle!", "chat-system");
+    }
+  }
+
+  // ── 11. COMBAT, PROJECTILES & 3D LOOT DROPS ─────────────────────────────
+  const activeProjectiles = [];
+
+  function spawn3DLoot(x, y, z, type = 'gold') {
+    const g = new THREE.Mesh(
+      new THREE.DodecahedronGeometry(0.3, 0),
+      new THREE.MeshStandardMaterial({
+        color: type === 'gold' ? 0xfbbf24 : 0xa855f7,
+        emissive: type === 'gold' ? 0xd97706 : 0x7e22ce,
+        emissiveIntensity: 0.6
+      })
+    );
+    g.position.set(x, y + 0.4, z);
+    scene.add(g);
+    activeLootItems.push({ mesh: g, x: x, y: y + 0.4, z: z, type: type, life: 30 });
+  }
+
+  function spawnSpellProjectile(type, origin, dir) {
+    const pMesh = new THREE.Mesh(
+      new THREE.SphereGeometry(type === 'meteor' ? 0.9 : 0.35, 6, 6),
+      new THREE.MeshBasicMaterial({ color: type === 'fireball' ? 0xf97316 : (type === 'frost' ? 0x38bdf8 : 0xfacc15) })
+    );
+    pMesh.position.copy(origin); scene.add(pMesh);
+    activeProjectiles.push({ type: type, mesh: pMesh, dir: dir.clone().normalize(), speed: 22, life: 2.5 });
+    sfx.playMagic();
+  }
+
+  function showDamageNumber(val, worldPos, isCrit = false, color = '#ffffff') {
+    const v = worldPos.clone().project(camera);
+    if (v.z > 1) return;
+    const sx = (v.x * 0.5 + 0.5) * window.innerWidth;
+    const sy = (-(v.y * 0.5) + 0.5) * window.innerHeight;
+
+    const el = document.createElement('div');
+    el.className = 'dmg-text';
+    el.textContent = (isCrit ? "CRIT! " : "") + val;
+    el.style.left = sx + 'px'; el.style.top = sy + 'px';
+    el.style.color = isCrit ? '#f59e0b' : color;
+    el.style.fontSize = isCrit ? '22px' : '15px';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 800);
+  }
+
+  function castSkill(slotIndex) {
+    if (player.activeCooldowns[slotIndex] > 0) return;
+    const skillKey = player.equippedSkills[slotIndex];
+    if (!skillKey) return;
+
+    const manaCosts = { w1: 0, m1: 15, m2: 20, m3: 25, m5: 50, w2: 20, w3: 30, r1: 15, r2: 20 };
+    const cost = manaCosts[skillKey] || 0;
+    if (player.mp < cost) { addChatMessage("System", "⚠️ Not enough Mana!", "chat-system"); return; }
+    player.mp -= cost;
+    updatePlayerHUD();
+
+    weaponMesh.rotation.x = -Math.PI / 3;
+    setTimeout(() => weaponMesh.rotation.x = Math.PI / 6, 200);
+
+    const fwd = new THREE.Vector3(-Math.sin(playerYaw), 0, -Math.cos(playerYaw));
+
+    if (skillKey === 'w1' || slotIndex === 0) {
+      sfx.playSwing();
+      player.activeCooldowns[slotIndex] = 0.45;
+      let hit = false;
+      monsters.forEach(m => {
+        if (Math.hypot(m.x - player.group.position.x, m.z - player.group.position.z) < 4.5) {
+          hit = true;
+          player.combo++;
+          player.comboTimer = 3.5;
+          const isCrit = Math.random() < (player.crit / 100);
+          const comboMul = 1.0 + Math.min(1.0, player.combo * 0.05);
+          const dmg = Math.round(player.atk * (isCrit ? 1.8 : 1.0) * comboMul);
+          damageMonster(m, dmg, isCrit);
+        }
+      });
+      if (!hit) {
+        resourceNodes.forEach(node => {
+          if (node.hp > 0 && Math.hypot(node.x - player.group.position.x, node.z - player.group.position.z) < 4.0) {
+            harvestNode(node);
+          }
+        });
+      }
+    } else if (skillKey === 'm1') {
+      player.activeCooldowns[slotIndex] = 1.2;
+      spawnSpellProjectile('fireball', player.group.position.clone().add(new THREE.Vector3(0, 1.2, 0)), fwd);
+    } else if (skillKey === 'm2') {
+      player.activeCooldowns[slotIndex] = 4.0;
+      sfx.playMagic();
+      monsters.forEach(m => {
+        if (Math.hypot(m.x - player.group.position.x, m.z - player.group.position.z) < 9.0) {
+          damageMonster(m, Math.round(player.matk * 0.9), false, '#38bdf8');
+          m.state = 'frozen';
+          setTimeout(() => { if (m.state === 'frozen') m.state = 'chase'; }, 3000);
+        }
+      });
+    } else if (skillKey === 'm3') {
+      player.activeCooldowns[slotIndex] = 2.5;
+      sfx.playMagic();
+      monsters.filter(m => Math.hypot(m.x - player.group.position.x, m.z - player.group.position.z) < 14).slice(0, 3).forEach(m => {
+        damageMonster(m, Math.round(player.matk * 1.3), true, '#facc15');
+      });
+    } else if (skillKey === 'm5') {
+      player.activeCooldowns[slotIndex] = 8.0;
+      const targetPos = player.group.position.clone().add(fwd.clone().multiplyScalar(12));
+      spawnSpellProjectile('meteor', targetPos.clone().add(new THREE.Vector3(4, 25, 4)), new THREE.Vector3(-0.2, -1, -0.2));
+    }
+  }
+
+  function damageMonster(m, dmg, isCrit = false, color = '#ffffff') {
+    m.hp -= dmg;
+    sfx.playHit();
+    showDamageNumber(dmg, m.mesh.position.clone().add(new THREE.Vector3(0, 1.5, 0)), isCrit, color);
+
+    const tf = document.getElementById('target-frame');
+    tf.style.display = 'flex';
+    document.getElementById('target-name').textContent = m.def.name + " [Lv." + m.def.level + "]";
+    document.getElementById('target-hp-fill').style.width = Math.max(0, (m.hp / m.maxHp) * 100) + '%';
+
+    if (m.def.isBoss) {
+      document.getElementById('boss-bar-wrap').style.display = 'flex';
+      document.getElementById('boss-hp-fill').style.width = Math.max(0, (m.hp / m.maxHp) * 100) + '%';
+    }
+
+    m.state = 'chase';
+    if (m.hp <= 0) killMonster(m);
+  }
+
+  function killMonster(m) {
+    player.kills++;
+    if (m.def.name.includes("Slime")) {
+      player.slimeKills++;
+      checkQuestProgress('slime');
+    }
+    if (m.def.isBoss) {
+      checkQuestProgress('boss');
+    }
+
+    addExp(m.def.exp);
+    const goldDrop = 10 + Math.floor(Math.random() * m.def.exp * 0.5);
+    player.gold += goldDrop;
+    updateResourceUI();
+    addChatMessage("Combat", "⚔️ Defeated " + m.def.name + "! (+" + m.def.exp + " EXP, +" + goldDrop + " Gold)", "chat-loot");
+
+    // Spawn 3D Loot Coin Drop
+    spawn3DLoot(m.x, m.y, m.z, 'gold');
+
+    if (m.def.isBoss) {
+      document.getElementById('boss-bar-wrap').style.display = 'none';
+      showToast("🏆 WORLD BOSS SLAIN! TITAN DEFEATED!");
+    }
+
+    scene.remove(m.mesh);
+    const idx = monsters.indexOf(m);
+    if (idx > -1) monsters.splice(idx, 1);
+    setTimeout(() => spawnMonster(Object.keys(MONSTER_DEFS).find(k => MONSTER_DEFS[k].name === m.def.name) || 'slime', m.homeX, m.homeZ), 20000);
+  }
+
+  function harvestNode(node) {
+    node.hp--;
+    sfx.playGather();
+    const yieldAmount = 2 + Math.floor(Math.random() * 3);
+    if (node.type === 'wood') player.wood += yieldAmount;
+    if (node.type === 'stone') player.stone += yieldAmount;
+    if (node.type === 'crystal') player.crystal += yieldAmount;
+    updateResourceUI();
+    addExp(8);
+    if (node.hp <= 0) {
+      spawn3DLoot(node.x, node.y, node.z, node.type === 'crystal' ? 'crystal' : 'gold');
+      node.mesh.visible = false;
+      setTimeout(() => { node.hp = node.maxHp; node.mesh.visible = true; }, 25000);
+    }
+  }
+
+  function addExp(amt) {
+    player.exp += amt;
+    if (player.exp >= player.expNext) {
+      player.exp -= player.expNext;
+      player.lvl++;
+      player.expNext = Math.round(player.expNext * 1.5);
+      player.skillPoints += 2;
+      player.maxHp += 25; player.hp = player.maxHp;
+      player.maxMp += 15; player.mp = player.maxMp;
+      player.atk += 6; player.matk += 8;
+      sfx.playLevelUp();
+      showToast("⭐ LEVEL UP! YOU REACHED LEVEL " + player.lvl + " ⭐");
+    }
+    updatePlayerHUD();
+  }
+
+  // ── 12. DYNAMIC QUEST PROGRESSION ──────────────────────────────────────
+  function checkQuestProgress(actionType) {
+    if (player.questStage === 1 && actionType === 'slime') {
+      document.getElementById('quest-objective').textContent = `Defeat 3 Forest Slimes (${Math.min(3, player.slimeKills)}/3)`;
+      if (player.slimeKills >= 3) {
+        player.questStage = 2;
+        addExp(150); player.gold += 50; potHp += 2;
+        document.getElementById('inv-hp-count').textContent = potHp;
+        updateResourceUI();
+        sfx.playLevelUp();
+        showToast("📜 QUEST 1 COMPLETED! (+150 EXP, +50 Gold)");
+        addChatMessage("System", "🎉 Quest Complete: Plains Defender! New Quest Unlocked: Master Builder.", "chat-system");
+        updateQuestUI();
+      }
+    } else if (player.questStage === 2 && actionType === 'build') {
+      document.getElementById('quest-objective').textContent = `Construct 2 base structures (${Math.min(2, player.builtCount)}/2)`;
+      if (player.builtCount >= 2) {
+        player.questStage = 3;
+        addExp(200); player.wood += 100; player.stone += 50;
+        updateResourceUI();
+        sfx.playLevelUp();
+        showToast("📜 QUEST 2 COMPLETED! (+200 EXP, +100 Wood, +50 Stone)");
+        addChatMessage("System", "🎉 Quest Complete: Master Builder! Final Quest Unlocked: Slay the Caldera Titan.", "chat-system");
+        updateQuestUI();
+      }
+    } else if (player.questStage === 3 && actionType === 'boss') {
+      player.questStage = 4;
+      addExp(2500); player.gold += 500;
+      updateResourceUI();
+      sfx.playLevelUp();
+      showToast("🏆 ALL CHAPTER QUESTS COMPLETED! TITLE UNLOCKED: TITAN SLAYER");
+      document.getElementById('char-title').textContent = "Titan Slayer";
+      addChatMessage("System", "👑 Legendary Hero! You have conquered the Caldera Titan and finished all bounties.", "chat-loot");
+      updateQuestUI();
+    }
+  }
+
+  function updateQuestUI() {
+    const qTitle = document.getElementById('quest-title');
+    const qObj = document.getElementById('quest-objective');
+    const container = document.getElementById('quest-list-container');
+
+    if (player.questStage === 1) {
+      qTitle.textContent = "📜 Quest: Plains Defender";
+      qObj.textContent = `Defeat 3 Forest Slimes (${player.slimeKills}/3)`;
+    } else if (player.questStage === 2) {
+      qTitle.textContent = "📜 Quest: Master Builder";
+      qObj.textContent = `Construct 2 base structures (${player.builtCount}/2)`;
+    } else if (player.questStage === 3) {
+      qTitle.textContent = "📜 Quest: Slay the Caldera Titan";
+      qObj.textContent = `Defeat the Ancient Magma Titan (0/1)`;
+    } else {
+      qTitle.textContent = "🏆 Quest: All Bounties Complete!";
+      qObj.textContent = `Champion of Aethelgard`;
+    }
+
+    if (container) {
+      container.innerHTML = `
+        <div style="background:rgba(255,255,255,0.05); padding:12px; border-radius:10px; border-left:4px solid ${player.questStage > 1 ? '#10b981' : 'var(--primary)'};">
+          <h4 style="color:#fbbf24;">1. Plains Defender ${player.questStage > 1 ? '✓ (Completed)' : '(Active)'}</h4>
+          <p style="font-size:12px; opacity:0.8; margin-top:2px;">Hunt down 3 Forest Slimes around the starter meadows.</p>
+          <div style="font-size:11px; color:#34d399; margin-top:4px;">Reward: 150 EXP, 50 Gold, 2 Health Potions</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.05); padding:12px; border-radius:10px; border-left:4px solid ${player.questStage > 2 ? '#10b981' : (player.questStage === 2 ? 'var(--primary)' : '#475569')};">
+          <h4 style="color:#38bdf8;">2. Master Builder ${player.questStage > 2 ? '✓ (Completed)' : (player.questStage === 2 ? '(Active)' : '')}</h4>
+          <p style="font-size:12px; opacity:0.8; margin-top:2px;">Construct any 2 base structures (Walls, Campfire, or Turrets).</p>
+          <div style="font-size:11px; color:#34d399; margin-top:4px;">Reward: 200 EXP, 100 Wood, 50 Stone</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.05); padding:12px; border-radius:10px; border-left:4px solid ${player.questStage > 3 ? '#10b981' : (player.questStage === 3 ? 'var(--primary)' : '#475569')};">
+          <h4 style="color:#ef4444;">3. Slay the Caldera Titan ${player.questStage > 3 ? '✓ (Completed)' : (player.questStage === 3 ? '(Active)' : '')}</h4>
+          <p style="font-size:12px; opacity:0.8; margin-top:2px;">Defeat the Ancient Magma Titan in the volcano crater.</p>
+          <div style="font-size:11px; color:#34d399; margin-top:4px;">Reward: 2500 EXP, 500 Gold, Title: 'Titan Slayer'</div>
+        </div>
+      `;
+    }
+  }
+
+  // ── 13. POTIONS, MOUNT, FISHING & EMOTES ────────────────────────────────
+  let potHp = 3, potMp = 3, potSpd = 2;
+
+  function usePotion(type) {
+    if (type === 'health' && potHp > 0) {
+      potHp--; player.hp = Math.min(player.maxHp, player.hp + 50); sfx.playDrink();
+      addChatMessage("System", "🧪 Used Health Potion (+50 HP)!", "chat-loot");
+    } else if (type === 'mana' && potMp > 0) {
+      potMp--; player.mp = Math.min(player.maxMp, player.mp + 40); sfx.playDrink();
+      addChatMessage("System", "🫙 Used Mana Potion (+40 MP)!", "chat-loot");
+    } else if (type === 'speed' && potSpd > 0) {
+      potSpd--; player.activeBuffs.speed = 15; sfx.playDrink();
+      addChatMessage("System", "⚡ Used Elixir of Swiftness (+40% Speed for 15s)!", "chat-loot");
+    }
+    document.getElementById('inv-hp-count').textContent = potHp;
+    document.getElementById('inv-mp-count').textContent = potMp;
+    document.getElementById('inv-spd-count').textContent = potSpd;
+    updatePlayerHUD();
+  }
+
+  function toggleMount() {
+    player.isMounted = !player.isMounted;
+    mountGroup.visible = player.isMounted;
+    sfx.playMount();
+    addChatMessage("System", player.isMounted ? "🐺 Mounted Direwolf (+60% Speed)!" : "Dismounted.", "chat-system");
+  }
+
+  function triggerDodgeRoll() {
+    if (player.sta >= 25 && !player.isRolling) {
+      player.sta -= 25;
+      player.isRolling = true;
+      player.rollTimer = 0.35;
+      const fwd = new THREE.Vector3(-Math.sin(playerYaw), 0, -Math.cos(playerYaw));
+      player.rollDir.copy(fwd);
+      sfx.playRoll();
+    }
+  }
+
+  function tryFishing() {
+    if (player.group.position.y <= 0.2) {
+      sfx.playGather();
+      const caught = Math.random() > 0.4 ? "Golden Trout (+35 Gold)" : "Old Mystic Boot (+5 EXP)";
+      player.gold += 35;
+      updateResourceUI();
+      addChatMessage("System", "🎣 You fished up: " + caught + "!", "chat-loot");
+    } else {
+      addChatMessage("System", "❌ Stand near water/lake to fish!", "chat-system");
+    }
+  }
+
+  function playEmote(type) {
+    closeModals();
+    if (type === 'dance') {
+      addChatMessage("You", "💃 is dancing gracefully!");
+      pBody.rotation.y = Math.PI; setTimeout(() => pBody.rotation.y = 0, 1500);
+    } else if (type === 'wave') {
+      addChatMessage("You", "👋 waves to everyone nearby!");
+    } else if (type === 'cheer') {
+      addChatMessage("You", "🎉 cheers with epic enthusiasm!");
+    }
+  }
+
+  // ── 14. CONTROLS, CAMERA & INPUT ────────────────────────────────────────
   const keys = {};
-  const velocity = new THREE.Vector3();
-  let yaw = 0, pitch = 0;
+  let yaw = 0, pitch = 0.2;
+  let playerYaw = 0;
   let isLocked = false;
-  let shiftlockMode = 0; // 0 = None, 1 = Smooth Lock, 2 = Instant Lock
-  let cameraZoomDistance = 6.0; // Dynamic zoom distance controlled by scroll wheel!
-  let currentRadius = 6.0;
-  let playerYaw = 0; // Store the persistent, smooth player yaw to prevent 360 spins!
+  let shiftlockMode = 1;
+  let cameraZoomDistance = 7.0;
   let isRightMouseDown = false;
 
-  // Scroll wheel event listener to zoom in and out
-  document.addEventListener('wheel', e => {
-    // Zoom in or out (e.deltaY is positive when scrolling down / zooming out)
-    cameraZoomDistance += e.deltaY * 0.005;
-    // Keep bounded between 2.0 (close up third person) and 15.0 (wide environment view)
-    cameraZoomDistance = Math.max(2.0, Math.min(15.0, cameraZoomDistance));
-  });
+  const chatInput = document.getElementById('chat-input');
 
-  // Settings Wiring: Look Sensitivity and Keyboard Layout OS Toggle
-  let mouseSensitivity = 1.0;
-  let isMacLayout = false;
-
-  // Auto detect macOS
-  const ua = navigator.userAgent.toLowerCase();
-  const plat = navigator.platform.toLowerCase();
-  if (ua.includes('mac') || plat.includes('mac')) {
-    isMacLayout = true;
-  }
-
-  function updateLayoutUI() {
-    const label = document.getElementById('sprint-key-label');
-    const winBtn = document.getElementById('layout-win-btn');
-    const macBtn = document.getElementById('layout-mac-btn');
-    
-    if (isMacLayout) {
-      if (label) label.innerHTML = '<kbd>Control</kbd>';
-      if (winBtn) {
-        winBtn.style.background = 'rgba(255,255,255,0.15)';
-        winBtn.style.color = '#fff';
-      }
-      if (macBtn) {
-        macBtn.style.background = '#ffcc00';
-        macBtn.style.color = '#111';
-      }
-    } else {
-      if (label) label.innerHTML = '<kbd>Ctrl</kbd>';
-      if (winBtn) {
-        winBtn.style.background = '#ffcc00';
-        winBtn.style.color = '#111';
-      }
-      if (macBtn) {
-        macBtn.style.background = 'rgba(255,255,255,0.15)';
-        macBtn.style.color = '#fff';
-      }
-    }
-  }
-
-  // Wire buttons & slider after document DOM is ready (in script directly)
-  window.addEventListener('DOMContentLoaded', () => {
-    const sensSlider = document.getElementById('sens-slider');
-    const sensVal = document.getElementById('sens-val');
-    
-    if (sensSlider && sensVal) {
-      sensSlider.addEventListener('input', () => {
-        mouseSensitivity = parseFloat(sensSlider.value);
-        sensVal.textContent = mouseSensitivity.toFixed(1) + 'x';
-      });
-    }
-
-    const winBtn = document.getElementById('layout-win-btn');
-    const macBtn = document.getElementById('layout-mac-btn');
-
-    if (winBtn && macBtn) {
-      winBtn.addEventListener('click', () => {
-        isMacLayout = false;
-        updateLayoutUI();
-      });
-      macBtn.addEventListener('click', () => {
-        isMacLayout = true;
-        updateLayoutUI();
-      });
-    }
-
-    updateLayoutUI();
-  });
-
-  // Intercept browser context menu to allow smooth right-click camera dragging
-  document.addEventListener('contextmenu', e => {
-    e.preventDefault();
-  });
-
-  let lastMouseX = 0;
-  let lastMouseY = 0;
-
-  document.addEventListener('mousedown', e => {
-    if (e.button === 2) {
-      isRightMouseDown = true;
-      lastMouseX = e.clientX;
-      lastMouseY = e.clientY;
-      // Only lock the pointer on right-click mousedown if Shiftlock is OFF (None Mode)
-      if (shiftlockMode === 0) {
-        const p = renderer.domElement.requestPointerLock();
-        if (p && typeof p.catch === 'function') {
-          p.catch(err => {
-            console.warn("Pointer lock request denied on right-click:", err);
-          });
-        }
-      }
-    }
-  });
-
-  document.addEventListener('mouseup', e => {
-    if (e.button === 2) {
-      isRightMouseDown = false;
-      // Only release pointer lock on right-click mouseup if Shiftlock is OFF (None Mode)
-      if (shiftlockMode === 0) {
-        if (document.pointerLockElement === renderer.domElement) {
-          document.exitPointerLock();
-        }
-      }
-    }
-  });
-
-  function updateShiftlockUI() {
-    const el = document.getElementById('shiftlock-indicator');
-    const ch = document.getElementById('crosshair');
-    if (!el) return;
-    if (shiftlockMode === 0) {
-      el.textContent = 'Shiftlock: Off (None)';
-      el.style.color = '#ffcc00';
-      if (ch) ch.style.display = 'none'; // Hide crosshair
-      if (document.pointerLockElement === renderer.domElement) {
-        document.exitPointerLock();
-      }
-    } else {
-      if (shiftlockMode === 1) {
-        el.textContent = 'Shiftlock: Mode 1 (Smooth)';
-        el.style.color = '#00ffcc';
-      } else if (shiftlockMode === 2) {
-        el.textContent = 'Shiftlock: Mode 2 (Instant)';
-        el.style.color = '#ff3366';
-      }
-      if (ch) ch.style.display = 'block'; // Show crosshair!
-      
-      // Catch pointer lock promise rejection to avoid "SecurityError" overlay
-      const p = renderer.domElement.requestPointerLock();
-      if (p && typeof p.catch === 'function') {
-        p.catch(err => {
-          console.warn("Pointer lock request denied (expected during rapid cycling/cooldown):", err);
-        });
-      }
-    }
-  }
-
-  document.addEventListener('keydown', e => { 
-    keys[e.code] = true; 
-    
-    // Cycle Shiftlock modes on Ctrl press (without trigger repetition when holding key)
-    if (e.code === 'ControlLeft' || e.code === 'ControlRight') {
-      if (!e.repeat) {
-        shiftlockMode = (shiftlockMode + 1) % 3;
-        updateShiftlockUI();
-      }
-    }
-  });
-  
-  document.addEventListener('keyup', e => { keys[e.code] = false; });
-
-  // Clear keys on window blur to prevent infinite walking stuck keys
-  window.addEventListener('blur', () => {
-    for (const key in keys) {
-      keys[key] = false;
-    }
-    isRightMouseDown = false;
-  });
-
-  renderer.domElement.addEventListener('click', () => {
-    // Only lock pointer on click if Shiftlock is ON
-    if (shiftlockMode > 0) {
-      const p = renderer.domElement.requestPointerLock();
-      if (p && typeof p.catch === 'function') {
-        p.catch(err => {
-          console.warn("Pointer lock request denied on click:", err);
-        });
-      }
-    }
-  });
-
-  let justLocked = false;
-
-  document.addEventListener('pointerlockchange', () => {
-    const wasLocked = isLocked;
-    isLocked = document.pointerLockElement === renderer.domElement;
-    if (isLocked) {
-      if (!wasLocked) {
-        justLocked = true;
-      }
-      if (shiftlockMode === 0 && !isRightMouseDown) {
-        document.exitPointerLock();
-      }
-    } else {
-      if (shiftlockMode === 0) {
-        isRightMouseDown = false;
-      }
-    }
-  });
-
-  document.addEventListener('mousemove', e => {
-    if (justLocked) {
-      justLocked = false;
+  document.addEventListener('keydown', e => {
+    // If typing in chat input, prevent game hotkeys from hijacking
+    if (document.activeElement === chatInput) {
+      if (e.code === 'Escape') chatInput.blur();
       return;
     }
 
-    const mx = e.movementX;
-    const my = e.movementY;
-
-    // Shiftlock is ON: Mouse moves camera directly (requires pointer lock)
-    if (shiftlockMode > 0) {
-      if (!isLocked) return;
-      if (isNaN(mx) || isNaN(my) || !isFinite(mx) || !isFinite(my)) return;
-      yaw -= mx * 0.002 * mouseSensitivity;
-      pitch = Math.max(-0.6, Math.min(1.2, pitch + my * 0.002 * mouseSensitivity));
-    } 
-    // Shiftlock is OFF: Dragging mouse with RIGHT CLICK rotates camera
-    else {
-      if (!isLocked && !isRightMouseDown) return;
-      
-      let dx = 0;
-      let dy = 0;
-      
-      if (isLocked) {
-        dx = mx;
-        dy = my;
-      } else {
-        // If not locked, compute delta manually using clientX/clientY
-        dx = e.clientX - lastMouseX;
-        dy = e.clientY - lastMouseY;
-        
-        lastMouseX = e.clientX;
-        lastMouseY = e.clientY;
-      }
-      
-      // Safeguard against NaN / undefined values
-      if (isNaN(dx) || isNaN(dy) || !isFinite(dx) || !isFinite(dy)) return;
-      
-      // Ignore massive delta jumps (like snaps during transition)
-      if (Math.abs(dx) > 150 || Math.abs(dy) > 150) {
-        return;
-      }
-      
-      yaw -= dx * 0.0025 * mouseSensitivity;
-      pitch = Math.max(-0.6, Math.min(1.2, pitch + dy * 0.0025 * mouseSensitivity));
+    keys[e.code] = true;
+    if (e.code === 'KeyK') toggleModal('modal-skills');
+    if (e.code === 'KeyI') toggleModal('modal-inv');
+    if (e.code === 'KeyB') toggleBuildMode();
+    if (e.code === 'KeyJ') toggleModal('modal-quests');
+    if (e.code === 'KeyM') toggleModal('modal-map');
+    if (e.code === 'KeyO' || e.code === 'Escape') toggleModal('modal-settings');
+    if (e.code === 'KeyC') toggleModal('modal-char');
+    if (e.code === 'KeyR') toggleMount();
+    if (e.code === 'KeyV') triggerDodgeRoll();
+    if (e.code === 'KeyG') tryFishing();
+    if (e.code === 'KeyX') dismantleNearbyBuilding();
+    if (e.code === 'Digit1') castSkill(1);
+    if (e.code === 'Digit2') castSkill(2);
+    if (e.code === 'Digit3') castSkill(3);
+    if (e.code === 'Digit4') castSkill(4);
+    if (e.code === 'Digit5') castSkill(5);
+    if (e.code === 'KeyF') castSkill(0);
+    if (e.code === 'ControlLeft' || e.code === 'ControlRight') {
+      shiftlockMode = (shiftlockMode + 1) % 3;
+      document.getElementById('crosshair').style.display = (shiftlockMode > 0) ? 'block' : 'none';
     }
   });
 
-  // ── Game Loop ────────────────────────────────────────────
+  document.addEventListener('keyup', e => { keys[e.code] = false; });
+
+  document.addEventListener('mousedown', e => {
+    if (e.button === 0) {
+      if (isBuildMode) placeCurrentBuilding();
+      else castSkill(0);
+    }
+    if (e.button === 2) isRightMouseDown = true;
+  });
+
+  document.addEventListener('mouseup', e => { if (e.button === 2) isRightMouseDown = false; });
+  document.addEventListener('contextmenu', e => e.preventDefault());
+
+  renderer.domElement.addEventListener('click', () => {
+    // Only lock pointer if not clicking inside any open modal
+    const anyModalOpen = Array.from(document.querySelectorAll('.game-modal')).some(m => m.style.display === 'block');
+    if (!anyModalOpen && shiftlockMode > 0) {
+      renderer.domElement.requestPointerLock();
+    }
+  });
+
+  document.addEventListener('pointerlockchange', () => {
+    isLocked = (document.pointerLockElement === renderer.domElement);
+    document.getElementById('crosshair').style.display = (isLocked || shiftlockMode > 0) ? 'block' : 'none';
+  });
+
+  document.addEventListener('mousemove', e => {
+    if (isLocked || isRightMouseDown) {
+      yaw -= e.movementX * 0.0025;
+      pitch = Math.max(-0.4, Math.min(1.1, pitch + e.movementY * 0.0025));
+    }
+  });
+
+  document.addEventListener('wheel', e => {
+    cameraZoomDistance = Math.max(2.5, Math.min(18.0, cameraZoomDistance + e.deltaY * 0.006));
+  });
+
+  // ── 15. UI HELPERS & MODALS ─────────────────────────────────────────────
+  function updatePlayerHUD() {
+    document.getElementById('player-lvl-badge').textContent = "LV " + player.lvl;
+    document.getElementById('hp-val').textContent = Math.round(player.hp) + " / " + player.maxHp;
+    document.getElementById('hp-fill').style.width = (player.hp / player.maxHp * 100) + '%';
+    document.getElementById('mp-val').textContent = Math.round(player.mp) + " / " + player.maxMp;
+    document.getElementById('mp-fill').style.width = (player.mp / player.maxMp * 100) + '%';
+    document.getElementById('sta-val').textContent = Math.round(player.sta) + " / " + player.maxSta;
+    document.getElementById('sta-fill').style.width = (player.sta / player.maxSta * 100) + '%';
+    const expPct = Math.round((player.exp / player.expNext) * 100);
+    document.getElementById('exp-val').textContent = expPct + '%';
+    document.getElementById('exp-fill').style.width = expPct + '%';
+    document.getElementById('skill-pts-badge').textContent = player.skillPoints;
+    document.getElementById('modal-sp-val').textContent = player.skillPoints;
+
+    document.getElementById('char-lvl').textContent = player.lvl;
+    document.getElementById('char-atk').textContent = player.atk;
+    document.getElementById('char-matk').textContent = player.matk;
+    document.getElementById('char-def').textContent = player.def;
+    document.getElementById('char-crit').textContent = player.crit + '%';
+    document.getElementById('char-kills').textContent = player.kills;
+    document.getElementById('char-built').textContent = player.builtCount;
+
+    // Buff Badges
+    const bContainer = document.getElementById('buff-container');
+    bContainer.innerHTML = '';
+    for (const b in player.activeBuffs) {
+      if (player.activeBuffs[b] > 0) {
+        const badge = document.createElement('span');
+        badge.className = 'buff-badge';
+        badge.textContent = `${b.toUpperCase()}: ${Math.ceil(player.activeBuffs[b])}s`;
+        bContainer.appendChild(badge);
+      }
+    }
+  }
+
+  function updateResourceUI() {
+    document.getElementById('res-wood-val').textContent = player.wood;
+    document.getElementById('res-stone-val').textContent = player.stone;
+    document.getElementById('res-crystal-val').textContent = player.crystal;
+    document.getElementById('res-gold-val').textContent = player.gold;
+  }
+
+  function addChatMessage(user, msg, customClass = '') {
+    const container = document.getElementById('chat-messages');
+    const line = document.createElement('div');
+    line.className = 'chat-line ' + customClass;
+    line.innerHTML = (user === 'System') ? msg : `<span class="chat-user">${user}</span>: ${msg}`;
+    container.appendChild(line);
+    container.scrollTop = container.scrollHeight;
+  }
+
+  function showToast(text) {
+    const toast = document.getElementById('toast-notification');
+    toast.textContent = text;
+    toast.style.display = 'block';
+    setTimeout(() => toast.style.display = 'none', 3000);
+  }
+
+  function toggleModal(id) {
+    const el = document.getElementById(id);
+    const isShowing = el.style.display === 'block';
+    closeModals();
+    if (!isShowing) {
+      if (document.pointerLockElement) document.exitPointerLock();
+      el.style.display = 'block';
+      if (id === 'modal-map') renderBigMap();
+      if (id === 'modal-quests') updateQuestUI();
+    }
+  }
+
+  function closeModals() {
+    document.querySelectorAll('.game-modal').forEach(m => m.style.display = 'none');
+  }
+
+  function toggleBuildMode() {
+    isBuildMode = !isBuildMode;
+    ghostGroup.visible = isBuildMode;
+    if (isBuildMode) toggleModal('modal-build');
+  }
+
+  function selectBlueprint(type, cardEl) {
+    selectedBlueprint = type;
+    document.querySelectorAll('.build-card').forEach(c => c.classList.remove('selected'));
+    if (cardEl) cardEl.classList.add('selected');
+    closeModals();
+    isBuildMode = true;
+    ghostGroup.visible = true;
+  }
+
+  function handleSkillNodeClick(skillId) {
+    if (!player.unlockedSkills.has(skillId)) {
+      if (player.skillPoints > 0) {
+        player.skillPoints--;
+        player.unlockedSkills.add(skillId);
+        document.getElementById('node-' + skillId).classList.add('unlocked');
+        updatePlayerHUD();
+        addChatMessage("System", "✨ Unlocked skill tree perk!", "chat-loot");
+      }
+    } else {
+      // Allow equipping to active slot 1-5
+      const slot = prompt("Assign " + skillId.toUpperCase() + " to Hotbar Slot (1, 2, 3, 4, or 5):", "1");
+      const slotNum = parseInt(slot);
+      if (slotNum >= 1 && slotNum <= 5) {
+        player.equippedSkills[slotNum] = skillId;
+        const iconMap = { w1: '⚔️', w2: '🌪️', w3: '💥', m1: '🔥', m2: '❄️', m3: '⚡', m5: '☄️', r1: '🎯', r2: '💨' };
+        document.getElementById('icon-' + slotNum).textContent = iconMap[skillId] || '✨';
+        addChatMessage("System", `Equipped ${skillId.toUpperCase()} to Slot ${slotNum}!`, "chat-system");
+      }
+    }
+  }
+
+  // Wire UI Buttons
+  document.getElementById('btn-skills').onclick = () => toggleModal('modal-skills');
+  document.getElementById('btn-inv').onclick = () => toggleModal('modal-inv');
+  document.getElementById('btn-build').onclick = () => toggleBuildMode();
+  document.getElementById('btn-quests').onclick = () => toggleModal('modal-quests');
+  document.getElementById('btn-map').onclick = () => toggleModal('modal-map');
+  document.getElementById('btn-settings').onclick = () => toggleModal('modal-settings');
+
+  chatInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && chatInput.value.trim()) {
+      addChatMessage("You", chatInput.value.trim());
+      chatInput.value = '';
+      chatInput.blur();
+    }
+  });
+
+  // Settings Handlers
+  document.getElementById('sfx-slider').oninput = e => {
+    sfx.volume = parseFloat(e.target.value);
+    document.getElementById('sfx-vol-val').textContent = Math.round(sfx.volume * 100) + '%';
+  };
+  document.getElementById('sens-slider').oninput = e => {
+    document.getElementById('sens-val').textContent = parseFloat(e.target.value).toFixed(1) + 'x';
+  };
+
+  let timeSpeedMultiplier = 1.0;
+  function toggleTimeSpeed() {
+    if (timeSpeedMultiplier === 1.0) timeSpeedMultiplier = 4.0;
+    else if (timeSpeedMultiplier === 4.0) timeSpeedMultiplier = 0.0;
+    else timeSpeedMultiplier = 1.0;
+    document.getElementById('time-spd-val').textContent = (timeSpeedMultiplier === 1.0) ? 'Normal' : (timeSpeedMultiplier === 4.0 ? 'Fast' : 'Freeze Day');
+  }
+
+  // ── 16. RADAR & BIG WORLD MAP ───────────────────────────────────────────
+  const miniCanvas = document.getElementById('minimap-canvas');
+  const miniCtx = miniCanvas.getContext('2d');
+
+  function renderMinimap() {
+    miniCtx.fillStyle = '#0f172a';
+    miniCtx.fillRect(0, 0, 136, 136);
+    const scale = 136 / terrainSize;
+    const cx = 68 + player.group.position.x * scale;
+    const cz = 68 + player.group.position.z * scale;
+
+    miniCtx.fillStyle = '#1b4332'; miniCtx.fillRect(0, 0, 68, 68);
+    miniCtx.fillStyle = '#64748b'; miniCtx.fillRect(68, 0, 68, 68);
+    miniCtx.fillStyle = '#78350f'; miniCtx.fillRect(0, 68, 68, 68);
+    miniCtx.fillStyle = '#450a0a'; miniCtx.fillRect(68, 68, 68, 68);
+    miniCtx.fillStyle = '#22c55e'; miniCtx.beginPath(); miniCtx.arc(68, 68, 22, 0, Math.PI*2); miniCtx.fill();
+
+    monsters.forEach(m => {
+      miniCtx.fillStyle = m.def.isBoss ? '#ef4444' : '#f87171';
+      miniCtx.beginPath();
+      miniCtx.arc(68 + m.x * scale, 68 + m.z * scale, m.def.isBoss ? 4 : 2, 0, Math.PI * 2);
+      miniCtx.fill();
+    });
+
+    miniCtx.fillStyle = '#fbbf24';
+    miniCtx.beginPath(); miniCtx.arc(cx, cz, 3.5, 0, Math.PI * 2); miniCtx.fill();
+
+    document.getElementById('biome-tag').textContent = getBiomeType(player.group.position.x, player.group.position.z).replace('_', ' ');
+  }
+
+  function renderBigMap() {
+    const bCanvas = document.getElementById('big-map-canvas');
+    const bCtx = bCanvas.getContext('2d');
+    bCtx.fillStyle = '#0f172a'; bCtx.fillRect(0, 0, 500, 500);
+    const scale = 500 / terrainSize;
+
+    bCtx.fillStyle = '#1b4332'; bCtx.fillRect(0, 0, 250, 250);
+    bCtx.fillStyle = '#64748b'; bCtx.fillRect(250, 0, 250, 250);
+    bCtx.fillStyle = '#78350f'; bCtx.fillRect(0, 250, 250, 250);
+    bCtx.fillStyle = '#450a0a'; bCtx.fillRect(250, 250, 250, 250);
+    bCtx.fillStyle = '#22c55e'; bCtx.beginPath(); bCtx.arc(250, 250, 75, 0, Math.PI*2); bCtx.fill();
+
+    shrines.forEach(s => {
+      bCtx.fillStyle = '#a855f7'; bCtx.beginPath();
+      bCtx.arc(250 + s.x * scale, 250 + s.z * scale, 6, 0, Math.PI*2); bCtx.fill();
+    });
+
+    bCtx.fillStyle = '#fbbf24'; bCtx.beginPath();
+    bCtx.arc(250 + player.group.position.x * scale, 250 + player.group.position.z * scale, 7, 0, Math.PI*2); bCtx.fill();
+  }
+
+  // ── 17. MAIN GAME LOOP ──────────────────────────────────────────────────
   const clock = new THREE.Clock();
-  let vy = 0; // vertical velocity (jump)
+  let vy = 0;
+  let worldTime = 0.25;
 
   function animate() {
     requestAnimationFrame(animate);
     const dt = Math.min(clock.getDelta(), 0.05);
-    let isSliding = false;
 
-    // Clouds drift
-    for (const c of clouds) {
-      c.position.x += c.userData.speed * dt;
-      if (c.position.x > 100) c.position.x = -100;
+    // 1. Day / Night Orbit & Sky Light
+    if (timeSpeedMultiplier > 0) {
+      worldTime = (worldTime + dt * 0.005 * timeSpeedMultiplier) % 1.0;
+    }
+    const sunAngle = worldTime * Math.PI * 2;
+    sunLight.position.set(Math.cos(sunAngle) * 200, Math.sin(sunAngle) * 200, 80);
+    const isDay = Math.sin(sunAngle) > 0;
+    const skyColor = isDay ? new THREE.Color(0x7ec8e3).lerp(new THREE.Color(0xf59e0b), Math.max(0, 1 - Math.sin(sunAngle)*1.8)) : new THREE.Color(0x050811);
+    scene.background = skyColor;
+    scene.fog.color = skyColor;
+    starsMat.opacity = isDay ? 0 : 0.8;
+    const hour = Math.floor(worldTime * 24);
+    const min = Math.floor((worldTime * 24 % 1) * 60);
+    document.getElementById('world-time-tag').textContent = (isDay ? '☀️ ' : '🌙 ') + (hour<10?'0':'')+hour + ':' + (min<10?'0':'')+min;
+
+    // 2. Regeneration & Buffs
+    player.mp = Math.min(player.maxMp, player.mp + 4 * dt);
+    player.sta = Math.min(player.maxSta, player.sta + 15 * dt);
+
+    for (const b in player.activeBuffs) {
+      if (player.activeBuffs[b] > 0) {
+        player.activeBuffs[b] -= dt;
+      }
     }
 
-    // Player movement (Sprint with ShiftLeft or ShiftRight)
-    const speed = (keys['ShiftLeft'] || keys['ShiftRight']) ? 12 : 6;
+    if (player.comboTimer > 0) {
+      player.comboTimer -= dt;
+      document.getElementById('combo-meter').style.display = 'block';
+      document.getElementById('combo-count').textContent = player.combo;
+    } else {
+      player.combo = 0;
+      document.getElementById('combo-meter').style.display = 'none';
+    }
+
+    // Shrines check
+    shrines.forEach(s => {
+      s.crystal.rotation.y += 1.5 * dt;
+      if (Math.hypot(s.x - player.group.position.x, s.z - player.group.position.z) < 5) {
+        player.activeBuffs[s.buffType] = 30;
+      }
+    });
+
+    // Portal check
+    portalRing.rotation.z += 2.0 * dt;
+    if (Math.hypot(100 - player.group.position.x, -60 - player.group.position.z) < 3.5) {
+      player.group.position.set(120, getTerrainHeight(120, 120), 120);
+      showToast("🌀 TELEPORTED TO TITAN'S CALDERA LAIR! 🌀");
+    }
+
+    // 3. Loot Pickup Magnetic Sweep
+    for (let i = activeLootItems.length - 1; i >= 0; i--) {
+      const item = activeLootItems[i];
+      item.mesh.rotation.y += 3.0 * dt;
+      const d = Math.hypot(item.x - player.group.position.x, item.z - player.group.position.z);
+      if (d < 3.0) {
+        sfx.playCoin();
+        if (item.type === 'gold') {
+          player.gold += 20;
+          addChatMessage("Loot", "🪙 Picked up 20 Gold!", "chat-loot");
+        } else {
+          player.crystal += 2;
+          addChatMessage("Loot", "💎 Picked up 2 Crystals!", "chat-loot");
+        }
+        updateResourceUI();
+        scene.remove(item.mesh);
+        activeLootItems.splice(i, 1);
+      }
+    }
+
+    updatePlayerHUD();
+
+    // 4. Movement, Dodge Roll & Swimming Physics
+    let currentSpeed = (keys['ShiftLeft'] || keys['ShiftRight']) ? 14 : 7;
+    if (player.isMounted) currentSpeed *= 1.6;
+    if (player.activeBuffs.speed) currentSpeed *= 1.4;
+
     const forward = new THREE.Vector3(-Math.sin(yaw), 0, -Math.cos(yaw));
     const right = new THREE.Vector3(Math.cos(yaw), 0, -Math.sin(yaw));
-
     const move = new THREE.Vector3();
-    if (keys['KeyW'] || keys['ArrowUp']) move.add(forward);
-    if (keys['KeyS'] || keys['ArrowDown']) move.sub(forward);
-    if (keys['KeyA'] || keys['ArrowLeft']) move.sub(right);
-    if (keys['KeyD'] || keys['ArrowRight']) move.add(right);
 
-    if (move.length() > 0) {
-      move.normalize();
-
-    }
-
-    // Check if current position is a steep slope (> 50 degrees)
-    const currentSlopeNormal = getTerrainNormal(player.position.x, player.position.z);
-    
-    // Check if player is near any pathway
-    let onPathwayCurrent = false;
-    for (const path of pathwaysData) {
-      const pdx = player.position.x - path.x;
-      const pdz = player.position.z - path.z;
-      const pdist = Math.sqrt(pdx * pdx + pdz * pdz);
-      if (pdist < 3.8 && Math.abs(player.position.y - path.y) < 2.5) {
-        onPathwayCurrent = true;
-        break;
-      }
-    }
-    
-    // Also check if they are near a ladder
-    let nearLadderCurrent = false;
-    for (const ladder of laddersData) {
-      const ldx = player.position.x - ladder.x;
-      const ldz = player.position.z - ladder.z;
-      const ldist = Math.sqrt(ldx * ldx + ldz * ldz);
-      if (ldist < 1.2 && player.position.y >= ladder.yMin - 0.5 && player.position.y <= ladder.yMax + 0.8) {
-        nearLadderCurrent = true;
-        break;
-      }
-    }
-
-    if (player.userData.slideVelocityX === undefined) {
-      player.userData.slideVelocityX = 0;
-      player.userData.slideVelocityZ = 0;
-      player.userData.walkVelocityX = 0;
-      player.userData.walkVelocityZ = 0;
-      player.userData.landingRecoveryTimer = 0;
-      player.userData.landingSpeedMultiplier = 1.0;
-      player.userData.maxAirborneHeight = 0;
-    }
-
-    // Determine current ground/platform height for standing check
-    const currentGroundY = getTerrainHeight(player.position.x, player.position.z);
-    let currentPlatformY = -999;
-    for (const path of pathwaysData) {
-      const pdx = player.position.x - path.x;
-      const pdz = player.position.z - path.z;
-      const sizeX = path.width / 2 + 0.35;
-      const sizeZ = path.length / 2 + 0.35;
-      const cosRY = Math.cos(-path.ry);
-      const sinRY = Math.sin(-path.ry);
-      const localX = pdx * cosRY - pdz * sinRY;
-      const localZ = pdx * sinRY + pdz * cosRY;
-      if (Math.abs(localX) < sizeX && Math.abs(localZ) < sizeZ) {
-        if (player.position.y >= path.y - 0.25 && player.position.y <= path.y + 0.6) {
-          currentPlatformY = path.y;
-          break;
-        }
-      }
-    }
-    let currentLandingY = currentGroundY + FEET_OFFSET;
-    if (currentPlatformY > currentGroundY + FEET_OFFSET) {
-      currentLandingY = currentPlatformY;
-    }
-    const isTouchingGround = player.position.y <= currentLandingY + 0.05;
-
-    // Update sliding state based on steepness of current slope (> 30 degrees)
-    const isSlopeSteep = currentSlopeNormal.y < 0.866 && !onPathwayCurrent && !nearLadderCurrent;
-    const isSlidingActive = isSlopeSteep && isTouchingGround;
-
-    let targetMaxSpeed = 0;
-    let accelerationRate = 0;
-
-    if (isSlidingActive) {
-      if (currentSlopeNormal.y < 0.766) {
-        // Steep Slope (>= 40 degrees)
-        targetMaxSpeed = 16.0;
-        accelerationRate = 22.0;
-      } else {
-        // Medium Slope (30 to 40 degrees)
-        targetMaxSpeed = 4.0;
-        accelerationRate = 8.0;
-      }
-
-      // Accelerate downhill along the normal
-      player.userData.slideVelocityX += currentSlopeNormal.x * accelerationRate * dt;
-      player.userData.slideVelocityZ += currentSlopeNormal.z * accelerationRate * dt;
-      
-      // Smooth deceleration or clamping to targetMaxSpeed
-      const slideSpeed = Math.sqrt(player.userData.slideVelocityX**2 + player.userData.slideVelocityZ**2);
-      if (slideSpeed > targetMaxSpeed) {
-        const newSpeed = Math.max(targetMaxSpeed, slideSpeed - 15.0 * dt);
-        player.userData.slideVelocityX = (player.userData.slideVelocityX / slideSpeed) * newSpeed;
-        player.userData.slideVelocityZ = (player.userData.slideVelocityZ / slideSpeed) * newSpeed;
-      }
+    if (player.isRolling) {
+      player.rollTimer -= dt;
+      player.group.position.addScaledVector(player.rollDir, 18 * dt);
+      if (player.rollTimer <= 0) player.isRolling = false;
     } else {
-      // Decay slide velocity when not actively sliding
-      // Lose momentum over 0.8 seconds (faster if moving forward)
-      const decayTime = (move.length() > 0.1) ? 0.25 : 0.8;
-      player.userData.slideVelocityX *= Math.max(0, 1 - dt / decayTime);
-      player.userData.slideVelocityZ *= Math.max(0, 1 - dt / decayTime);
-    }
+      if (keys['KeyW'] || keys['ArrowUp']) move.add(forward);
+      if (keys['KeyS'] || keys['ArrowDown']) move.sub(forward);
+      if (keys['KeyA'] || keys['ArrowLeft']) move.sub(right);
+      if (keys['KeyD'] || keys['ArrowRight']) move.add(right);
 
-    const currentSlideSpeed = Math.sqrt(player.userData.slideVelocityX**2 + player.userData.slideVelocityZ**2);
-    isSliding = isSlidingActive || currentSlideSpeed > 0.5;
-
-    // Calculate target walk multiplier based on movement direction relative to the slope normal
-    const dot = move.x * currentSlopeNormal.x + move.z * currentSlopeNormal.z;
-    let targetWalkMultiplier = 1.0;
-    if (isSlidingActive && dot < 0) {
-      // Moving uphill: scale down walk speed proportionally to the slope angle
-      targetWalkMultiplier = Math.max(0.15, 1.0 + dot * 1.3);
-    }
-    // Also scale down control if already sliding fast
-    targetWalkMultiplier = Math.min(targetWalkMultiplier, Math.max(0.15, 1.0 - currentSlideSpeed / 12.0));
-
-    // Smoothly interpolate walk multiplier to prevent instant slowdown jitter
-    if (player.userData.walkMultiplier === undefined) {
-      player.userData.walkMultiplier = 1.0;
-    }
-    player.userData.walkMultiplier = THREE.MathUtils.lerp(player.userData.walkMultiplier, targetWalkMultiplier, 8 * dt);
-    const walkMultiplier = Math.max(0.15, player.userData.walkMultiplier);
-
-    // If airborne and not climbing, horizontal velocity is locked to the launch velocity (no steering in air)
-    if (!isTouchingGround && !player.userData.isClimbingLadder) {
-      if (!player.userData.isAirborne) {
-        player.userData.isAirborne = true;
-        player.userData.airVelocityX = (player.userData.walkVelocityX || 0) + player.userData.slideVelocityX;
-        player.userData.airVelocityZ = (player.userData.walkVelocityZ || 0) + player.userData.slideVelocityZ;
-        // Zero out slide velocity so it doesn't double-apply in the air
-        player.userData.slideVelocityX = 0;
-        player.userData.slideVelocityZ = 0;
-        // Start tracking peak airborne height
-        player.userData.maxAirborneHeight = player.position.y;
-      }
-      // Track peak height while in the air
-      player.userData.maxAirborneHeight = Math.max(player.userData.maxAirborneHeight || player.position.y, player.position.y);
-
-      velocity.x = player.userData.airVelocityX || 0;
-      velocity.z = player.userData.airVelocityZ || 0;
-      
-      // Keep walkVelocity updated with airborne velocity so landing is seamless
-      player.userData.walkVelocityX = velocity.x;
-      player.userData.walkVelocityZ = velocity.z;
-    } else {
-      player.userData.isAirborne = false;
-      
-      // Update recovery timer
-      if (player.userData.landingRecoveryTimer > 0) {
-        player.userData.landingRecoveryTimer -= dt;
-      }
-      
-      let landingMultiplier = 1.0;
-      if (player.userData.landingRecoveryTimer > 0) {
-        landingMultiplier = player.userData.landingSpeedMultiplier || 1.0;
-      }
-
-      const targetVelX = move.x * speed * walkMultiplier * landingMultiplier;
-      const targetVelZ = move.z * speed * walkMultiplier * landingMultiplier;
-      
-      // Smoothly interpolate walking velocity (0.25s stop time / 0.054 tau)
-      const lerpFactor = 1 - Math.exp(-dt / 0.054);
-      player.userData.walkVelocityX = THREE.MathUtils.lerp(player.userData.walkVelocityX || 0, targetVelX, lerpFactor);
-      player.userData.walkVelocityZ = THREE.MathUtils.lerp(player.userData.walkVelocityZ || 0, targetVelZ, lerpFactor);
-      velocity.x = player.userData.walkVelocityX;
-      velocity.z = player.userData.walkVelocityZ;
-    }
-
-    player.position.x += (velocity.x + player.userData.slideVelocityX) * dt;
-    player.position.z += (velocity.z + player.userData.slideVelocityZ) * dt;
-
-    // Keep in bounds
-    player.position.x = Math.max(-terrainSize/2 + 2, Math.min(terrainSize/2 - 2, player.position.x));
-    player.position.z = Math.max(-terrainSize/2 + 2, Math.min(terrainSize/2 - 2, player.position.z));
-
-    // Tree collisions (cylinder-based check around the trunks)
-    const playerRadius = 0.2;
-    const trunkCollisionRadius = 0.5; // Slightly larger than tree trunks for smooth navigation
-    const minCollisionDist = playerRadius + trunkCollisionRadius;
-    for (const tree of treePositions) {
-      const dx = player.position.x - tree.x;
-      const dz = player.position.z - tree.z;
-      const dist = Math.sqrt(dx * dx + dz * dz);
-      if (dist < minCollisionDist) {
-        // Push the player outward to prevent clipping
-        const angle = Math.atan2(dz, dx);
-        player.position.x = tree.x + Math.cos(angle) * minCollisionDist;
-        player.position.z = tree.z + Math.sin(angle) * minCollisionDist;
-      }
-    }
-
-    // ── Ladder Climbing & Gravity Check ───────────────────
-    let isClimbing = false;
-    let activeLadder = null;
-    
-    // Check if the player is horizontally and vertically within ladder bounds
-    for (const ladder of laddersData) {
-      const dx = player.position.x - ladder.x;
-      const dz = player.position.z - ladder.z;
-      const dist = Math.sqrt(dx * dx + dz * dz);
-      
-      if (dist < 1.1 && player.position.y >= ladder.yMin - 0.5 && player.position.y <= ladder.yMax + 0.8) {
-        activeLadder = ladder;
-        break;
-      }
-    }
-    
-    if (activeLadder) {
-      // W or Up Arrow always offsets Bob forward, detaching him from the ladder!
-      if (keys['KeyW'] || keys['ArrowUp']) {
-        player.userData.isClimbingLadder = false;
-        player.userData.climbDirection = 0;
-        isClimbing = false;
-        // Push Bob horizontally slightly in his look direction to offset him from the ladder
-        player.position.x += forward.x * 2.0 * dt;
-        player.position.z += forward.z * 2.0 * dt;
-      } 
-      // E Key pressed once auto starts climb UP (fast speed 6.5!)
-      else if (keys['KeyE']) {
-        player.userData.isClimbingLadder = true;
-        player.userData.climbDirection = 1; // 1 = UP
-      } 
-      // S or Down Arrow pressed once auto starts climb DOWN (fast speed -6.5!)
-      else if (keys['KeyS'] || keys['ArrowDown']) {
-        player.userData.isClimbingLadder = true;
-        player.userData.climbDirection = -1; // -1 = DOWN
-      } 
-      
-      // Handle auto climbing state mechanics
-      if (player.userData.isClimbingLadder) {
-        isClimbing = true;
-        if (player.userData.climbDirection === 1) {
-          vy = 6.5; // Fast climbing!
-        } else if (player.userData.climbDirection === -1) {
-          vy = -6.5; // Fast descending!
-        } else {
-          vy = 0;
-        }
-      }
-    } else {
-      player.userData.isClimbingLadder = false;
-      player.userData.climbDirection = 0;
-    }
-
-    // ── Cute Low-Poly Climb Animation ─────────────────────
-    if (isClimbing) {
-      // Bob wiggles body and bobs head like he's climbing rungs!
-      const climbTime = clock.getElapsedTime() * 12;
-      body.position.x = Math.sin(climbTime) * 0.12;
-      body.position.y = 0.6 + Math.cos(climbTime * 2) * 0.08;
-      
-      head.position.x = Math.sin(climbTime) * 0.08;
-      head.position.y = 1.45 + Math.cos(climbTime * 2) * 0.05;
-    } else {
-      // Reset to standard resting positions
-      body.position.x = 0;
-      body.position.y = 0.6;
-      head.position.x = 0;
-      head.position.y = 1.45;
-    }
-    
-    // groundY is where the character's feet sit (group origin = feet)
-    const groundY = getTerrainHeight(player.position.x, player.position.z);
-    const terrainNormal = getTerrainNormal(player.position.x, player.position.z);
-
-    // Platform collision check (for elevated pathways/clouds)
-    let platformY = -999;
-    for (const path of pathwaysData) {
-      const pdx = player.position.x - path.x;
-      const pdz = player.position.z - path.z;
-      
-      const sizeX = path.width / 2 + 0.35;
-      const sizeZ = path.length / 2 + 0.35;
-      
-      const cosRY = Math.cos(-path.ry);
-      const sinRY = Math.sin(-path.ry);
-      const localX = pdx * cosRY - pdz * sinRY;
-      const localZ = pdx * sinRY + pdz * cosRY;
-      
-      if (Math.abs(localX) < sizeX && Math.abs(localZ) < sizeZ) {
-        // Player is horizontally inside the platform. Check if falling onto it
-        if (player.position.y >= path.y - 0.25 && player.position.y <= path.y + 0.6) {
-          platformY = path.y;
-          break;
+      if (move.length() > 0) {
+        move.normalize();
+        player.group.position.x += move.x * currentSpeed * dt;
+        player.group.position.z += move.z * currentSpeed * dt;
+        if (shiftlockMode === 0) {
+          const targetYaw = Math.atan2(move.x, move.z);
+          let diff = targetYaw - playerYaw;
+          diff = Math.atan2(Math.sin(diff), Math.cos(diff));
+          playerYaw += diff * 10 * dt;
         }
       }
     }
 
-    let landingY = groundY + FEET_OFFSET;
-    let isStandingOnPlatform = false;
-    if (platformY > groundY + FEET_OFFSET) {
-      landingY = platformY;
-      isStandingOnPlatform = true;
-    }
-
-    // Apply gravity only if not actively climbing a ladder
-    if (!isClimbing) {
-      if (player.position.y > landingY + 0.01 || isSliding) {
-        vy -= 22 * dt;
-        if (isSliding) {
-          vy = Math.max(-8, vy); // Clamp downward momentum to prevent infinite gravity accumulation glitch
-        }
-      } else {
-        vy = 0;
-      }
-
-      // Jump (allowed when on ground or sliding, except on steep slopes >= 40 degrees)
-      const freshSlopeNormal = getTerrainNormal(player.position.x, player.position.z);
-      const isSlopeSteep = freshSlopeNormal.y < 0.766 && !onPathwayCurrent && !nearLadderCurrent;
-      if (keys['Space'] && (vy === 0 || isSliding) && Math.abs(player.position.y - landingY) < 0.35 && !isSlopeSteep) {
-        vy = 8.5;
-      }
-    }
-
-    player.position.y += vy * dt;
-
-    // Anti fall-through: clamp to terrain or platform
-    if (player.position.y < landingY) {
-      // Reset momentum on landing based on drop intensity
-      if (player.userData.isAirborne) {
-        player.userData.isAirborne = false;
-        player.userData.airVelocityX = 0;
-        player.userData.airVelocityZ = 0;
-        
-        const dropDistance = Math.max(0, (player.userData.maxAirborneHeight || player.position.y) - landingY);
-        // Intensity scales to 1.0 at 1.64m drop (height of a normal jump)
-        const intensity = Math.min(1.5, dropDistance / 1.64);
-        
-        player.userData.landingRecoveryTimer = 0.4 * intensity;
-        player.userData.landingSpeedMultiplier = Math.max(0.5, 1.0 - 0.5 * intensity);
-        
-        // Trigger camera landing impact bob (scales with intensity)
-        player.userData.cameraBobOffset = -0.45 * intensity;
-      }
-      
-      player.position.y = landingY;
-      if (vy < 0 && !isSliding) {
-        vy = 0;
-      }
-    }
-
-    if (shiftlockMode === 0) {
-      // NONE MODE: Character turning is disabled unless moving
-      if (move.length() > 0.01) {
-        // Turn smoothly to face walking direction along shortest path
-        const targetYaw = Math.atan2(move.x, move.z);
-        let diff = targetYaw - playerYaw;
-        diff = Math.atan2(Math.sin(diff), Math.cos(diff)); // Shortest path
-        playerYaw += diff * 10 * dt;
-      }
-    } else if (shiftlockMode === 1) {
-      // SHIFTLOCK 1: Smooth lock to face camera direction along shortest path
+    if (shiftlockMode > 0) {
       const targetYaw = yaw + Math.PI;
       let diff = targetYaw - playerYaw;
-      diff = Math.atan2(Math.sin(diff), Math.cos(diff)); // Shortest path
-      playerYaw += diff * 10 * dt;
-    } else if (shiftlockMode === 2) {
-      // SHIFTLOCK 2: Instant lock to face camera direction
-      playerYaw = yaw + Math.PI;
+      diff = Math.atan2(Math.sin(diff), Math.cos(diff));
+      playerYaw += diff * (shiftlockMode === 2 ? 30 : 12) * dt;
     }
+    player.group.quaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), playerYaw);
 
-    // Keep playerYaw normalized between [-PI, PI] to prevent any numerical drift
-    playerYaw = Math.atan2(Math.sin(playerYaw), Math.cos(playerYaw));
-
-    // Base orientation
-    const yawQuat = new THREE.Quaternion().setFromAxisAngle(
-      new THREE.Vector3(0, 1, 0), playerYaw
-    );
-    player.quaternion.copy(yawQuat); // Instantly copy the smooth target quaternion!
-
-    // ── Spherical Camera Follow with Roblox-style Terrain & Obstacle Collision ──
-    // Decay camera landing impact bob smoothly
-    if (player.userData.cameraBobOffset === undefined) {
-      player.userData.cameraBobOffset = 0;
-    }
-    player.userData.cameraBobOffset = THREE.MathUtils.lerp(player.userData.cameraBobOffset, 0, 10 * dt);
-
-    player.updateMatrixWorld(true); // Force matrix update to prevent camera snapping/jumping!
-    const targetPos = new THREE.Vector3();
-    head.getWorldPosition(targetPos); // Follow the exact world position of the head, adapting to slope tilts!
-    targetPos.y += player.userData.cameraBobOffset;
-
-    const maxRadius = cameraZoomDistance; // Desired distance
+    const groundY = getTerrainHeight(player.group.position.x, player.group.position.z);
     
-    // Direction vector from target to camera (using pitch and yaw)
-    // pitch acts as the elevation angle, yaw acts as the azimuthal angle
-    const dx = Math.sin(yaw) * Math.cos(pitch) * maxRadius;
-    const dy = Math.sin(pitch) * maxRadius;
-    const dz = Math.cos(yaw) * Math.cos(pitch) * maxRadius;
-    
-    let targetRadius = maxRadius;
-    const collisionSteps = 12;
-    
-    for (let i = 1; i <= collisionSteps; i++) {
-      const t = i / collisionSteps;
-      const checkX = targetPos.x + dx * t;
-      const checkY = targetPos.y + dy * t;
-      const checkZ = targetPos.z + dz * t;
-      
-      // 1. Terrain collision check
-      const terrainY = getTerrainHeight(checkX, checkZ);
-      if (checkY < terrainY + 0.08) {
-        targetRadius = maxRadius * Math.max(0.15, t - 0.08);
-        break;
+    // Check placed platform/floor collision
+    let highestStandingY = groundY;
+    placedBuildings.forEach(b => {
+      if ((b.type === 'floor' || b.type === 'ramp') && Math.hypot(b.x - player.group.position.x, b.z - player.group.position.z) < 2.0) {
+        if (b.y >= groundY && b.y <= player.group.position.y + 0.8) {
+          highestStandingY = Math.max(highestStandingY, b.y);
+        }
       }
-      
-      // 2. Tree trunk collision check
-      let hitTree = false;
-      for (const tree of treePositions) {
-        const tdx = checkX - tree.x;
-        const tdz = checkZ - tree.z;
-        const tdist = Math.sqrt(tdx * tdx + tdz * tdz);
-        const treeBaseY = getTerrainHeight(tree.x, tree.z);
-        if (tdist < 0.6 && checkY > treeBaseY && checkY < treeBaseY + 4.0) {
-          targetRadius = maxRadius * Math.max(0.15, t - 0.08);
-          hitTree = true;
+    });
+
+    if (player.group.position.y > highestStandingY + 0.05) {
+      vy -= 24 * dt;
+    } else {
+      player.group.position.y = highestStandingY;
+      vy = 0;
+      if (keys['Space']) vy = 9.5;
+    }
+    player.group.position.y += vy * dt;
+
+    // 5. Ghost Building Placement
+    if (isBuildMode) {
+      const gx = player.group.position.x - Math.sin(playerYaw) * 5.0;
+      const gz = player.group.position.z - Math.cos(playerYaw) * 5.0;
+      ghostGroup.position.set(gx, getTerrainHeight(gx, gz), gz);
+      ghostGroup.rotation.y = playerYaw;
+    }
+
+    // 6. Update Projectiles
+    for (let i = activeProjectiles.length - 1; i >= 0; i--) {
+      const p = activeProjectiles[i];
+      p.mesh.position.addScaledVector(p.dir, p.speed * dt);
+      p.life -= dt;
+      let hit = false;
+      for (const m of monsters) {
+        if (m.mesh.position.distanceTo(p.mesh.position) < (p.type === 'meteor' ? 3.5 : 1.8)) {
+          hit = true;
+          damageMonster(m, Math.round(player.matk * 1.6), true, p.type === 'fireball' ? '#f97316' : '#38bdf8');
           break;
         }
       }
-      if (hitTree) break;
+      if (hit || p.life <= 0) {
+        scene.remove(p.mesh); activeProjectiles.splice(i, 1);
+      }
     }
-    
-    // ── MATHEMATICAL SAFETY NET (PREVENTS ANY UNDERGROUND CLIPPING) ──
-    let testOffset = new THREE.Vector3(
-      Math.sin(yaw) * Math.cos(pitch) * targetRadius,
-      Math.sin(pitch) * targetRadius,
-      Math.cos(yaw) * Math.cos(pitch) * targetRadius
+
+    // 7. Monster AI
+    monsters.forEach(m => {
+      const distToPlayer = Math.hypot(m.x - player.group.position.x, m.z - player.group.position.z);
+      if (distToPlayer < 12 && m.state !== 'frozen') m.state = 'chase';
+
+      if (m.state === 'chase') {
+        const dx = player.group.position.x - m.x;
+        const dz = player.group.position.z - m.z;
+        const d = Math.hypot(dx, dz);
+        if (d > 1.8) {
+          m.x += (dx / d) * m.def.speed * dt;
+          m.z += (dz / d) * m.def.speed * dt;
+        } else {
+          m.attackCooldown -= dt;
+          if (m.attackCooldown <= 0 && !player.isRolling) {
+            m.attackCooldown = 1.4;
+            const finalDmg = Math.max(2, m.def.dmg - (player.activeBuffs.frost ? player.def + 50 : player.def));
+            player.hp = Math.max(0, player.hp - finalDmg);
+            sfx.playHit();
+            showDamageNumber(finalDmg, player.group.position.clone().add(new THREE.Vector3(0, 1.6, 0)), false, '#ef4444');
+            updatePlayerHUD();
+          }
+        }
+      }
+      m.y = getTerrainHeight(m.x, m.z);
+      m.mesh.position.set(m.x, m.y, m.z);
+      m.mesh.lookAt(player.group.position.x, m.y, player.group.position.z);
+    });
+
+    // 8. Simulated MMO NPC Adventurers
+    npcHeroes.forEach(h => {
+      h.chatCooldown -= dt;
+      if (h.chatCooldown <= 0) {
+        h.chatCooldown = 15 + Math.random() * 25;
+        const msgs = [
+          "Just mined rare crystals in the mountain!",
+          "Watch out for the magma titan!",
+          "Need more stone for the fortress ramparts.",
+          "Casting Frost Nova! Freeze them!",
+          "Let's mount up and explore the ruins!"
+        ];
+        addChatMessage(h.name, msgs[Math.floor(Math.random() * msgs.length)]);
+      }
+      h.x += (Math.random() - 0.5) * 2 * dt;
+      h.z += (Math.random() - 0.5) * 2 * dt;
+      h.y = getTerrainHeight(h.x, h.z);
+      h.mesh.position.set(h.x, h.y, h.z);
+    });
+
+    // 9. Camera Orbit Follow
+    const headPos = player.group.position.clone().add(new THREE.Vector3(0, 1.4, 0));
+    const camOffset = new THREE.Vector3(
+      Math.sin(yaw) * Math.cos(pitch) * cameraZoomDistance,
+      Math.sin(pitch) * cameraZoomDistance,
+      Math.cos(yaw) * Math.cos(pitch) * cameraZoomDistance
     );
-    
-    let checkPos = new THREE.Vector3().copy(targetPos).add(testOffset);
-    let terrainHeightAtCam = getTerrainHeight(checkPos.x, checkPos.z);
-    
-    // Smoothly decrease targetRadius if camera is calculated to be below terrain + buffer
-    let safetyCounter = 0;
-    while (targetRadius > 1.2 && checkPos.y < terrainHeightAtCam + 0.12 && safetyCounter < 15) {
-      targetRadius -= 0.3;
-      testOffset.set(
-        Math.sin(yaw) * Math.cos(pitch) * targetRadius,
-        Math.sin(pitch) * targetRadius,
-        Math.cos(yaw) * Math.cos(pitch) * targetRadius
-      );
-      checkPos.copy(targetPos).add(testOffset);
-      terrainHeightAtCam = getTerrainHeight(checkPos.x, checkPos.z);
-      safetyCounter++;
-    }
-    
-    // ── SMOOTH ASYMMETRIC RADIUS LERPING (FAST IN, SMOOTH OUT) ──
-    if (targetRadius < currentRadius) {
-      // Zooming in (collision): extremely fast to prevent clipping, with a micro-smoothing
-      currentRadius += (targetRadius - currentRadius) * 28 * dt;
-      if (currentRadius < targetRadius) currentRadius = targetRadius; // Physical safety limit
-    } else {
-      // Zooming out (cleared collision): smooth, elegant glide back to target
-      currentRadius += (targetRadius - currentRadius) * 6 * dt;
-    }
-    
-    const finalOffset = new THREE.Vector3(
-      Math.sin(yaw) * Math.cos(pitch) * currentRadius,
-      Math.sin(pitch) * currentRadius,
-      Math.cos(yaw) * Math.cos(pitch) * currentRadius
-    );
-    
-    camera.position.copy(targetPos).add(finalOffset);
-    camera.up.set(0, 1, 0); // Keep camera upright (remove terrain normal tilt)
-    camera.lookAt(targetPos);
+    camera.position.copy(headPos).add(camOffset);
+    camera.lookAt(headPos);
+
+    // 10. Minimap Render
+    renderMinimap();
 
     renderer.render(scene, camera);
   }
 
   animate();
 
-  // ── Resize ───────────────────────────────────────────────
   window.addEventListener('resize', () => {
     camera.aspect = innerWidth / innerHeight;
     camera.updateProjectionMatrix();
