@@ -802,7 +802,7 @@
 
   <script>
   /* =========================================================================
-     CHRONICLES OF AETHELGARD — 3-ISLAND PROCEDURAL ARCHIPELAGO ENGINE
+     CHRONICLES OF AETHELGARD — HIGH PERFORMANCE 3-ISLAND ARCHIPELAGO ENGINE
      ========================================================================= */
 
   // ── 1. PROCEDURAL SOUND SYNTHESIZER ─────────────────────────────────────
@@ -881,7 +881,7 @@
   const ambLight = new THREE.AmbientLight(0x4a4d62, 0.4);
   scene.add(ambLight);
 
-  // ── 3. PROCEDURAL 3-ISLAND ARCHIPELAGO TERRAIN (700x700) ────────────────
+  // ── 3. PROCEDURAL 3-ISLAND ARCHIPELAGO TERRAIN (750x750) ────────────────
   const terrainSize = 750;
   const terrainSegs = 130;
   const terrainGeo = new THREE.PlaneGeometry(terrainSize, terrainSize, terrainSegs, terrainSegs);
@@ -901,7 +901,7 @@
     const d2 = Math.hypot(x - 0, z - (-260));  // Island 2: Frostveil
     const d3 = Math.hypot(x - 0, z - 260);     // Island 3: Caldera
     
-    let h = -14; // Ocean floor depth
+    let h = -14;
     let type = 'OCEAN';
 
     if (d1 < 75) {
@@ -916,9 +916,9 @@
       type = 'CALDERA';
       const shape = 1 - (d3 / 80);
       if (d3 < 26) {
-        h = 6 + (d3 / 26) * 6 + Math.sin(x * 0.15) * 1.5; // Crater
+        h = 6 + (d3 / 26) * 6 + Math.sin(x * 0.15) * 1.5;
       } else {
-        h = Math.pow(shape, 1.1) * 36 + Math.cos(x * 0.09) * 3; // Outer rim
+        h = Math.pow(shape, 1.1) * 36 + Math.cos(x * 0.09) * 3;
       }
     }
     return { h, type };
@@ -996,14 +996,11 @@
 
   portals.forEach(p => {
     const g = new THREE.Group();
-    // Stone Pillars
     const p1 = new THREE.Mesh(new THREE.BoxGeometry(0.8, 4.5, 0.8), new THREE.MeshStandardMaterial({ color: 0x475569, flatShading: true }));
     p1.position.set(-1.8, 2.25, 0); g.add(p1);
     const p2 = p1.clone(); p2.position.x = 1.8; g.add(p2);
-    // Header Beam
     const top = new THREE.Mesh(new THREE.BoxGeometry(4.8, 0.9, 1.0), new THREE.MeshStandardMaterial({ color: 0x334155, flatShading: true }));
     top.position.set(0, 4.8, 0); g.add(top);
-    // Swirling Energy Disk
     const vortex = new THREE.Mesh(
       new THREE.CircleGeometry(1.8, 16),
       new THREE.MeshBasicMaterial({ color: p.color, transparent: true, opacity: 0.75, side: THREE.DoubleSide })
@@ -1032,7 +1029,6 @@
     g.rotation.y = angle;
     scene.add(g);
   }
-  // Island 1: Haven Village
   createTudorHouse(-12, -12, Math.PI / 8);
   createTudorHouse(14, -8, -Math.PI / 6);
   createTudorHouse(10, 18, Math.PI / 4);
@@ -1059,7 +1055,7 @@
     const g = new THREE.Group();
     const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.45, 2.2, 5), new THREE.MeshStandardMaterial({ color: 0x543310, flatShading: true }));
     trunk.position.y = 1.1; trunk.castShadow = true; g.add(trunk);
-    let leafColor = (type === 'pine') ? 0x1b4332 : ((type === 'caldera') ? 0x451a1a : 0x2e7d32);
+    let leafColor = (type === 'pine') ? 0x1b4332 : 0x2e7d32;
     const leafMat = new THREE.MeshStandardMaterial({ color: leafColor, flatShading: true, roughness: 0.7 });
     if (type === 'pine') {
       const c1 = new THREE.Mesh(new THREE.ConeGeometry(1.6, 2.5, 5), leafMat); c1.position.y = 2.5; c1.castShadow = true; g.add(c1);
@@ -1074,12 +1070,10 @@
     }
   }
 
-  // Island 1 Oaks
   for (let i = 0; i < 30; i++) {
     const a = Math.random() * Math.PI * 2, r = 18 + Math.random() * 45;
     createDetailedTree(Math.cos(a)*r, Math.sin(a)*r, 'oak');
   }
-  // Island 2 Pines
   for (let i = 0; i < 35; i++) {
     const a = Math.random() * Math.PI * 2, r = 10 + Math.random() * 50;
     createDetailedTree(Math.cos(a)*r, -260 + Math.sin(a)*r, 'pine');
@@ -1127,7 +1121,7 @@
     exp: 0, expNext: 100,
     atk: 30, matk: 25, def: 10, crit: 15,
     wood: 50, stone: 30, crystal: 5, gold: 120,
-    kills: 0, currentIsland: 1,
+    kills: 0, currentIsland: 1, skillPoints: 0,
     heroClass: 'Warrior',
     isMounted: false,
     isRolling: false, rollTimer: 0, rollDir: new THREE.Vector3(),
@@ -1254,7 +1248,6 @@
       const body = new THREE.Mesh(new THREE.DodecahedronGeometry(0.9, 1), new THREE.MeshStandardMaterial({ color: 0x38bdf8, emissive: 0x0284c7, emissiveIntensity: 0.4, flatShading: true }));
       body.position.y = 0.7; body.castShadow = true; g.add(body);
     } else if (type === 'guardian') {
-      // Gloom Treant Sentinel (Island 1 Boss)
       const trunk = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.6, 4.2, 6), new THREE.MeshStandardMaterial({ color: 0x451a03, flatShading: true }));
       trunk.position.y = 2.1; trunk.castShadow = true; g.add(trunk);
       const canopy = new THREE.Mesh(new THREE.DodecahedronGeometry(2.2, 0), new THREE.MeshStandardMaterial({ color: 0x14532d }));
@@ -1262,14 +1255,12 @@
       const eye = new THREE.Mesh(new THREE.SphereGeometry(0.3, 4, 4), new THREE.MeshBasicMaterial({ color: 0xf59e0b }));
       eye.position.set(0, 3.2, 1.2); g.add(eye);
     } else if (type === 'behemoth') {
-      // Glacial Behemoth (Island 2 Boss)
       const body = new THREE.Mesh(new THREE.BoxGeometry(3.0, 3.5, 3.0), new THREE.MeshStandardMaterial({ color: 0x93c5fd, emissive: 0x1d4ed8, emissiveIntensity: 0.5, flatShading: true }));
       body.position.y = 2.4; body.castShadow = true; g.add(body);
       const horn1 = new THREE.Mesh(new THREE.ConeGeometry(0.5, 2.0, 4), new THREE.MeshStandardMaterial({ color: 0xffffff }));
       horn1.position.set(-1.2, 4.8, 0); horn1.rotation.z = -0.5; g.add(horn1);
       const horn2 = horn1.clone(); horn2.position.x = 1.2; horn2.rotation.z = 0.5; g.add(horn2);
     } else if (type === 'titan') {
-      // Ancient Magma Titan (Island 3 Boss)
       const torso = new THREE.Mesh(new THREE.BoxGeometry(2.8, 3.6, 2.2), new THREE.MeshStandardMaterial({ color: 0x1c1917, emissive: 0xef4444, emissiveIntensity: 0.6, flatShading: true }));
       torso.position.y = 3.0; torso.castShadow = true; g.add(torso);
       const head = new THREE.Mesh(new THREE.DodecahedronGeometry(1.2, 0), new THREE.MeshStandardMaterial({ color: 0x450a0a, flatShading: true }));
@@ -1395,6 +1386,25 @@
       player.gold += m.isBoss ? 150 : 20;
       document.getElementById('char-kills').textContent = player.kills;
       document.getElementById('res-gold').textContent = player.gold;
+      
+      // Level Up Logic
+      if (player.exp >= player.expNext) {
+        player.lvl++;
+        player.exp -= player.expNext;
+        player.expNext = Math.round(player.expNext * 1.5);
+        player.maxHp += 20; player.hp = player.maxHp;
+        player.maxMp += 15; player.mp = player.maxMp;
+        player.atk += 8; player.matk += 6; player.def += 3;
+        player.skillPoints++;
+        document.getElementById('hero-lvl-badge').textContent = 'LV ' + player.lvl;
+        document.getElementById('char-lvl').textContent = player.lvl;
+        document.getElementById('char-atk').textContent = player.atk;
+        document.getElementById('char-matk').textContent = player.matk;
+        document.getElementById('sp-count').textContent = player.skillPoints;
+        sfx.playFanfare();
+        showToast(`⭐ LEVEL UP! LEVEL ${player.lvl}! +Stats & Skill Point! ⭐`);
+      }
+
       document.getElementById('exp-ribbon-fill').style.width = Math.min(100, (player.exp / player.expNext * 100)) + '%';
       
       spawn3DLoot(m.x, m.y, m.z);
@@ -1601,6 +1611,10 @@
   const keys = {};
   document.addEventListener('keydown', e => {
     keys[e.code] = true;
+    if (e.code === 'Escape') {
+      closeModals();
+      closeDialogue();
+    }
     if (e.code === 'KeyE') {
       if (activePortalNear) {
         if (activePortalNear.unlocked) {
