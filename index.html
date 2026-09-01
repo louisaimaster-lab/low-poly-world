@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chronicles of Aethelgard — Low Poly Open World RPG</title>
+  <title>Chronicles of Aethelgard — 3 Islands Realm</title>
   
   <!-- Fantasy Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -64,7 +64,7 @@
     
     .game-logo {
       font-family: var(--font-title);
-      font-size: clamp(32px, 5.5vw, 64px);
+      font-size: clamp(28px, 5.2vw, 60px);
       font-weight: 900;
       letter-spacing: 4px;
       text-align: center;
@@ -140,7 +140,7 @@
     }
     #act-banner.show { opacity: 1; transform: translate(-50%, -40%); }
     .act-label { font-family: var(--font-title); font-size: 14px; color: #f59e0b; letter-spacing: 6px; }
-    .act-title { font-family: var(--font-title); font-size: 30px; color: #fff; text-shadow: 0 4px 20px #000; }
+    .act-title { font-family: var(--font-title); font-size: 28px; color: #fff; text-shadow: 0 4px 20px #000; }
 
     /* ─── 3. OUTDOOR FANTASY RPG HUD ─── */
     #hud {
@@ -149,7 +149,7 @@
     }
     #hud.active { opacity: 1; pointer-events: auto; }
 
-    /* ── TOP LEFT: DRAGON WING FILIGREE HERO FRAME ── */
+    /* Hero Unit Frame */
     #hero-unit-frame {
       position: fixed; top: 16px; left: 16px; z-index: 50;
       display: flex; align-items: center; gap: 12px;
@@ -209,7 +209,7 @@
       height: 5px; border-radius: 3px;
     }
 
-    /* ── TOP CENTER: ADVENTURE COMPASS & COMBO METER ── */
+    /* Top Center: Adventure Compass & Island Info */
     #top-compass-banner {
       position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
       z-index: 50; display: flex; flex-direction: column; align-items: center; gap: 4px;
@@ -234,7 +234,7 @@
     }
     @keyframes popIn { 0% { transform: scale(0.6); } 100% { transform: scale(1.0); } }
 
-    /* ── TOP RIGHT: HANGING TAVERN SIGN & LIVE QUEST TRACKER ── */
+    /* Top Right: Resources & Questline Tracker Widget */
     #top-right-bar {
       position: fixed; top: 16px; right: 16px; z-index: 50;
       display: flex; flex-direction: column; align-items: flex-end; gap: 8px;
@@ -246,12 +246,11 @@
       box-shadow: 0 8px 24px rgba(0,0,0,0.85);
       display: flex; gap: 12px; font-size: 12px; font-weight: 800; color: #fef3c7;
     }
-    /* Questline Tracker HUD Widget */
     #quest-tracker-widget {
       background: linear-gradient(180deg, #2e1c12 0%, #1c0e07 100%);
       border: 2px solid var(--gold-border);
       border-left: 5px solid #f59e0b;
-      border-radius: 14px; padding: 12px 16px; width: 260px;
+      border-radius: 14px; padding: 12px 16px; width: 270px;
       box-shadow: 0 8px 24px rgba(0,0,0,0.85); cursor: pointer;
       position: relative; transition: 0.2s transform;
     }
@@ -291,7 +290,7 @@
     }
     .boss-hp-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #7f1d1d, #ef4444, #fca5a5); transition: width 0.1s; }
 
-    /* ── BOTTOM CENTER: CARVED OAK & IRON ACTION HOTBAR ── */
+    /* Action Hotbar */
     #action-hotbar-container {
       position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
       z-index: 50; display: flex; gap: 8px; align-items: center;
@@ -322,7 +321,7 @@
       font-size: 13px; font-weight: 900; color: #f59e0b;
     }
 
-    /* ── BOTTOM SCREEN: CELTIC EXP RIBBON ── */
+    /* EXP Ribbon */
     #bottom-exp-ribbon {
       position: fixed; bottom: 0; left: 0; right: 0; height: 6px;
       background: #140b06; border-top: 1px solid #854d0e; z-index: 40;
@@ -334,7 +333,7 @@
       transition: width 0.2s ease-out;
     }
 
-    /* Controls Reminder */
+    /* Controls Hint */
     #controls-hint {
       position: fixed; bottom: 86px; left: 50%; transform: translateX(-50%);
       z-index: 45; font-size: 11px; opacity: 0.85; pointer-events: none;
@@ -342,7 +341,7 @@
       padding: 4px 14px; border-radius: 20px; font-family: var(--font-ui); color: #fef08a;
     }
 
-    /* ── BOTTOM RIGHT: BUTTONS ── */
+    /* Right Menu Buttons */
     #right-menu-bar {
       position: fixed; bottom: 20px; right: 16px; z-index: 50;
       display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
@@ -356,7 +355,7 @@
     }
     .wood-menu-btn:hover { background: #78350f; border-color: #fde047; }
 
-    /* ─── 4. INTERACTIVE NPC DIALOGUE OVERLAY ─── */
+    /* Interaction Prompt */
     #interact-prompt {
       position: fixed; top: 60%; left: 50%; transform: translate(-50%, -50%);
       z-index: 100; pointer-events: none; display: none;
@@ -391,7 +390,7 @@
     }
     .dialogue-opt-btn:hover { background: #854d0e; border-color: #fde047; }
 
-    /* ─── 5. FANTASY BACKPACK & MODALS ─── */
+    /* Modals & Backpack */
     .wood-modal {
       position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
       z-index: 800; background: linear-gradient(180deg, #3d2314 0%, #1f0f06 100%);
@@ -404,13 +403,8 @@
     .modal-close-btn { background: #573016; border: 2px solid var(--gold-main); color: #fff; width: 28px; height: 28px; border-radius: 8px; cursor: pointer; font-weight: 900; }
     .modal-close-btn:hover { background: #ef4444; }
 
-    /* Backpack Grid & Equipment Slots */
-    #backpack-layout {
-      display: flex; gap: 20px; flex-wrap: wrap;
-    }
-    .equipment-column {
-      display: flex; flex-direction: column; gap: 8px; width: 140px;
-    }
+    #backpack-layout { display: flex; gap: 20px; flex-wrap: wrap; }
+    .equipment-column { display: flex; flex-direction: column; gap: 8px; width: 140px; }
     .equip-slot {
       background: #26140b; border: 2px solid var(--gold-border);
       border-radius: 12px; padding: 8px; text-align: center;
@@ -420,10 +414,7 @@
     .equip-slot-icon { font-size: 24px; }
     .equip-slot-name { font-size: 11px; color: #fef08a; font-family: var(--font-ui); }
 
-    .inventory-grid {
-      display: grid; grid-template-columns: repeat(4, 60px);
-      grid-gap: 8px;
-    }
+    .inventory-grid { display: grid; grid-template-columns: repeat(4, 60px); grid-gap: 8px; }
     .inv-slot {
       width: 60px; height: 60px; border-radius: 12px;
       background: radial-gradient(circle, #3d2314, #1c0e07);
@@ -438,7 +429,6 @@
       font-size: 9px; font-weight: 900; color: #fef08a; font-family: var(--font-ui);
     }
 
-    /* Build Cards Grid */
     #build-grid {
       display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
       gap: 12px; width: 540px; max-width: 85vw;
@@ -464,7 +454,7 @@
       100% { transform: translate(-50%, -45px) scale(0.9); opacity: 0; }
     }
 
-    /* Notification Toast */
+    /* Toast Message */
     #toast-msg {
       position: fixed; top: 110px; left: 50%; transform: translateX(-50%);
       z-index: 999; background: linear-gradient(180deg, #f59e0b, #92400e);
@@ -480,7 +470,7 @@
   <!-- ─── 1. TITLE SCREEN / MAIN MENU ─── -->
   <div id="main-menu">
     <h1 class="game-logo">CHRONICLES OF AETHELGARD</h1>
-    <div class="game-subtitle">🍃 Open World Action RPG 🍃</div>
+    <div class="game-subtitle">🌊 The Three Realm Archipelago 🌊</div>
     
     <div class="menu-wood-card">
       <div style="font-size: 12px; color: #fef08a; font-weight: 800; letter-spacing: 1px;">CHOOSE HERO CLASS</div>
@@ -509,8 +499,8 @@
     <div class="cine-bar"></div>
   </div>
   <div id="act-banner">
-    <div class="act-label">CHAPTER I</div>
-    <div class="act-title">AWAKENING IN HAVEN'S GLADE</div>
+    <div class="act-label">ISLAND I</div>
+    <div class="act-title">HAVEN'S SANCTUARY</div>
   </div>
 
   <!-- ─── 3. OUTDOOR FANTASY RPG HUD ─── -->
@@ -541,18 +531,18 @@
       </div>
     </div>
 
-    <!-- Top Center: Outdoor Adventure Compass & Biome Name -->
+    <!-- Top Center: Compass & Current Island -->
     <div id="top-compass-banner">
       <div class="compass-wood-dial">
         <span>🧭</span>
         <span>W &middot; NW &middot; <strong style="color:#fde047;">[ NORTH ]</strong> &middot; NE &middot; E</span>
         <span>☀️ 12:00</span>
       </div>
-      <div class="zone-banner" id="current-zone-name">Haven's Glade — Sunlit Plains</div>
+      <div class="zone-banner" id="current-zone-name">Island I: Haven's Sanctuary</div>
       <div id="combo-badge">🔥 <span id="combo-num">0</span>x COMBO!</div>
     </div>
 
-    <!-- Top Right: Resources & Questline Tracker Widget -->
+    <!-- Top Right: Resources & Live Quest Tracker -->
     <div id="top-right-bar">
       <div class="hanging-resource-sign">
         <div>🪵 <span id="res-wood">50</span></div>
@@ -562,7 +552,7 @@
       </div>
       <!-- Interactive Questline Tracker -->
       <div id="quest-tracker-widget" onclick="toggleModal('modal-quests')">
-        <div class="tracker-act-tag" id="track-act-tag">CHAPTER I &middot; MAIN STORY</div>
+        <div class="tracker-act-tag" id="track-act-tag">ISLAND I &middot; MAIN QUEST</div>
         <div class="tracker-quest-title" id="track-quest-title">Haven's Trial</div>
         <div class="tracker-objective-text" id="track-quest-obj">
           <span>⚔️</span> <span id="track-obj-text">Speak with Elder Cedric in town square</span>
@@ -575,16 +565,16 @@
 
     <!-- Controls Reminder -->
     <div id="controls-hint">
-      <kbd>WASD</kbd> Move &middot; <kbd>Shift</kbd> Sprint &middot; <kbd>Space</kbd> Jump &middot; <kbd>V</kbd> Roll &middot; <kbd>R</kbd> Mount &middot; <kbd>LMB/F</kbd> Strike &middot; <kbd>1-5</kbd> Spells &middot; <kbd>I</kbd> Backpack &middot; <kbd>E</kbd> Talk
+      <kbd>WASD</kbd> Move &middot; <kbd>Shift</kbd> Sprint &middot; <kbd>Space</kbd> Jump &middot; <kbd>V</kbd> Roll &middot; <kbd>R</kbd> Mount &middot; <kbd>LMB/F</kbd> Strike &middot; <kbd>1-5</kbd> Spells &middot; <kbd>I</kbd> Backpack &middot; <kbd>E</kbd> Talk/Portal
     </div>
 
     <!-- World Boss Bar -->
     <div id="boss-bar-wrap">
-      <div class="boss-name-banner">🌋 ANCIENT MAGMA TITAN 🌋</div>
+      <div class="boss-name-banner" id="boss-title-text">🌋 ANCIENT MAGMA TITAN 🌋</div>
       <div class="boss-hp-frame"><div class="boss-hp-fill" id="boss-fill"></div></div>
     </div>
 
-    <!-- Bottom Center: Carved Oak & Iron Hotbar -->
+    <!-- Bottom Center: Hotbar -->
     <div id="action-hotbar-container">
       <div class="spell-socket active" id="slot-0" onclick="castSkill(0)">
         <span class="spell-key-badge">LMB</span>
@@ -639,13 +629,13 @@
     </div>
   </div>
 
-  <!-- ─── 4. INTERACTIVE NPC DIALOGUE OVERLAY ─── -->
+  <!-- ─── 4. INTERACTIVE NPC & PORTAL DIALOGUE OVERLAY ─── -->
   <div id="interact-prompt">PRESS [E] TO TALK</div>
   <div id="dialogue-modal">
     <div class="npc-portrait" id="diag-portrait">🧙‍♂️</div>
     <div class="dialogue-content">
       <div class="npc-name" id="diag-name">Elder Cedric</div>
-      <div class="npc-speech" id="diag-speech">Greetings, young traveler. The realm is in peril...</div>
+      <div class="npc-speech" id="diag-speech">Greetings, young traveler. The three realm islands await your courage...</div>
       <div class="dialogue-options" id="diag-options">
         <button class="dialogue-opt-btn" onclick="advanceStoryDialogue()">Accept Quest</button>
         <button class="dialogue-opt-btn" onclick="closeDialogue()">Farewell</button>
@@ -670,7 +660,7 @@
         <div class="equip-slot">
           <div class="equip-slot-title">MAIN HAND</div>
           <div class="equip-slot-icon" id="eq-main-icon">🗡️</div>
-          <div class="equip-slot-name" id="eq-main-name">Dragon Blade</div>
+          <div class="equip-slot-name" id="eq-main-name">Aethel Blade</div>
         </div>
         <div class="equip-slot">
           <div class="equip-slot-title">ARMOR</div>
@@ -680,10 +670,10 @@
         <div class="equip-slot">
           <div class="equip-slot-title">RELIC</div>
           <div class="equip-slot-icon">💎</div>
-          <div class="equip-slot-name">Aethel Gem</div>
+          <div class="equip-slot-name" id="eq-relic-name">Sun-Key</div>
         </div>
       </div>
-      <!-- 16-Slot Inventory Grid -->
+      <!-- 16-Slot Grid -->
       <div>
         <div style="font-size:11px; color:#fde047; font-weight:800; margin-bottom:6px;">BACKPACK SLOTS</div>
         <div class="inventory-grid" id="backpack-slots-grid">
@@ -696,25 +686,21 @@
   <!-- Quests Modal -->
   <div class="wood-modal" id="modal-quests">
     <div class="modal-head">
-      <h2 class="modal-title">📜 Quest Chronicles & Bounties</h2>
+      <h2 class="modal-title">📜 Quest Chronicles & Archipelago Secrets</h2>
       <button class="modal-close-btn" onclick="closeModals()">✕</button>
     </div>
     <div id="quest-story-list" style="display:flex; flex-direction:column; gap:12px; min-width:320px;">
       <div style="background:#26140b; border:2px solid var(--gold-border); border-radius:12px; padding:12px;">
-        <h4 style="color:#fde047; font-size:13px; margin-bottom:4px;">Act I: Haven's Trial</h4>
-        <p style="font-size:11px; color:#e2e8f0; font-family:var(--font-ui);">Speak with Elder Cedric in the village center to begin your trial.</p>
+        <h4 style="color:#fde047; font-size:13px; margin-bottom:4px;">🏝️ Island I: Haven's Sanctuary</h4>
+        <p style="font-size:11px; color:#e2e8f0; font-family:var(--font-ui);">Speak with Elder Cedric, slay 3 Meadow Slimes, and defeat the Forest Guardian to claim the Sun-Key and unlock Portal I.</p>
       </div>
       <div style="background:#26140b; border:2px solid var(--gold-border); border-radius:12px; padding:12px;">
-        <h4 style="color:#fde047; font-size:13px; margin-bottom:4px;">Act II: Cleansing the Glade</h4>
-        <p style="font-size:11px; color:#e2e8f0; font-family:var(--font-ui);">Defeat 3 Meadow Slimes infesting the outer plains.</p>
+        <h4 style="color:#60a5fa; font-size:13px; margin-bottom:4px;">❄️ Island II: Frostveil Peak</h4>
+        <p style="font-size:11px; color:#e2e8f0; font-family:var(--font-ui);">Travel across the northern seas, meet Priestess Lyra, slay the Glacial Behemoth, and awaken the Glacial Keystone to unlock Portal II.</p>
       </div>
       <div style="background:#26140b; border:2px solid var(--gold-border); border-radius:12px; padding:12px;">
-        <h4 style="color:#fde047; font-size:13px; margin-bottom:4px;">Act III: Village Bastion</h4>
-        <p style="font-size:11px; color:#e2e8f0; font-family:var(--font-ui);">Construct 2 base defense structures with the Build menu [B].</p>
-      </div>
-      <div style="background:#26140b; border:2px solid var(--gold-border); border-radius:12px; padding:12px;">
-        <h4 style="color:#fde047; font-size:13px; margin-bottom:4px;">Act IV: The Caldera Titan</h4>
-        <p style="font-size:11px; color:#e2e8f0; font-family:var(--font-ui);">Journey south-east into the volcanic crater and vanquish the Magma Titan.</p>
+        <h4 style="color:#ef4444; font-size:13px; margin-bottom:4px;">🌋 Island III: Infernal Caldera</h4>
+        <p style="font-size:11px; color:#e2e8f0; font-family:var(--font-ui);">Ascend the volcanic citadel, vanquish the Ancient Magma Titan, and restore the Heart of Aethelgard to save the realm!</p>
       </div>
     </div>
   </div>
@@ -739,7 +725,7 @@
         <h4 style="color:#60a5fa; text-align:center; margin-bottom:8px;">🔮 PATH OF ARCANA</h4>
         <div style="font-size:12px; opacity:0.9;">Fireball [Lv.1]</div>
         <div style="font-size:12px; opacity:0.9; margin-top:6px;">Frost Nova [Lv.2]</div>
-        <div style="font-size:12px; opacity:0.9; margin-top:6px;">Chain Lightning [Lv.3]</div>
+        <div style="font-size:12px; opacity:0.9; margin-top:6px;">Meteor Strike [Lv.4]</div>
       </div>
     </div>
   </div>
@@ -786,17 +772,24 @@
       <div>Attack Power: <strong id="char-atk">30</strong></div>
       <div>Magic Power: <strong id="char-matk">20</strong></div>
       <div>Monsters Defeated: <strong id="char-kills">0</strong></div>
-      <div>Structures Built: <strong id="char-quests">0</strong></div>
+      <div>Unlocked Island: <strong id="char-island" style="color:#60a5fa;">Island I</strong></div>
     </div>
   </div>
 
-  <!-- Full Map Modal -->
+  <!-- Three Islands Map Modal -->
   <div class="wood-modal" id="modal-map">
     <div class="modal-head">
-      <h2 class="modal-title">🗺️ Realm of Aethelgard</h2>
+      <h2 class="modal-title">🗺️ Archipelago of Aethelgard</h2>
       <button class="modal-close-btn" onclick="closeModals()">✕</button>
     </div>
-    <canvas id="big-map-canvas" width="400" height="400" style="border:3px solid var(--gold-border); border-radius:14px;"></canvas>
+    <div style="text-align:center; margin-bottom:8px; font-size:12px; color:#fef08a;">
+      🏝️ Island I: Haven (Center) &nbsp;|&nbsp; ❄️ Island II: Frostveil (North) &nbsp;|&nbsp; 🌋 Island III: Caldera (South)
+    </div>
+    <div style="display:flex; justify-content:center; gap:8px;">
+      <button class="wood-menu-btn" onclick="fastTravel(1)">Teleport: Island I</button>
+      <button class="wood-menu-btn" onclick="fastTravel(2)">Teleport: Island II</button>
+      <button class="wood-menu-btn" onclick="fastTravel(3)">Teleport: Island III</button>
+    </div>
   </div>
 
   <!-- Three.js CDN with multi-source fallback -->
@@ -809,7 +802,7 @@
 
   <script>
   /* =========================================================================
-     CHRONICLES OF AETHELGARD — BLENDER-GRADE PROCEDURAL 3D WORLD & ASSETS
+     CHRONICLES OF AETHELGARD — 3-ISLAND PROCEDURAL ARCHIPELAGO ENGINE
      ========================================================================= */
 
   // ── 1. PROCEDURAL SOUND SYNTHESIZER ─────────────────────────────────────
@@ -840,6 +833,7 @@
     playSwing() { this.playTone('sine', 340, 90, 0.12, 0.25); }
     playHit() { this.playTone('triangle', 200, 40, 0.18, 0.4); }
     playMagic() { this.playTone('sawtooth', 400, 900, 0.22, 0.25); }
+    playTeleport() { this.playTone('sine', 200, 950, 0.6, 0.45); }
     playRoll() { this.playTone('sine', 160, 60, 0.2, 0.25); }
     playMount() { this.playTone('triangle', 300, 480, 0.25, 0.35); }
     playBuild() { this.playTone('square', 140, 60, 0.1, 0.25); }
@@ -856,9 +850,9 @@
   // ── 2. THREE.JS SCENE SETUP & NATURALLY BALANCED LIGHTING ───────────────
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0x8bc4dd);
-  scene.fog = new THREE.FogExp2(0x8bc4dd, 0.0035);
+  scene.fog = new THREE.FogExp2(0x8bc4dd, 0.0028);
 
-  const camera = new THREE.PerspectiveCamera(65, innerWidth / innerHeight, 0.1, 900);
+  const camera = new THREE.PerspectiveCamera(65, innerWidth / innerHeight, 0.1, 1000);
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
   renderer.setSize(innerWidth, innerHeight);
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
@@ -870,15 +864,15 @@
 
   // Soft Natural Daylight
   const sunLight = new THREE.DirectionalLight(0xfffaed, 1.4);
-  sunLight.position.set(90, 160, 70);
+  sunLight.position.set(100, 200, 80);
   sunLight.castShadow = true;
   sunLight.shadow.mapSize.set(2048, 2048);
   sunLight.shadow.camera.near = 10;
-  sunLight.shadow.camera.far = 450;
-  sunLight.shadow.camera.left = -220;
-  sunLight.shadow.camera.right = 220;
-  sunLight.shadow.camera.top = 220;
-  sunLight.shadow.camera.bottom = -220;
+  sunLight.shadow.camera.far = 650;
+  sunLight.shadow.camera.left = -300;
+  sunLight.shadow.camera.right = 300;
+  sunLight.shadow.camera.top = 300;
+  sunLight.shadow.camera.bottom = -300;
   sunLight.shadow.bias = -0.0004;
   scene.add(sunLight);
 
@@ -887,57 +881,62 @@
   const ambLight = new THREE.AmbientLight(0x4a4d62, 0.4);
   scene.add(ambLight);
 
-  // ── 3. PROCEDURAL 5-BIOME VAST WORLD GENERATION (500x500) ──────────────
-  const terrainSize = 500;
-  const terrainSegs = 90;
+  // ── 3. PROCEDURAL 3-ISLAND ARCHIPELAGO TERRAIN (700x700) ────────────────
+  const terrainSize = 750;
+  const terrainSegs = 130;
   const terrainGeo = new THREE.PlaneGeometry(terrainSize, terrainSize, terrainSegs, terrainSegs);
   const verts = terrainGeo.attributes.position;
   const colors = [];
 
-  const C_PLAINS_GRASS   = new THREE.Color(0x4ca243);
-  const C_PLAINS_DIRT    = new THREE.Color(0x7c5a3a);
-  const C_FOREST_MOSS    = new THREE.Color(0x275949);
-  const C_SNOW_PEAK      = new THREE.Color(0xf1f5f9);
-  const C_SNOW_ROCK      = new THREE.Color(0x64748b);
-  const C_LAVA_ROCK      = new THREE.Color(0x3a2222);
-  const C_DESERT_SAND    = new THREE.Color(0xd4a373);
+  const C_GRASS      = new THREE.Color(0x4ca243);
+  const C_DIRT       = new THREE.Color(0x7c5a3a);
+  const C_SAND       = new THREE.Color(0xd4a373);
+  const C_SNOW       = new THREE.Color(0xf1f5f9);
+  const C_ICE_ROCK   = new THREE.Color(0x64748b);
+  const C_LAVA_ROCK  = new THREE.Color(0x2e1a1a);
+  const C_OCEAN_BED  = new THREE.Color(0x1e3a5f);
 
-  function getBiomeType(x, z) {
-    if (x > 60 && z < -60) return 'SNOW_MOUNTAINS';
-    if (x > 60 && z > 60) return 'VOLCANIC_CALDERA';
-    if (x < -60 && z < -60) return 'ENCHANTED_FOREST';
-    if (x < -60 && z > 60) return 'DESERT_DUNES';
-    return 'SUNLIT_PLAINS';
+  function getIslandElevation(x, z) {
+    const d1 = Math.hypot(x - 0, z - 0);       // Island 1: Haven
+    const d2 = Math.hypot(x - 0, z - (-260));  // Island 2: Frostveil
+    const d3 = Math.hypot(x - 0, z - 260);     // Island 3: Caldera
+    
+    let h = -14; // Ocean floor depth
+    let type = 'OCEAN';
+
+    if (d1 < 75) {
+      type = 'HAVEN';
+      const shape = 1 - (d1 / 75);
+      h = Math.pow(shape, 0.8) * 16 + Math.sin(x * 0.08) * Math.cos(z * 0.08) * 2.5;
+    } else if (d2 < 75) {
+      type = 'FROSTVEIL';
+      const shape = 1 - (d2 / 75);
+      h = Math.pow(shape, 1.2) * 55 + Math.sin(x * 0.1 + z * 0.1) * 3;
+    } else if (d3 < 80) {
+      type = 'CALDERA';
+      const shape = 1 - (d3 / 80);
+      if (d3 < 26) {
+        h = 6 + (d3 / 26) * 6 + Math.sin(x * 0.15) * 1.5; // Crater
+      } else {
+        h = Math.pow(shape, 1.1) * 36 + Math.cos(x * 0.09) * 3; // Outer rim
+      }
+    }
+    return { h, type };
   }
 
   for (let i = 0; i < verts.count; i++) {
     const x = verts.getX(i), y = verts.getY(i);
-    const dCenter = Math.hypot(x, y);
-    let h = Math.sin(x * 0.03) * Math.cos(y * 0.03) * 4 + Math.sin(x * 0.08 + y * 0.06) * 2;
-    if (dCenter < 30) h *= (dCenter / 30);
-
-    // Mountain Peak (NE)
-    const dSnow = Math.hypot(x - 130, y - (-130));
-    if (dSnow < 120) h += Math.pow(1 - dSnow/120, 2) * 65;
-
-    // Caldera (SE)
-    const dVolc = Math.hypot(x - 130, y - 130);
-    if (dVolc < 110) h += (dVolc < 30) ? ((30 - dVolc)*-0.3 + 12) : (Math.pow(1 - dVolc/110, 1.6) * 38);
-
-    // Desert (SW)
-    if (x < -40 && y > 40) h += Math.sin(x * 0.05 + y * 0.04) * 6;
-
-    // Forest (NW)
-    if (x < -40 && y < -40) h += Math.cos(x * 0.06) * Math.sin(y * 0.06) * 4;
-
+    const { h, type } = getIslandElevation(x, y);
     verts.setZ(i, h);
 
-    let c = C_PLAINS_GRASS.clone();
-    if (x > 60 && y < -60) c = (h > 28) ? C_SNOW_PEAK : C_SNOW_ROCK;
-    else if (x > 60 && y > 60) c = C_LAVA_ROCK;
-    else if (x < -60 && y > 60) c = C_DESERT_SAND;
-    else if (x < -60 && y < -60) c = C_FOREST_MOSS;
-    else c = (h < 0.2) ? C_PLAINS_DIRT : C_PLAINS_GRASS;
+    let c = C_OCEAN_BED.clone();
+    if (type === 'HAVEN') {
+      c = (h < 1.5) ? C_SAND : ((h < 4.0) ? C_DIRT : C_GRASS);
+    } else if (type === 'FROSTVEIL') {
+      c = (h > 24) ? C_SNOW : C_ICE_ROCK;
+    } else if (type === 'CALDERA') {
+      c = C_LAVA_ROCK;
+    }
     colors.push(c.r, c.g, c.b);
   }
   terrainGeo.computeVertexNormals();
@@ -960,7 +959,7 @@
     const ci2 = Math.min(ci + 1, terrainSegs);
     const ri2 = Math.min(ri + 1, terrainSegs);
     const clamp = (i, j) => {
-      if (i < 0 || i > terrainSegs || j < 0 || j > terrainSegs) return 0;
+      if (i < 0 || i > terrainSegs || j < 0 || j > terrainSegs) return -14;
       return verts.getZ(j * (terrainSegs + 1) + i);
     };
     const h00 = clamp(ci, ri), h10 = clamp(ci2, ri);
@@ -970,83 +969,80 @@
     return h0 * (1 - rf) + h1 * rf;
   }
 
-  // Water & Lava Lake
-  const water = new THREE.Mesh(
-    new THREE.PlaneGeometry(terrainSize, terrainSize),
-    new THREE.MeshStandardMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.75, roughness: 0.2 })
+  // Ocean Plane
+  const ocean = new THREE.Mesh(
+    new THREE.PlaneGeometry(1000, 1000),
+    new THREE.MeshStandardMaterial({ color: 0x0284c7, transparent: true, opacity: 0.8, roughness: 0.15 })
   );
-  water.rotation.x = -Math.PI / 2;
-  water.position.y = -0.9;
-  scene.add(water);
+  ocean.rotation.x = -Math.PI / 2;
+  ocean.position.y = 0;
+  scene.add(ocean);
 
+  // Lava Lake on Island 3 (Caldera)
   const lava = new THREE.Mesh(
-    new THREE.CircleGeometry(32, 16),
-    new THREE.MeshStandardMaterial({ color: 0xff4500, emissive: 0xd97706, emissiveIntensity: 0.8, roughness: 0.4 })
+    new THREE.CircleGeometry(24, 16),
+    new THREE.MeshStandardMaterial({ color: 0xff4500, emissive: 0xd97706, emissiveIntensity: 0.85, roughness: 0.4 })
   );
   lava.rotation.x = -Math.PI / 2;
-  lava.position.set(130, 9, 130);
+  lava.position.set(0, 6.5, 260);
   scene.add(lava);
 
-  // ── 4. BLENDER-GRADE HANDCRAFTED 3D ASSETS ──────────────────────────────
-  // Tudor Timber Village Cottages
-  function createDetailedHouse(x, z, angle = 0) {
+  // ── 4. ANCIENT PORTAL ARCHWAYS ──────────────────────────────────────────
+  const portals = [
+    { id: 1, name: "Portal to Frostveil Peak", x: 0, z: 52, destX: 0, destZ: -210, destIsland: 2, unlocked: false, color: 0x38bdf8 },
+    { id: 2, name: "Portal to Infernal Caldera", x: 0, z: -310, destX: 0, destZ: 210, destIsland: 3, unlocked: false, color: 0xef4444 },
+    { id: 3, name: "Portal to Haven's Sanctuary", x: 0, z: 310, destX: 0, destZ: 0, destIsland: 1, unlocked: true, color: 0x22c55e }
+  ];
+
+  portals.forEach(p => {
     const g = new THREE.Group();
-    // Stone Block Foundation
+    // Stone Pillars
+    const p1 = new THREE.Mesh(new THREE.BoxGeometry(0.8, 4.5, 0.8), new THREE.MeshStandardMaterial({ color: 0x475569, flatShading: true }));
+    p1.position.set(-1.8, 2.25, 0); g.add(p1);
+    const p2 = p1.clone(); p2.position.x = 1.8; g.add(p2);
+    // Header Beam
+    const top = new THREE.Mesh(new THREE.BoxGeometry(4.8, 0.9, 1.0), new THREE.MeshStandardMaterial({ color: 0x334155, flatShading: true }));
+    top.position.set(0, 4.8, 0); g.add(top);
+    // Swirling Energy Disk
+    const vortex = new THREE.Mesh(
+      new THREE.CircleGeometry(1.8, 16),
+      new THREE.MeshBasicMaterial({ color: p.color, transparent: true, opacity: 0.75, side: THREE.DoubleSide })
+    );
+    vortex.position.set(0, 2.4, 0); g.add(vortex);
+    p.vortexMesh = vortex;
+
+    const y = Math.max(0, getTerrainHeight(p.x, p.z));
+    g.position.set(p.x, y, p.z);
+    scene.add(g);
+    p.mesh = g;
+  });
+
+  // ── 5. DETAILED 3D PROPS & BUILDINGS ────────────────────────────────────
+  function createTudorHouse(x, z, angle = 0) {
+    const g = new THREE.Group();
     const base = new THREE.Mesh(new THREE.BoxGeometry(5.4, 0.6, 5.4), new THREE.MeshStandardMaterial({ color: 0x475569, flatShading: true }));
     base.position.y = 0.3; g.add(base);
-
-    // Stucco Plaster Walls
     const stucco = new THREE.Mesh(new THREE.BoxGeometry(4.8, 3.2, 4.8), new THREE.MeshStandardMaterial({ color: 0xfef3c7, flatShading: true }));
     stucco.position.y = 1.9; stucco.castShadow = true; stucco.receiveShadow = true; g.add(stucco);
-
-    // Exposed Timber Corner Trusses
-    const trussMat = new THREE.MeshStandardMaterial({ color: 0x451a03, flatShading: true });
-    [[-2.4, -2.4], [2.4, -2.4], [-2.4, 2.4], [2.4, 2.4]].forEach(([tx, tz]) => {
-      const beam = new THREE.Mesh(new THREE.BoxGeometry(0.35, 3.2, 0.35), trussMat);
-      beam.position.set(tx, 1.9, tz); g.add(beam);
-    });
-
-    // Layered Shingle Roof & Overhang
     const roof = new THREE.Mesh(new THREE.ConeGeometry(4.6, 2.8, 4), new THREE.MeshStandardMaterial({ color: 0x991b1b, flatShading: true }));
     roof.position.y = 4.6; roof.rotation.y = Math.PI / 4; roof.castShadow = true; g.add(roof);
-
-    // Brick Chimney
-    const chim = new THREE.Mesh(new THREE.BoxGeometry(0.7, 2.4, 0.7), new THREE.MeshStandardMaterial({ color: 0x334155 }));
-    chim.position.set(1.5, 4.5, -1.2); g.add(chim);
-
-    // Wooden Door with Iron Hinges
-    const door = new THREE.Mesh(new THREE.BoxGeometry(1.2, 2.1, 0.15), trussMat);
+    const door = new THREE.Mesh(new THREE.BoxGeometry(1.2, 2.1, 0.15), new THREE.MeshStandardMaterial({ color: 0x451a03 }));
     door.position.set(0, 1.35, 2.45); g.add(door);
-
-    // Glowing Warm Mullioned Windows
-    const winMat = new THREE.MeshStandardMaterial({ color: 0xfef08a, emissive: 0xf59e0b, emissiveIntensity: 0.7 });
-    const win1 = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.8, 0.1), winMat);
-    win1.position.set(1.4, 2.2, 2.45); g.add(win1);
-
     g.position.set(x, getTerrainHeight(x, z), z);
     g.rotation.y = angle;
     scene.add(g);
   }
-  createDetailedHouse(-12, -12, Math.PI / 8);
-  createDetailedHouse(14, -8, -Math.PI / 6);
-  createDetailedHouse(10, 18, Math.PI / 4);
+  // Island 1: Haven Village
+  createTudorHouse(-12, -12, Math.PI / 8);
+  createTudorHouse(14, -8, -Math.PI / 6);
+  createTudorHouse(10, 18, Math.PI / 4);
 
-  // Village Wishing Well
-  const well = new THREE.Group();
-  const wellBase = new THREE.Mesh(new THREE.CylinderGeometry(1.4, 1.6, 1.2, 8), new THREE.MeshStandardMaterial({ color: 0x64748b, flatShading: true }));
-  wellBase.position.y = 0.6; well.add(wellBase);
-  const wellRoof = new THREE.Mesh(new THREE.ConeGeometry(1.8, 1.2, 4), new THREE.MeshStandardMaterial({ color: 0x78350f, flatShading: true }));
-  wellRoof.position.y = 2.4; wellRoof.rotation.y = Math.PI / 4; well.add(wellRoof);
-  well.position.set(0, getTerrainHeight(0, 6), 6);
-  scene.add(well);
-
-  // Animated Rotating Windmill
+  // Rotating Windmill
   const windmillGroup = new THREE.Group();
   const wmTower = new THREE.Mesh(new THREE.CylinderGeometry(2.0, 3.5, 9, 8), new THREE.MeshStandardMaterial({ color: 0xe2e8f0, flatShading: true }));
   wmTower.position.y = 4.5; wmTower.castShadow = true; windmillGroup.add(wmTower);
   const wmRoof = new THREE.Mesh(new THREE.ConeGeometry(2.8, 2.5, 8), new THREE.MeshStandardMaterial({ color: 0x991b1b, flatShading: true }));
   wmRoof.position.y = 10.2; windmillGroup.add(wmRoof);
-
   const sailsGroup = new THREE.Group();
   for (let i = 0; i < 4; i++) {
     const sail = new THREE.Mesh(new THREE.BoxGeometry(0.6, 4.5, 0.1), new THREE.MeshStandardMaterial({ color: 0x854d0e }));
@@ -1058,12 +1054,12 @@
   windmillGroup.position.set(-25, getTerrainHeight(-25, -25), -25);
   scene.add(windmillGroup);
 
-  // Biome Trees with Multi-Tiered Foliage
+  // Biome Trees
   function createDetailedTree(x, z, type = 'oak') {
     const g = new THREE.Group();
     const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.45, 2.2, 5), new THREE.MeshStandardMaterial({ color: 0x543310, flatShading: true }));
     trunk.position.y = 1.1; trunk.castShadow = true; g.add(trunk);
-    let leafColor = (type === 'pine') ? 0x1b4332 : ((type === 'enchanted') ? 0x9333ea : 0x2e7d32);
+    let leafColor = (type === 'pine') ? 0x1b4332 : ((type === 'caldera') ? 0x451a1a : 0x2e7d32);
     const leafMat = new THREE.MeshStandardMaterial({ color: leafColor, flatShading: true, roughness: 0.7 });
     if (type === 'pine') {
       const c1 = new THREE.Mesh(new THREE.ConeGeometry(1.6, 2.5, 5), leafMat); c1.position.y = 2.5; c1.castShadow = true; g.add(c1);
@@ -1071,45 +1067,42 @@
     } else {
       const b1 = new THREE.Mesh(new THREE.DodecahedronGeometry(1.7, 1), leafMat); b1.position.y = 2.7; b1.castShadow = true; g.add(b1);
     }
-    g.position.set(x, getTerrainHeight(x, z), z);
-    scene.add(g);
-  }
-  for (let i = 0; i < 90; i++) {
-    const tx = (Math.random()-0.5)*380;
-    const tz = (Math.random()-0.5)*380;
-    if (Math.hypot(tx, tz) < 18) continue;
-    const biome = getBiomeType(tx, tz);
-    if (biome === 'SNOW_MOUNTAINS') createDetailedTree(tx, tz, 'pine');
-    else if (biome === 'ENCHANTED_FOREST') createDetailedTree(tx, tz, 'enchanted');
-    else if (biome === 'SUNLIT_PLAINS') createDetailedTree(tx, tz, 'oak');
+    const y = getTerrainHeight(x, z);
+    if (y > 0.5) {
+      g.position.set(x, y, z);
+      scene.add(g);
+    }
   }
 
-  // ── 5. NPCS & STORYLINE ─────────────────────────────────────────────────
+  // Island 1 Oaks
+  for (let i = 0; i < 30; i++) {
+    const a = Math.random() * Math.PI * 2, r = 18 + Math.random() * 45;
+    createDetailedTree(Math.cos(a)*r, Math.sin(a)*r, 'oak');
+  }
+  // Island 2 Pines
+  for (let i = 0; i < 35; i++) {
+    const a = Math.random() * Math.PI * 2, r = 10 + Math.random() * 50;
+    createDetailedTree(Math.cos(a)*r, -260 + Math.sin(a)*r, 'pine');
+  }
+
+  // ── 6. NPCS & STORYLINE ─────────────────────────────────────────────────
   const npcs = [
     {
-      id: 'cedric', name: 'Elder Cedric', role: 'Village Elder', icon: '🧙‍♂️',
-      x: 0, z: -5,
+      id: 'cedric', name: 'Elder Cedric', role: 'Haven Elder', icon: '🧙‍♂️',
+      x: 0, z: -5, island: 1,
       dialogues: [
-        "Welcome to Haven's Glade, brave traveler! Corrupted Shadow Slimes are spreading in the meadow. Slay 3 of them to prove your strength!",
-        "Splendid victory! Next, seek out Torvin the Blacksmith to learn base fortification.",
-        "The realm honors your deeds!"
+        "Welcome to Haven's Sanctuary! The archipelago is fractured. Defeat 3 Meadow Slimes and the Forest Guardian to claim the Sun-Key and unlock the Frostveil Portal!",
+        "Splendid work, hero! The Frostveil Portal to the north is now open!",
+        "May the light protect your journey!"
       ]
     },
     {
-      id: 'torvin', name: 'Blacksmith Torvin', role: 'Master Smith', icon: '⚒️',
-      x: 10, z: -4,
+      id: 'lyra', name: 'High Priestess Lyra', role: 'Glacial Shrine Maiden', icon: '✨',
+      x: 0, z: -230, island: 2,
       dialogues: [
-        "Need fortifications? Press [B] to open the build menu and place 2 outpost structures!",
-        "Exceptional work! You now hold the power to face the ancient horrors.",
-        "May your anvil ring loud!"
-      ]
-    },
-    {
-      id: 'lyra', name: 'High Priestess Lyra', role: 'Shrine Maiden', icon: '✨',
-      x: -6, z: 8,
-      dialogues: [
-        "The Ancient Magma Titan has awoken in the volcanic caldera! Journey south-east when you are prepared for the final trial.",
-        "May the light guide your blade!"
+        "You reached Frostveil! The Glacial Behemoth guards the Keystone to the Caldera. Slay 3 Frost Slimes & the Behemoth to awaken the Portal!",
+        "The Glacial Keystone is yours! Step into the Caldera Portal to face the Titan!",
+        "May the frost empower your blade!"
       ]
     }
   ];
@@ -1125,7 +1118,7 @@
     npc.mesh = g;
   });
 
-  // ── 6. BACKPACK INVENTORY & HERO MODEL ──────────────────────────────────
+  // ── 7. HERO PLAYER & BACKPACK SYSTEM ────────────────────────────────────
   const player = {
     group: new THREE.Group(),
     lvl: 1, hp: 100, maxHp: 100,
@@ -1134,7 +1127,7 @@
     exp: 0, expNext: 100,
     atk: 30, matk: 25, def: 10, crit: 15,
     wood: 50, stone: 30, crystal: 5, gold: 120,
-    kills: 0, builtCount: 0,
+    kills: 0, currentIsland: 1,
     heroClass: 'Warrior',
     isMounted: false,
     isRolling: false, rollTimer: 0, rollDir: new THREE.Vector3(),
@@ -1142,23 +1135,25 @@
     activeCooldowns: [0, 0, 0, 0, 0, 0],
     activeQuestIndex: 0,
     quests: [
-      { act: "CHAPTER I", name: "Haven's Trial", desc: "Speak with Elder Cedric in town square", count: 0, target: 1, done: false },
-      { act: "CHAPTER II", name: "Cleansing the Glade", desc: "Defeat 3 Meadow Slimes (0/3)", count: 0, target: 3, done: false },
-      { act: "CHAPTER III", name: "Village Bastion", desc: "Construct 2 outpost structures (0/2)", count: 0, target: 2, done: false },
-      { act: "CHAPTER IV", name: "The Caldera Titan", desc: "Defeat the Ancient Magma Titan (0/1)", count: 0, target: 1, done: false }
+      { act: "ISLAND I", name: "Haven's Trial", desc: "Speak with Elder Cedric in town square", count: 0, target: 1, done: false },
+      { act: "ISLAND I", name: "Cleansing Haven", desc: "Defeat 3 Meadow Slimes (0/3)", count: 0, target: 3, done: false },
+      { act: "ISLAND I", name: "Forest Guardian", desc: "Slay the Guardian & unlock Frostveil Portal (0/1)", count: 0, target: 1, done: false },
+      { act: "ISLAND II", name: "Frostveil Secrets", desc: "Speak with Priestess Lyra on Island II", count: 0, target: 1, done: false },
+      { act: "ISLAND II", name: "Glacial Behemoth", desc: "Defeat the Behemoth & unlock Caldera Portal (0/1)", count: 0, target: 1, done: false },
+      { act: "ISLAND III", name: "The Ancient Titan", desc: "Defeat the Ancient Magma Titan on Island III (0/1)", count: 0, target: 1, done: false }
     ],
     backpack: [
       { id: 'potion_hp', name: 'Health Flask', icon: '🧪', type: 'consumable', count: 5, effect: 'hp' },
       { id: 'potion_mp', name: 'Mana Potion', icon: '🫙', type: 'consumable', count: 5, effect: 'mp' },
       { id: 'iron_ore', name: 'Iron Ingot', icon: '🪨', type: 'material', count: 12 },
       { id: 'arcane_cryst', name: 'Arcane Gem', icon: '💎', type: 'material', count: 4 },
-      { id: 'dragon_sword', name: 'Dragon Blade', icon: '🗡️', type: 'weapon', atk: 25 },
-      { id: 'shield_iron', name: 'Iron Crest Shield', icon: '🛡️', type: 'armor', def: 15 },
+      { id: 'sun_blade', name: 'Aethel Blade', icon: '🗡️', type: 'weapon', atk: 25 },
+      { id: 'shield_iron', name: 'Knight Plate', icon: '🛡️', type: 'armor', def: 15 },
       null, null, null, null, null, null, null, null, null, null
     ]
   };
 
-  // Articulated Character Geometry (Blender-Proportioned)
+  // Articulated Character Geometry
   const pBody = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.8, 0.4), new THREE.MeshStandardMaterial({ color: 0x1e3a8a, flatShading: true }));
   pBody.position.y = 0.75; pBody.castShadow = true; player.group.add(pBody);
 
@@ -1242,71 +1237,7 @@
     }
   }
 
-  // ── 7. SANDBOX BUILDING SYSTEM ─────────────────────────────────────────
-  let isBuildMode = false;
-  let selectedBlueprint = 'wood_wall';
-  const placedBuildings = [];
-
-  const ghostGroup = new THREE.Group();
-  const ghostMat = new THREE.MeshBasicMaterial({ color: 0x22c55e, transparent: true, opacity: 0.5, wireframe: true });
-  const ghostBox = new THREE.Mesh(new THREE.BoxGeometry(3, 2.5, 0.4), ghostMat);
-  ghostGroup.add(ghostBox); scene.add(ghostGroup); ghostGroup.visible = false;
-
-  function createBuildingMesh(type) {
-    const g = new THREE.Group();
-    if (type === 'wood_wall') {
-      const m = new THREE.Mesh(new THREE.BoxGeometry(3, 2.5, 0.4), new THREE.MeshStandardMaterial({ color: 0x854d0e, flatShading: true }));
-      m.position.y = 1.25; m.castShadow = true; g.add(m);
-    } else if (type === 'stone_wall') {
-      const m = new THREE.Mesh(new THREE.BoxGeometry(3, 3, 0.6), new THREE.MeshStandardMaterial({ color: 0x64748b, flatShading: true }));
-      m.position.y = 1.5; m.castShadow = true; g.add(m);
-    } else if (type === 'floor') {
-      const m = new THREE.Mesh(new THREE.BoxGeometry(3, 0.3, 3), new THREE.MeshStandardMaterial({ color: 0xa16207, flatShading: true }));
-      m.position.y = 0.15; g.add(m);
-    } else if (type === 'ramp') {
-      const m = new THREE.Mesh(new THREE.BoxGeometry(3, 0.3, 3.5), new THREE.MeshStandardMaterial({ color: 0x854d0e, flatShading: true }));
-      m.rotation.x = Math.PI / 6; m.position.y = 0.8; g.add(m);
-    }
-    return g;
-  }
-
-  function placeCurrentBuilding() {
-    const mesh = createBuildingMesh(selectedBlueprint);
-    mesh.position.copy(ghostGroup.position);
-    mesh.rotation.y = ghostGroup.rotation.y;
-    scene.add(mesh);
-
-    placedBuildings.push({
-      type: selectedBlueprint, mesh: mesh,
-      x: mesh.position.x, y: mesh.position.y, z: mesh.position.z
-    });
-    player.builtCount++;
-    document.getElementById('char-quests').textContent = player.builtCount;
-    sfx.playBuild();
-    showToast("🔨 Placed " + selectedBlueprint.replace('_', ' ').toUpperCase() + "!");
-
-    if (player.activeQuestIndex === 2) {
-      player.quests[2].count++;
-      updateQuestHUD();
-      if (player.quests[2].count >= 2) {
-        player.activeQuestIndex = 3;
-        updateQuestHUD();
-        sfx.playFanfare();
-        showToast("📜 ACT III COMPLETE! Final Quest: Slay the Titan!");
-      }
-    }
-  }
-
-  function selectBlueprint(type, cardEl) {
-    selectedBlueprint = type;
-    document.querySelectorAll('.build-card').forEach(c => c.classList.remove('selected'));
-    if (cardEl) cardEl.classList.add('selected');
-    closeModals();
-    isBuildMode = true;
-    ghostGroup.visible = true;
-  }
-
-  // ── 8. MONSTERS & COMBAT SYSTEM ────────────────────────────────────────
+  // ── 8. MONSTERS & BOSSES ACROSS 3 ISLANDS ───────────────────────────────
   const monsters = [];
   const activeProjectiles = [];
   const activeLootItems = [];
@@ -1319,14 +1250,30 @@
       const eye1 = new THREE.Mesh(new THREE.SphereGeometry(0.12, 4, 4), new THREE.MeshBasicMaterial({ color: 0x000000 }));
       eye1.position.set(-0.25, 0.8, 0.7); g.add(eye1);
       const eye2 = eye1.clone(); eye2.position.x = 0.25; g.add(eye2);
-    } else if (type === 'boss') {
-      const torso = new THREE.Mesh(new THREE.BoxGeometry(2.4, 3.0, 1.8), new THREE.MeshStandardMaterial({ color: 0x1c1917, emissive: 0x991b1b, emissiveIntensity: 0.5, flatShading: true }));
-      torso.position.y = 2.8; torso.castShadow = true; g.add(torso);
-      const head = new THREE.Mesh(new THREE.DodecahedronGeometry(1.0, 0), new THREE.MeshStandardMaterial({ color: 0x450a0a, flatShading: true }));
-      head.position.y = 4.8; g.add(head);
-      const horn1 = new THREE.Mesh(new THREE.ConeGeometry(0.3, 1.2, 4), new THREE.MeshStandardMaterial({ color: 0xf59e0b }));
-      horn1.position.set(-0.7, 5.6, 0); horn1.rotation.z = -0.4; g.add(horn1);
-      const horn2 = horn1.clone(); horn2.position.x = 0.7; horn2.rotation.z = 0.4; g.add(horn2);
+    } else if (type === 'frost_slime') {
+      const body = new THREE.Mesh(new THREE.DodecahedronGeometry(0.9, 1), new THREE.MeshStandardMaterial({ color: 0x38bdf8, emissive: 0x0284c7, emissiveIntensity: 0.4, flatShading: true }));
+      body.position.y = 0.7; body.castShadow = true; g.add(body);
+    } else if (type === 'guardian') {
+      // Gloom Treant Sentinel (Island 1 Boss)
+      const trunk = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.6, 4.2, 6), new THREE.MeshStandardMaterial({ color: 0x451a03, flatShading: true }));
+      trunk.position.y = 2.1; trunk.castShadow = true; g.add(trunk);
+      const canopy = new THREE.Mesh(new THREE.DodecahedronGeometry(2.2, 0), new THREE.MeshStandardMaterial({ color: 0x14532d }));
+      canopy.position.y = 4.8; g.add(canopy);
+      const eye = new THREE.Mesh(new THREE.SphereGeometry(0.3, 4, 4), new THREE.MeshBasicMaterial({ color: 0xf59e0b }));
+      eye.position.set(0, 3.2, 1.2); g.add(eye);
+    } else if (type === 'behemoth') {
+      // Glacial Behemoth (Island 2 Boss)
+      const body = new THREE.Mesh(new THREE.BoxGeometry(3.0, 3.5, 3.0), new THREE.MeshStandardMaterial({ color: 0x93c5fd, emissive: 0x1d4ed8, emissiveIntensity: 0.5, flatShading: true }));
+      body.position.y = 2.4; body.castShadow = true; g.add(body);
+      const horn1 = new THREE.Mesh(new THREE.ConeGeometry(0.5, 2.0, 4), new THREE.MeshStandardMaterial({ color: 0xffffff }));
+      horn1.position.set(-1.2, 4.8, 0); horn1.rotation.z = -0.5; g.add(horn1);
+      const horn2 = horn1.clone(); horn2.position.x = 1.2; horn2.rotation.z = 0.5; g.add(horn2);
+    } else if (type === 'titan') {
+      // Ancient Magma Titan (Island 3 Boss)
+      const torso = new THREE.Mesh(new THREE.BoxGeometry(2.8, 3.6, 2.2), new THREE.MeshStandardMaterial({ color: 0x1c1917, emissive: 0xef4444, emissiveIntensity: 0.6, flatShading: true }));
+      torso.position.y = 3.0; torso.castShadow = true; g.add(torso);
+      const head = new THREE.Mesh(new THREE.DodecahedronGeometry(1.2, 0), new THREE.MeshStandardMaterial({ color: 0x450a0a, flatShading: true }));
+      head.position.y = 5.4; g.add(head);
     }
     g.scale.set(scale, scale, scale);
     return g;
@@ -1334,14 +1281,22 @@
 
   function spawnMob(name, type, hp, dmg, exp, x, z, scale = 0.8, isBoss = false) {
     const mesh = createMonsterMesh(type, scale);
-    const y = getTerrainHeight(x, z);
+    const y = Math.max(0.5, getTerrainHeight(x, z));
     mesh.position.set(x, y, z);
     scene.add(mesh);
     monsters.push({ name, type, hp, maxHp: hp, dmg, exp, mesh, x, z, y, isBoss, state: 'wander', atkCd: 0, speed: isBoss ? 4.5 : 4.0 });
   }
 
-  for (let i = 0; i < 18; i++) spawnMob("Meadow Slime", "slime", 60, 6, 30, (Math.random()-0.5)*80 + 20, (Math.random()-0.5)*80 + 20, 0.75);
-  spawnMob("Ancient Magma Titan", "boss", 3500, 55, 2000, 130, 130, 2.5, true);
+  // Island 1 Mobs & Boss
+  for (let i = 0; i < 8; i++) spawnMob("Meadow Slime", "slime", 50, 6, 25, (Math.random()-0.5)*50, (Math.random()-0.5)*50 + 15, 0.75);
+  spawnMob("Gloom Treant Sentinel", "guardian", 450, 16, 250, 0, 38, 1.2, true);
+
+  // Island 2 Mobs & Boss
+  for (let i = 0; i < 8; i++) spawnMob("Frost Slime", "frost_slime", 120, 14, 60, (Math.random()-0.5)*60, -260 + (Math.random()-0.5)*60, 0.8);
+  spawnMob("Glacial Behemoth", "behemoth", 1200, 32, 800, 0, -285, 1.4, true);
+
+  // Island 3 Mobs & Final Titan Boss
+  spawnMob("Ancient Magma Titan", "titan", 3800, 55, 3000, 0, 260, 2.6, true);
 
   function spawn3DLoot(x, y, z) {
     const g = new THREE.Mesh(
@@ -1429,6 +1384,7 @@
 
     if (m.isBoss) {
       document.getElementById('boss-bar-wrap').style.display = 'flex';
+      document.getElementById('boss-title-text').textContent = "👑 " + m.name.toUpperCase() + " 👑";
       document.getElementById('boss-fill').style.width = Math.max(0, (m.hp / m.maxHp * 100)) + '%';
     }
 
@@ -1436,7 +1392,7 @@
     if (m.hp <= 0) {
       player.kills++;
       player.exp += m.exp;
-      player.gold += 20;
+      player.gold += m.isBoss ? 150 : 20;
       document.getElementById('char-kills').textContent = player.kills;
       document.getElementById('res-gold').textContent = player.gold;
       document.getElementById('exp-ribbon-fill').style.width = Math.min(100, (player.exp / player.expNext * 100)) + '%';
@@ -1448,7 +1404,22 @@
       if (m.isBoss) {
         document.getElementById('boss-bar-wrap').style.display = 'none';
         sfx.playFanfare();
-        showToast("🏆 VICTORY! ANCIENT MAGMA TITAN DEFEATED!");
+
+        if (m.type === 'guardian') {
+          // Island 1 Complete -> Unlock Portal 1 to Frostveil
+          portals[0].unlocked = true;
+          player.activeQuestIndex = 3;
+          updateQuestHUD();
+          showToast("✨ SUN-KEY UNLOCKED! Frostveil Portal is now ACTIVE!");
+        } else if (m.type === 'behemoth') {
+          // Island 2 Complete -> Unlock Portal 2 to Caldera
+          portals[1].unlocked = true;
+          player.activeQuestIndex = 5;
+          updateQuestHUD();
+          showToast("✨ GLACIAL KEYSTONE UNLOCKED! Caldera Portal is ACTIVE!");
+        } else if (m.type === 'titan') {
+          showToast("🏆 VICTORY! REALM OF AETHELGARD IS RESTORED!");
+        }
       } else {
         if (player.activeQuestIndex === 1) {
           player.quests[1].count++;
@@ -1457,7 +1428,7 @@
             player.activeQuestIndex = 2;
             updateQuestHUD();
             sfx.playFanfare();
-            showToast("📜 QUEST COMPLETE! Next: Build 2 Structures!");
+            showToast("📜 QUEST: Slay the Forest Guardian at Portal I!");
           }
         }
       }
@@ -1481,7 +1452,7 @@
   function showToast(txt) {
     const t = document.getElementById('toast-msg');
     t.textContent = txt; t.style.display = 'block';
-    setTimeout(() => t.style.display = 'none', 3000);
+    setTimeout(() => t.style.display = 'none', 3500);
   }
 
   function updateVitalsHUD() {
@@ -1495,7 +1466,7 @@
   function updateQuestHUD() {
     const q = player.quests[player.activeQuestIndex];
     if (q) {
-      document.getElementById('track-act-tag').textContent = q.act + " · MAIN STORY";
+      document.getElementById('track-act-tag').textContent = q.act + " · MAIN QUEST";
       document.getElementById('track-quest-title').textContent = q.name;
       let objTxt = q.desc;
       let pct = 25;
@@ -1526,6 +1497,28 @@
     }
   }
 
+  // Fast Travel / Portal Jump
+  function teleportTo(x, z, islandNum, name) {
+    sfx.playTeleport();
+    player.group.position.set(x, getTerrainHeight(x, z), z);
+    player.currentIsland = islandNum;
+    document.getElementById('current-zone-name').textContent = `Island ${islandNum}: ${name}`;
+    document.getElementById('char-island').textContent = `Island ${islandNum}: ${name}`;
+    showToast(`🌀 Arrived at Island ${islandNum}: ${name}!`);
+    closeModals();
+  }
+
+  function fastTravel(islandNum) {
+    if (islandNum === 1) teleportTo(0, 0, 1, "Haven's Sanctuary");
+    else if (islandNum === 2) {
+      if (!portals[0].unlocked) { showToast("🔒 Unlock Frostveil first by defeating Forest Guardian!"); return; }
+      teleportTo(0, -210, 2, "Frostveil Peak");
+    } else if (islandNum === 3) {
+      if (!portals[1].unlocked) { showToast("🔒 Unlock Caldera first by defeating Glacial Behemoth!"); return; }
+      teleportTo(0, 210, 3, "Infernal Caldera");
+    }
+  }
+
   // ── 9. GAME STATE & DIALOGUE ────────────────────────────────────────────
   let gameState = 'MENU';
   let spawnProgress = 0;
@@ -1535,6 +1528,7 @@
   let shiftlockMode = 1;
   let cameraZoomDistance = 7.0;
   let activeDialogueNPC = null;
+  let activePortalNear = null;
 
   function selectClass(cls) {
     player.heroClass = cls;
@@ -1578,6 +1572,11 @@
       updateQuestHUD();
       sfx.playFanfare();
       showToast("📜 NEW QUEST: Slay 3 Meadow Slimes!");
+    } else if (activeDialogueNPC && activeDialogueNPC.id === 'lyra' && player.activeQuestIndex === 3) {
+      player.activeQuestIndex = 4;
+      updateQuestHUD();
+      sfx.playFanfare();
+      showToast("📜 NEW QUEST: Vanquish the Glacial Behemoth!");
     }
     closeDialogue();
   }
@@ -1605,8 +1604,16 @@
   document.addEventListener('keydown', e => {
     keys[e.code] = true;
     if (e.code === 'KeyE') {
+      if (activePortalNear) {
+        if (activePortalNear.unlocked) {
+          teleportTo(activePortalNear.destX, activePortalNear.destZ, activePortalNear.destIsland, activePortalNear.name.replace('Portal to ', ''));
+        } else {
+          showToast("🔒 This Ancient Portal is sealed! Defeat the island boss to awaken it.");
+        }
+        return;
+      }
       npcs.forEach(npc => {
-        if (Math.hypot(npc.x - player.group.position.x, npc.z - player.group.position.z) < 4.0) {
+        if (Math.hypot(npc.x - player.group.position.x, npc.z - player.group.position.z) < 4.5) {
           openDialogue(npc);
         }
       });
@@ -1634,8 +1641,7 @@
 
   document.addEventListener('mousedown', e => {
     if (gameState === 'PLAYING' && e.button === 0) {
-      if (isBuildMode) placeCurrentBuilding();
-      else castSkill(0);
+      castSkill(0);
     }
   });
 
@@ -1656,15 +1662,16 @@
     cameraZoomDistance = Math.max(2.5, Math.min(18.0, cameraZoomDistance + e.deltaY * 0.006));
   });
 
-  // ── 11. MAIN ANIMATION & ARTICULATION LOOP ──────────────────────────────
+  // ── 11. MAIN ANIMATION & GAME LOOP ──────────────────────────────────────
   const clock = new THREE.Clock();
 
   function animate() {
     requestAnimationFrame(animate);
     const dt = Math.min(clock.getDelta(), 0.05);
 
-    // Windmill sails spin
+    // Windmill & Portal vortex animation
     sailsGroup.rotation.z += 0.4 * dt;
+    portals.forEach(p => { if (p.vortexMesh) p.vortexMesh.rotation.z += 1.5 * dt; });
 
     // Regeneration
     player.mp = Math.min(player.maxMp, player.mp + 4 * dt);
@@ -1708,7 +1715,6 @@
       camera.position.lerpVectors(new THREE.Vector3(0, 45, 55), new THREE.Vector3(0, 3.5, 7.5), easeT);
       camera.lookAt(player.group.position.x, player.group.position.y + 1.2, player.group.position.z);
     } else if (gameState === 'PLAYING') {
-      // Movement & Physics
       let currentSpeed = (keys['ShiftLeft'] || keys['ShiftRight']) ? 14 : 7;
       if (player.isMounted) currentSpeed *= 1.6;
 
@@ -1754,21 +1760,13 @@
       }
       player.group.quaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), playerYaw);
 
-      // Bilinear Smooth Elevation & Platform Jumping
-      const groundY = getTerrainHeight(player.group.position.x, player.group.position.z);
-      let highestStandingY = groundY;
-      placedBuildings.forEach(b => {
-        if ((b.type === 'floor' || b.type === 'ramp') && Math.hypot(b.x - player.group.position.x, b.z - player.group.position.z) < 2.2) {
-          if (b.y >= groundY && b.y <= player.group.position.y + 0.8) {
-            highestStandingY = Math.max(highestStandingY, b.y);
-          }
-        }
-      });
-
-      if (player.group.position.y > highestStandingY + 0.05) {
+      // Bilinear Smooth Elevation & Water Clamping
+      const groundY = Math.max(0, getTerrainHeight(player.group.position.x, player.group.position.z));
+      
+      if (player.group.position.y > groundY + 0.05) {
         vy -= 26 * dt;
       } else {
-        player.group.position.y = highestStandingY;
+        player.group.position.y = groundY;
         vy = 0;
         if (keys['Space'] && player.sta >= 10) {
           vy = 9.5;
@@ -1776,14 +1774,6 @@
         }
       }
       player.group.position.y += vy * dt;
-
-      // Building Ghost Blueprint
-      if (isBuildMode) {
-        const gx = player.group.position.x - Math.sin(playerYaw) * 5.0;
-        const gz = player.group.position.z - Math.cos(playerYaw) * 5.0;
-        ghostGroup.position.set(gx, getTerrainHeight(gx, gz), gz);
-        ghostGroup.rotation.y = playerYaw;
-      }
 
       // Update Projectiles
       for (let i = activeProjectiles.length - 1; i >= 0; i--) {
@@ -1816,12 +1806,12 @@
         }
       }
 
-      // Monster AI & Squashing Animations
+      // Monster AI
       monsters.forEach(m => {
         const dist = Math.hypot(m.x - player.group.position.x, m.z - player.group.position.z);
         if (dist < 12 && m.state !== 'frozen') m.state = 'chase';
 
-        if (m.type === 'slime') {
+        if (m.type === 'slime' || m.type === 'frost_slime') {
           const bounce = Math.sin(clock.getElapsedTime() * 6);
           m.mesh.scale.set(0.75 * (1 - bounce * 0.15), 0.75 * (1 + bounce * 0.2), 0.75 * (1 - bounce * 0.15));
         }
@@ -1844,7 +1834,7 @@
             }
           }
         }
-        m.y = getTerrainHeight(m.x, m.z);
+        m.y = Math.max(0.5, getTerrainHeight(m.x, m.z));
         m.mesh.position.set(m.x, m.y, m.z);
         m.mesh.lookAt(player.group.position.x, m.y, player.group.position.z);
       });
@@ -1859,14 +1849,31 @@
       camera.position.copy(head).add(camOffset);
       camera.lookAt(head);
 
-      // Check near NPC prompt
+      // Check near Portal / NPC prompt
+      activePortalNear = null;
+      portals.forEach(p => {
+        if (Math.hypot(p.x - player.group.position.x, p.z - player.group.position.z) < 4.0) {
+          activePortalNear = p;
+        }
+      });
+
       let nearNPC = false;
       npcs.forEach(npc => {
-        if (Math.hypot(npc.x - player.group.position.x, npc.z - player.group.position.z) < 4.0) {
+        if (Math.hypot(npc.x - player.group.position.x, npc.z - player.group.position.z) < 4.5) {
           nearNPC = true;
         }
       });
-      document.getElementById('interact-prompt').style.display = nearNPC ? 'block' : 'none';
+
+      const promptEl = document.getElementById('interact-prompt');
+      if (activePortalNear) {
+        promptEl.style.display = 'block';
+        promptEl.textContent = activePortalNear.unlocked ? `[E] STEP THROUGH ${activePortalNear.name.toUpperCase()}` : `[E] ${activePortalNear.name.toUpperCase()} (LOCKED)`;
+      } else if (nearNPC) {
+        promptEl.style.display = 'block';
+        promptEl.textContent = "PRESS [E] TO TALK";
+      } else {
+        promptEl.style.display = 'none';
+      }
     }
 
     renderer.render(scene, camera);
