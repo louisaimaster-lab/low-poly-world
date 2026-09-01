@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chronicles of Aethelgard — 3 Islands Realm</title>
+  <title>Low Poly World</title>
   
-  <!-- Fantasy Google Fonts -->
+  <!-- Medieval & Clean UI Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Cinzel+Decorative:wght@700;900&family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 
   <style>
     :root {
@@ -16,149 +16,145 @@
       --gold-main: #f59e0b;
       --gold-dark: #b45309;
       --gold-border: #d97706;
-      --wood-dark: #29180d;
-      --wood-med: #452311;
+      --wood-dark: #1e130b;
+      --wood-med: #381e0f;
+      --wood-light: #522d17;
       --wood-border: #78350f;
-      --hp-red: #ef4444;
-      --mp-blue: #3b82f6;
-      --sta-green: #10b981;
-      --exp-purple: #a855f7;
-      --font-title: 'Cinzel Decorative', 'Cinzel', serif;
-      --font-body: 'Cinzel', serif;
+      --hp-red: #dc2626;
+      --mp-blue: #2563eb;
+      --sta-green: #059669;
+      --font-title: 'Cinzel', serif;
       --font-ui: 'Outfit', sans-serif;
-      --font-mono: 'JetBrains Mono', monospace;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
     body {
       overflow: hidden;
-      background: #8bc4dd;
-      font-family: var(--font-body);
+      background: #111827;
+      font-family: var(--font-title);
       color: #fef3c7;
     }
     canvas { display: block; width: 100vw; height: 100vh; position: fixed; inset: 0; z-index: 1; }
 
     /* Crosshair for Shiftlock */
     #crosshair {
-      position: fixed; top: 45%; left: 50%;
+      position: fixed; top: 46%; left: 50%;
       transform: translate(-50%, -50%);
       width: 14px; height: 14px;
       pointer-events: none; z-index: 100; display: none;
     }
     #crosshair::before, #crosshair::after {
-      content: ''; position: absolute; background: #fff;
-      box-shadow: 0 0 4px rgba(0,0,0,0.8);
+      content: ''; position: absolute; background: #fef08a;
+      box-shadow: 0 0 6px rgba(0,0,0,0.9);
     }
     #crosshair::before { top: 6px; left: 0; width: 14px; height: 2px; }
     #crosshair::after { top: 0; left: 6px; width: 2px; height: 14px; }
 
-    /* Target Lock-On Reticle */
+    /* Target Lock-On Diamond Reticle */
     #lockon-reticle {
       position: fixed; pointer-events: none; z-index: 150; display: none;
-      width: 34px; height: 34px; transform: translate(-50%, -50%);
+      width: 38px; height: 38px; transform: translate(-50%, -50%);
       border: 3px solid #ef4444; border-radius: 6px;
-      box-shadow: 0 0 18px rgba(239, 68, 68, 0.95), inset 0 0 10px rgba(239, 68, 68, 0.8);
-      animation: lockPulse 0.7s ease-in-out infinite alternate;
+      box-shadow: 0 0 20px rgba(239, 68, 68, 0.9), inset 0 0 10px rgba(239, 68, 68, 0.6);
+      animation: lockSpin 1.2s ease-in-out infinite alternate;
     }
-    @keyframes lockPulse {
-      0% { transform: translate(-50%, -50%) rotate(45deg) scale(0.85); }
-      100% { transform: translate(-50%, -50%) rotate(45deg) scale(1.2); }
+    @keyframes lockSpin {
+      0% { transform: translate(-50%, -50%) rotate(45deg) scale(0.88); }
+      100% { transform: translate(-50%, -50%) rotate(45deg) scale(1.15); }
     }
 
     /* ─── 1. TITLE SCREEN / MAIN MENU ─── */
     #main-menu {
       position: fixed; inset: 0; z-index: 1000;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      background: radial-gradient(circle at center, rgba(30, 20, 10, 0.25) 0%, rgba(10, 8, 6, 0.85) 85%);
-      backdrop-filter: blur(4px);
+      background: radial-gradient(circle at center, rgba(20, 15, 10, 0.4) 0%, rgba(8, 6, 4, 0.92) 80%);
+      backdrop-filter: blur(6px);
       transition: opacity 0.6s ease, transform 0.6s ease;
     }
-    #main-menu.hidden { opacity: 0; pointer-events: none; transform: scale(1.05); }
+    #main-menu.hidden { opacity: 0; pointer-events: none; transform: scale(1.04); }
     
     .game-logo {
       font-family: var(--font-title);
-      font-size: clamp(28px, 5.2vw, 60px);
+      font-size: clamp(32px, 5.5vw, 68px);
       font-weight: 900;
-      letter-spacing: 4px;
+      letter-spacing: 6px;
       text-align: center;
-      background: linear-gradient(180deg, #fffbeb 0%, #fde047 25%, #f59e0b 65%, #78350f 100%);
+      background: linear-gradient(180deg, #ffffff 0%, #fde047 30%, #f59e0b 70%, #78350f 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      filter: drop-shadow(0 4px 16px rgba(245, 158, 11, 0.8)) drop-shadow(0 0 35px rgba(217, 119, 6, 0.6));
-      margin-bottom: 4px;
+      filter: drop-shadow(0 4px 18px rgba(245, 158, 11, 0.8));
+      margin-bottom: 2px;
     }
     .game-subtitle {
-      font-family: var(--font-body);
-      font-size: clamp(12px, 1.8vw, 16px);
+      font-family: var(--font-ui);
+      font-size: clamp(12px, 1.6vw, 15px);
       color: #fcd34d;
       letter-spacing: 4px;
       text-transform: uppercase;
+      font-weight: 700;
       margin-bottom: 24px;
       text-shadow: 0 2px 10px #000;
     }
     .menu-wood-card {
-      background: linear-gradient(180deg, #3d2314 0%, #26140b 100%);
-      border: 4px solid var(--gold-border);
-      border-radius: 24px;
-      padding: 28px 40px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.95), inset 0 0 25px rgba(0,0,0,0.8), inset 0 2px 4px rgba(254, 240, 138, 0.4);
+      background: linear-gradient(180deg, #381e0f 0%, #1e1008 100%);
+      border: 3px solid var(--gold-border);
+      border-radius: 20px;
+      padding: 26px 36px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.95), inset 0 0 20px rgba(0,0,0,0.8), inset 0 2px 3px rgba(254, 240, 138, 0.4);
       display: flex; flex-direction: column; align-items: center; gap: 16px;
-      max-width: 480px; width: 92%;
-      position: relative;
+      max-width: 440px; width: 92%;
     }
     .class-select-row {
-      display: flex; gap: 12px; width: 100%; justify-content: center;
+      display: flex; gap: 10px; width: 100%; justify-content: center;
     }
     .class-wood-btn {
-      flex: 1; padding: 12px 8px;
-      background: linear-gradient(180deg, #4d2b17, #241209);
+      flex: 1; padding: 12px 6px;
+      background: linear-gradient(180deg, #452412, #211108);
       border: 2px solid #a16207;
-      border-radius: 14px; color: #fef08a;
-      font-family: var(--font-body); font-weight: 700; font-size: 13px;
-      cursor: pointer; transition: 0.2s; text-align: center;
-      box-shadow: inset 0 1px 3px rgba(255,255,255,0.2), 0 4px 12px rgba(0,0,0,0.6);
+      border-radius: 12px; color: #fef08a;
+      font-family: var(--font-ui); font-weight: 700; font-size: 12px;
+      cursor: pointer; transition: 0.15s; text-align: center;
     }
     .class-wood-btn:hover { border-color: #fde047; transform: translateY(-2px); }
     .class-wood-btn.selected {
       border-color: #fde047; background: linear-gradient(180deg, #d97706, #78350f);
-      box-shadow: 0 0 20px rgba(245, 158, 11, 0.7), inset 0 2px 4px #fef08a; color: #fff;
+      box-shadow: 0 0 16px rgba(245, 158, 11, 0.7); color: #fff;
     }
     .btn-enter-realm {
       width: 100%; padding: 14px 28px;
-      background: linear-gradient(180deg, #fde047 0%, #f59e0b 50%, #92400e 100%);
+      background: linear-gradient(180deg, #fde047 0%, #f59e0b 55%, #92400e 100%);
       border: 2px solid #fff;
-      border-radius: 16px; color: #3d1700;
-      font-family: var(--font-title); font-size: 18px; font-weight: 900;
+      border-radius: 14px; color: #2e1202;
+      font-family: var(--font-title); font-size: 17px; font-weight: 900;
       cursor: pointer; letter-spacing: 2px;
-      box-shadow: 0 8px 30px rgba(245, 158, 11, 0.7), inset 0 2px 4px rgba(255,255,255,0.8);
-      transition: 0.2s transform, 0.2s filter;
+      box-shadow: 0 8px 25px rgba(245, 158, 11, 0.6);
+      transition: 0.15s transform, 0.15s filter;
     }
     .btn-enter-realm:hover {
-      transform: translateY(-3px) scale(1.02);
-      filter: brightness(1.12);
-      box-shadow: 0 12px 35px rgba(245, 158, 11, 0.9);
+      transform: translateY(-2px) scale(1.02);
+      filter: brightness(1.1);
     }
 
-    /* ─── 2. CINEMATIC LETTERBOX & ACT INTRO ─── */
+    /* ─── 2. CINEMATIC LETTERBOX ─── */
     #cinematic-bars {
       position: fixed; inset: 0; z-index: 900; pointer-events: none;
       display: flex; flex-direction: column; justify-content: space-between;
     }
-    .cine-bar { height: 0vh; background: #0c0907; transition: height 0.6s ease-in-out; }
-    #cinematic-bars.active .cine-bar { height: 8vh; }
+    .cine-bar { height: 0vh; background: #0a0806; transition: height 0.5s ease-in-out; }
+    #cinematic-bars.active .cine-bar { height: 7vh; }
     #act-banner {
-      position: fixed; top: 18%; left: 50%; transform: translate(-50%, -50%);
+      position: fixed; top: 16%; left: 50%; transform: translate(-50%, -50%);
       z-index: 950; text-align: center; pointer-events: none; opacity: 0;
-      transition: opacity 0.8s ease, transform 0.8s ease;
+      transition: opacity 0.6s ease, transform 0.6s ease;
     }
     #act-banner.show { opacity: 1; transform: translate(-50%, -40%); }
-    .act-label { font-family: var(--font-title); font-size: 14px; color: #f59e0b; letter-spacing: 6px; }
-    .act-title { font-family: var(--font-title); font-size: 28px; color: #fff; text-shadow: 0 4px 20px #000; }
+    .act-label { font-family: var(--font-ui); font-size: 12px; color: #f59e0b; letter-spacing: 5px; font-weight: 800; }
+    .act-title { font-family: var(--font-title); font-size: 26px; color: #fff; text-shadow: 0 4px 18px #000; font-weight: 800; }
 
-    /* ─── 3. OUTDOOR FANTASY RPG HUD ─── */
+    /* ─── 3. OUTDOOR FANTASY HUD ─── */
     #hud {
       position: fixed; inset: 0; z-index: 50;
-      opacity: 0; pointer-events: none; transition: opacity 0.6s ease;
+      opacity: 0; pointer-events: none; transition: opacity 0.5s ease;
     }
     #hud.active { opacity: 1; pointer-events: auto; }
 
@@ -168,84 +164,77 @@
       display: flex; align-items: center; gap: 12px;
     }
     .hero-medallion {
-      width: 74px; height: 74px; border-radius: 50%;
-      background: radial-gradient(circle, #452311 0%, #1c0f07 90%);
-      border: 4px solid var(--gold-main);
-      box-shadow: 0 8px 25px rgba(0,0,0,0.8), 0 0 20px rgba(245, 158, 11, 0.4), inset 0 0 10px rgba(0,0,0,0.8);
+      width: 68px; height: 68px; border-radius: 50%;
+      background: radial-gradient(circle, #381e0f 0%, #120904 90%);
+      border: 3px solid var(--gold-main);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.85), 0 0 15px rgba(245, 158, 11, 0.4);
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      position: relative; cursor: pointer; transition: transform 0.2s;
+      position: relative; cursor: pointer; transition: transform 0.15s;
     }
     .hero-medallion:hover { transform: scale(1.05); }
-    .hero-avatar-icon { font-size: 34px; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.8)); }
+    .hero-avatar-icon { font-size: 30px; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.8)); }
     .hero-lvl-ribbon {
-      position: absolute; bottom: -8px;
+      position: absolute; bottom: -6px;
       background: linear-gradient(180deg, #f59e0b, #78350f);
-      border: 2px solid #fef08a; border-radius: 10px;
-      padding: 1px 8px; font-size: 10px; font-weight: 900;
-      color: #fff; text-shadow: 0 1px 3px #000;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.7);
+      border: 1.5px solid #fef08a; border-radius: 8px;
+      padding: 0 7px; font-size: 9px; font-weight: 900;
+      color: #fff; font-family: var(--font-ui);
     }
     .vitals-plank {
-      background: linear-gradient(180deg, #3d2314 0%, #241309 100%);
-      border: 3px solid var(--gold-border);
-      border-radius: 16px; padding: 8px 12px; width: 200px;
-      box-shadow: 0 8px 25px rgba(0,0,0,0.85), inset 0 0 10px rgba(0,0,0,0.6);
-      display: flex; flex-direction: column; gap: 6px;
-      position: relative;
+      background: linear-gradient(180deg, #381e0f 0%, #1e1008 100%);
+      border: 2px solid var(--gold-border);
+      border-radius: 14px; padding: 7px 10px; width: 190px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.85);
+      display: flex; flex-direction: column; gap: 5px;
     }
     .bar-frame {
-      position: relative; height: 15px; border-radius: 8px;
-      background: #140b06; border: 2px solid #573016;
-      overflow: hidden; box-shadow: inset 0 2px 5px rgba(0,0,0,0.9);
+      position: relative; height: 14px; border-radius: 6px;
+      background: #100804; border: 1.5px solid #573016;
+      overflow: hidden;
     }
     .bar-label-left {
-      position: absolute; top: 50%; left: 6px; transform: translateY(-50%);
-      font-size: 8px; font-weight: 900; color: #fff; z-index: 2;
-      text-shadow: 0 1px 3px #000; letter-spacing: 1px;
+      position: absolute; top: 50%; left: 5px; transform: translateY(-50%);
+      font-size: 8px; font-weight: 900; color: #fff; z-index: 2; font-family: var(--font-ui);
     }
     .bar-label-right {
-      position: absolute; top: 50%; right: 6px; transform: translateY(-50%);
-      font-size: 8px; font-weight: 800; color: #fef08a; z-index: 2;
-      text-shadow: 0 1px 3px #000; font-family: var(--font-ui);
+      position: absolute; top: 50%; right: 5px; transform: translateY(-50%);
+      font-size: 8px; font-weight: 700; color: #fef08a; z-index: 2; font-family: var(--font-ui);
     }
-    .bar-liquid { height: 100%; width: 100%; transition: width 0.15s ease-out; border-radius: 6px; }
+    .bar-liquid { height: 100%; width: 100%; transition: width 0.15s ease-out; border-radius: 4px; }
     .bar-liquid-hp {
-      background: linear-gradient(90deg, #7f1d1d 0%, #ef4444 60%, #fca5a5 100%);
-      box-shadow: 0 0 10px rgba(239, 68, 68, 0.7);
+      background: linear-gradient(90deg, #991b1b 0%, #ef4444 60%, #fca5a5 100%);
+      box-shadow: 0 0 8px rgba(239, 68, 68, 0.7);
     }
     .bar-liquid-mp {
       background: linear-gradient(90deg, #1e3a8a 0%, #3b82f6 60%, #93c5fd 100%);
-      box-shadow: 0 0 10px rgba(59, 130, 246, 0.7);
+      box-shadow: 0 0 8px rgba(59, 130, 246, 0.7);
     }
     .bar-liquid-sta {
       background: linear-gradient(90deg, #064e3b 0%, #10b981 60%, #6ee7b7 100%);
-      height: 5px; border-radius: 3px;
+      height: 4px; border-radius: 2px;
     }
 
-    /* Top Center: Compass & Current Island */
+    /* Top Center: Compass & Zone */
     #top-compass-banner {
       position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
-      z-index: 50; display: flex; flex-direction: column; align-items: center; gap: 4px;
+      z-index: 50; display: flex; flex-direction: column; align-items: center; gap: 3px;
     }
     .compass-wood-dial {
-      background: linear-gradient(180deg, #3d2314 0%, #241309 100%);
+      background: linear-gradient(180deg, #381e0f 0%, #1e1008 100%);
       border: 2px solid var(--gold-border);
-      border-radius: 12px; padding: 3px 14px;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.8);
-      font-size: 10px; font-weight: 800; color: #fef08a; letter-spacing: 2px;
-      display: flex; align-items: center; gap: 8px;
+      border-radius: 10px; padding: 2px 12px;
+      font-size: 9px; font-weight: 800; color: #fef08a; letter-spacing: 2px;
+      font-family: var(--font-ui);
     }
     .zone-banner {
-      font-family: var(--font-title); font-size: 14px; font-weight: 900;
-      color: #fde047; text-shadow: 0 2px 8px #000, 0 0 12px rgba(245, 158, 11, 0.6);
-      letter-spacing: 2px;
+      font-family: var(--font-title); font-size: 13px; font-weight: 800;
+      color: #fde047; text-shadow: 0 2px 6px #000; letter-spacing: 1px;
     }
     #combo-badge {
-      font-family: var(--font-title); font-size: 22px; font-weight: 900;
-      color: #f59e0b; text-shadow: 0 0 15px rgba(245,158,11,0.9);
-      display: none; animation: popIn 0.2s ease-out; margin-top: 4px;
+      font-family: var(--font-title); font-size: 20px; font-weight: 900;
+      color: #f59e0b; text-shadow: 0 0 12px rgba(245,158,11,0.9);
+      display: none; margin-top: 2px;
     }
-    @keyframes popIn { 0% { transform: scale(0.6); } 100% { transform: scale(1.0); } }
 
     /* Top Right: Resources & Live Quest Tracker */
     #top-right-bar {
@@ -253,117 +242,104 @@
       display: flex; flex-direction: column; align-items: flex-end; gap: 8px;
     }
     .hanging-resource-sign {
-      background: linear-gradient(180deg, #3d2314 0%, #241309 100%);
+      background: linear-gradient(180deg, #381e0f 0%, #1e1008 100%);
       border: 2px solid var(--gold-border);
-      border-radius: 14px; padding: 6px 14px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.85);
-      display: flex; gap: 12px; font-size: 12px; font-weight: 800; color: #fef3c7;
+      border-radius: 12px; padding: 5px 12px;
+      display: flex; gap: 10px; font-size: 11px; font-weight: 700; color: #fef3c7;
+      font-family: var(--font-ui);
     }
     #quest-tracker-widget {
-      background: linear-gradient(180deg, #2e1c12 0%, #1c0e07 100%);
+      background: linear-gradient(180deg, #2a150b 0%, #150a04 100%);
       border: 2px solid var(--gold-border);
-      border-left: 5px solid #f59e0b;
-      border-radius: 14px; padding: 12px 16px; width: 270px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.85); cursor: pointer;
-      position: relative; transition: 0.2s transform;
+      border-left: 4px solid #f59e0b;
+      border-radius: 12px; padding: 10px 14px; width: 250px;
+      cursor: pointer; transition: 0.15s;
     }
-    #quest-tracker-widget:hover { transform: translateY(-2px); border-color: #fde047; }
+    #quest-tracker-widget:hover { border-color: #fde047; }
     .tracker-act-tag {
-      font-size: 9px; font-weight: 900; color: #f59e0b; letter-spacing: 2px;
-      text-transform: uppercase; margin-bottom: 2px;
+      font-size: 8px; font-weight: 800; color: #f59e0b; letter-spacing: 2px;
+      text-transform: uppercase; font-family: var(--font-ui);
     }
     .tracker-quest-title {
-      font-size: 13px; font-weight: 800; color: #fef08a; margin-bottom: 4px;
-      font-family: var(--font-title);
+      font-size: 12px; font-weight: 800; color: #fef08a; margin-bottom: 2px;
     }
     .tracker-objective-text {
-      font-size: 11px; color: #e2e8f0; line-height: 1.35; font-family: var(--font-ui);
-      display: flex; align-items: center; gap: 6px;
-    }
-    .tracker-progress-bar {
-      margin-top: 6px; height: 6px; background: #140b06; border-radius: 3px;
-      border: 1px solid #78350f; overflow: hidden;
-    }
-    .tracker-progress-fill {
-      height: 100%; width: 0%; background: linear-gradient(90deg, #f59e0b, #fde047);
-      transition: width 0.3s ease-out;
+      font-size: 10px; color: #e2e8f0; font-family: var(--font-ui);
     }
 
     /* World Boss Header */
     #boss-bar-wrap {
-      position: fixed; top: 70px; left: 50%; transform: translateX(-50%);
+      position: fixed; top: 68px; left: 50%; transform: translateX(-50%);
       z-index: 60; display: none; flex-direction: column; align-items: center;
-      width: 460px; max-width: 90vw;
+      width: 440px; max-width: 90vw;
     }
-    .boss-name-banner { font-family: var(--font-title); font-size: 17px; color: #f87171; letter-spacing: 3px; font-weight: 900; }
+    .boss-name-banner { font-size: 15px; color: #f87171; letter-spacing: 2px; font-weight: 900; }
     .boss-hp-frame {
-      width: 100%; height: 16px; background: #140b06;
-      border: 2px solid #ef4444; border-radius: 8px; margin-top: 5px;
-      overflow: hidden; box-shadow: 0 0 20px rgba(239, 68, 68, 0.8);
+      width: 100%; height: 14px; background: #120904;
+      border: 2px solid #ef4444; border-radius: 6px; margin-top: 4px;
+      overflow: hidden;
     }
     .boss-hp-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #7f1d1d, #ef4444, #fca5a5); transition: width 0.1s; }
 
-    /* Action Hotbar */
+    /* Action Hotbar with Dedicated Weapon & Ability Sockets */
     #action-hotbar-container {
-      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-      z-index: 50; display: flex; gap: 8px; align-items: center;
-      background: linear-gradient(180deg, #3d2314 0%, #1f0f06 100%);
-      padding: 8px 14px; border-radius: 20px; border: 3px solid var(--gold-border);
-      box-shadow: 0 12px 35px rgba(0,0,0,0.9), 0 0 25px rgba(245, 158, 11, 0.25);
-      position: relative;
+      position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%);
+      z-index: 50; display: flex; gap: 7px; align-items: center;
+      background: linear-gradient(180deg, #381e0f 0%, #1a0c05 100%);
+      padding: 7px 12px; border-radius: 16px; border: 2px solid var(--gold-border);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.9);
     }
     .spell-socket {
-      width: 52px; height: 52px; border-radius: 12px;
-      background: radial-gradient(circle, #4d2a16, #1f0f06);
-      border: 2px solid #854d0e;
+      width: 48px; height: 48px; border-radius: 10px;
+      background: radial-gradient(circle, #452412, #180c05);
+      border: 2px solid #78350f;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       position: relative; cursor: pointer; transition: 0.15s;
     }
-    .spell-socket:hover { border-color: #fde047; transform: translateY(-3px); }
-    .spell-socket.active { border-color: #22c55e; box-shadow: 0 0 14px rgba(34, 197, 94, 0.7); }
+    .spell-socket:hover { border-color: #fde047; transform: translateY(-2px); }
+    .spell-socket.active { border-color: #f59e0b; box-shadow: 0 0 12px rgba(245, 158, 11, 0.6); }
     .spell-key-badge {
       position: absolute; top: 2px; left: 4px; font-size: 8px; font-weight: 900; color: #fde047; font-family: var(--font-ui);
     }
-    .spell-icon { font-size: 24px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8)); }
+    .spell-icon { font-size: 22px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8)); }
     .spell-mana-badge {
-      position: absolute; bottom: 2px; right: 4px; font-size: 8px; color: #93c5fd; font-weight: 800; font-family: var(--font-ui);
+      position: absolute; bottom: 2px; right: 4px; font-size: 7px; color: #93c5fd; font-weight: 800; font-family: var(--font-ui);
     }
     .spell-cd-overlay {
-      position: absolute; inset: 0; background: rgba(12, 8, 5, 0.85);
-      border-radius: 10px; display: none; align-items: center; justify-content: center;
-      font-size: 13px; font-weight: 900; color: #f59e0b;
+      position: absolute; inset: 0; background: rgba(10, 6, 3, 0.85);
+      border-radius: 8px; display: none; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 800; color: #f59e0b; font-family: var(--font-ui);
     }
 
     /* EXP Ribbon */
     #bottom-exp-ribbon {
-      position: fixed; bottom: 0; left: 0; right: 0; height: 6px;
-      background: #140b06; border-top: 1px solid #854d0e; z-index: 40;
+      position: fixed; bottom: 0; left: 0; right: 0; height: 5px;
+      background: #100804; border-top: 1px solid #78350f; z-index: 40;
     }
     #exp-ribbon-fill {
       height: 100%; width: 0%;
-      background: linear-gradient(90deg, #6b21a8, #a855f7, #c084fc);
-      box-shadow: 0 0 10px rgba(168, 85, 247, 0.8);
+      background: linear-gradient(90deg, #7e22ce, #a855f7, #c084fc);
       transition: width 0.2s ease-out;
     }
 
     /* Controls Hint */
     #controls-hint {
-      position: fixed; bottom: 86px; left: 50%; transform: translateX(-50%);
-      z-index: 45; font-size: 11px; opacity: 0.85; pointer-events: none;
-      background: rgba(30, 15, 8, 0.85); border: 1px solid var(--gold-border);
-      padding: 4px 14px; border-radius: 20px; font-family: var(--font-ui); color: #fef08a;
+      position: fixed; bottom: 78px; left: 50%; transform: translateX(-50%);
+      z-index: 45; font-size: 10px; pointer-events: none;
+      background: rgba(24, 12, 6, 0.85); border: 1px solid var(--gold-border);
+      padding: 3px 12px; border-radius: 16px; font-family: var(--font-ui); color: #fef08a;
     }
 
     /* Right Menu Buttons */
     #right-menu-bar {
-      position: fixed; bottom: 20px; right: 16px; z-index: 50;
-      display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+      position: fixed; bottom: 18px; right: 16px; z-index: 50;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 5px;
     }
     .wood-menu-btn {
-      background: linear-gradient(180deg, #4d2a16 0%, #241309 100%);
-      border: 2px solid var(--gold-border);
-      color: #fef08a; border-radius: 10px;
-      padding: 7px 10px; font-size: 10px; font-weight: 800; font-family: var(--font-body);
+      background: linear-gradient(180deg, #452412 0%, #1e1008 100%);
+      border: 1.5px solid var(--gold-border);
+      color: #fef08a; border-radius: 8px;
+      padding: 6px 8px; font-size: 9px; font-weight: 700; font-family: var(--font-ui);
       cursor: pointer; transition: 0.15s;
     }
     .wood-menu-btn:hover { background: #78350f; border-color: #fde047; }
@@ -372,84 +348,85 @@
     #interact-prompt {
       position: fixed; top: 60%; left: 50%; transform: translate(-50%, -50%);
       z-index: 100; pointer-events: none; display: none;
-      background: rgba(20, 10, 5, 0.85); border: 2px solid var(--gold-main);
-      padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 900;
-      color: #fde047; letter-spacing: 1px; box-shadow: 0 0 16px rgba(245, 158, 11, 0.7);
+      background: rgba(18, 9, 4, 0.9); border: 2px solid var(--gold-main);
+      padding: 6px 16px; border-radius: 18px; font-size: 11px; font-weight: 800;
+      color: #fde047; letter-spacing: 1px; font-family: var(--font-ui);
     }
     #dialogue-modal {
-      position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
-      z-index: 700; width: 640px; max-width: 92vw;
-      background: linear-gradient(180deg, #3d2314 0%, #1f0f06 100%);
-      border: 4px solid var(--gold-main);
-      border-radius: 20px; padding: 20px;
-      box-shadow: 0 16px 60px rgba(0,0,0,0.95), 0 0 30px rgba(245, 158, 11, 0.4);
-      display: none; gap: 16px; align-items: flex-start;
+      position: fixed; bottom: 85px; left: 50%; transform: translateX(-50%);
+      z-index: 700; width: 580px; max-width: 92vw;
+      background: linear-gradient(180deg, #381e0f 0%, #180c05 100%);
+      border: 3px solid var(--gold-main);
+      border-radius: 16px; padding: 18px;
+      box-shadow: 0 16px 50px rgba(0,0,0,0.95);
+      display: none; gap: 14px; align-items: flex-start;
     }
     .npc-portrait {
-      width: 76px; height: 76px; border-radius: 16px;
-      background: radial-gradient(circle, #78350f, #1c0e07);
-      border: 3px solid var(--gold-border);
+      width: 64px; height: 64px; border-radius: 12px;
+      background: radial-gradient(circle, #78350f, #150a04);
+      border: 2px solid var(--gold-border);
       display: flex; align-items: center; justify-content: center;
-      font-size: 38px; box-shadow: 0 4px 12px rgba(0,0,0,0.7);
+      font-size: 32px;
     }
     .dialogue-content { flex: 1; }
-    .npc-name { font-family: var(--font-title); font-size: 17px; color: #fde047; margin-bottom: 4px; }
-    .npc-speech { font-family: var(--font-ui); font-size: 13px; line-height: 1.4; color: #fef3c7; margin-bottom: 14px; }
-    .dialogue-options { display: flex; gap: 8px; flex-wrap: wrap; }
+    .npc-name { font-size: 15px; color: #fde047; margin-bottom: 2px; font-weight: 800; }
+    .npc-speech { font-family: var(--font-ui); font-size: 12px; line-height: 1.4; color: #fef3c7; margin-bottom: 12px; }
+    .dialogue-options { display: flex; gap: 6px; }
     .dialogue-opt-btn {
-      background: #573016; border: 2px solid var(--gold-main);
-      color: #fff; padding: 6px 14px; border-radius: 8px; font-size: 11px;
-      font-family: var(--font-body); cursor: pointer; font-weight: 800;
+      background: #573016; border: 1.5px solid var(--gold-main);
+      color: #fff; padding: 5px 12px; border-radius: 6px; font-size: 10px;
+      font-family: var(--font-ui); cursor: pointer; font-weight: 700;
     }
     .dialogue-opt-btn:hover { background: #854d0e; border-color: #fde047; }
 
     /* Modals & Backpack */
     .wood-modal {
       position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-      z-index: 800; background: linear-gradient(180deg, #3d2314 0%, #1f0f06 100%);
-      border: 4px solid var(--gold-main); border-radius: 20px;
-      padding: 22px; box-shadow: 0 16px 70px rgba(0,0,0,0.95), 0 0 35px rgba(245,158,11,0.5);
+      z-index: 800; background: linear-gradient(180deg, #381e0f 0%, #180c05 100%);
+      border: 3px solid var(--gold-main); border-radius: 18px;
+      padding: 20px; box-shadow: 0 16px 60px rgba(0,0,0,0.95);
       display: none; max-width: 90vw; max-height: 85vh; overflow: auto;
     }
-    .modal-head { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #78350f; padding-bottom: 10px; margin-bottom: 14px; }
-    .modal-title { font-family: var(--font-title); font-size: 19px; color: #fde047; }
-    .modal-close-btn { background: #573016; border: 2px solid var(--gold-main); color: #fff; width: 28px; height: 28px; border-radius: 8px; cursor: pointer; font-weight: 900; }
+    .modal-head { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #78350f; padding-bottom: 8px; margin-bottom: 12px; }
+    .modal-title { font-size: 17px; color: #fde047; font-weight: 800; }
+    .modal-close-btn { background: #573016; border: 1.5px solid var(--gold-main); color: #fff; width: 26px; height: 26px; border-radius: 6px; cursor: pointer; font-weight: 800; }
     .modal-close-btn:hover { background: #ef4444; }
 
-    #backpack-layout { display: flex; gap: 20px; flex-wrap: wrap; }
-    .equipment-column { display: flex; flex-direction: column; gap: 8px; width: 140px; }
+    #backpack-layout { display: flex; gap: 16px; flex-wrap: wrap; }
+    .equipment-column { display: flex; flex-direction: column; gap: 6px; width: 130px; }
     .equip-slot {
-      background: #26140b; border: 2px solid var(--gold-border);
-      border-radius: 12px; padding: 8px; text-align: center;
+      background: #211108; border: 1.5px solid var(--gold-border);
+      border-radius: 10px; padding: 6px; text-align: center;
       display: flex; flex-direction: column; align-items: center; gap: 2px;
     }
-    .equip-slot-title { font-size: 9px; color: #f59e0b; font-weight: 800; }
-    .equip-slot-icon { font-size: 24px; }
-    .equip-slot-name { font-size: 11px; color: #fef08a; font-family: var(--font-ui); }
+    .equip-slot-title { font-size: 8px; color: #f59e0b; font-weight: 800; font-family: var(--font-ui); }
+    .equip-slot-icon { font-size: 22px; }
+    .equip-slot-name { font-size: 10px; color: #fef08a; font-family: var(--font-ui); font-weight: 600; }
 
-    .inventory-grid { display: grid; grid-template-columns: repeat(4, 60px); grid-gap: 8px; }
+    .inventory-grid { display: grid; grid-template-columns: repeat(4, 56px); grid-gap: 6px; }
     .inv-slot {
-      width: 60px; height: 60px; border-radius: 12px;
-      background: radial-gradient(circle, #3d2314, #1c0e07);
-      border: 2px solid #78350f; cursor: pointer;
+      width: 56px; height: 56px; border-radius: 10px;
+      background: radial-gradient(circle, #381e0f, #150a04);
+      border: 1.5px solid #78350f; cursor: pointer;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       position: relative; transition: 0.15s;
     }
     .inv-slot:hover { border-color: #fde047; transform: scale(1.05); }
-    .inv-slot-icon { font-size: 26px; }
+    .inv-slot-icon { font-size: 24px; }
     .inv-slot-count {
-      position: absolute; bottom: 2px; right: 4px;
-      font-size: 9px; font-weight: 900; color: #fef08a; font-family: var(--font-ui);
+      position: absolute; bottom: 2px; right: 3px;
+      font-size: 8px; font-weight: 800; color: #fef08a; font-family: var(--font-ui);
     }
 
     #build-grid {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-      gap: 12px; width: 540px; max-width: 85vw;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 10px; width: 480px; max-width: 85vw;
     }
     .build-card {
-      background: #26140b; border: 2px solid var(--gold-border);
-      border-radius: 12px; padding: 12px; text-align: center; cursor: pointer;
-      display: flex; flex-direction: column; align-items: center; gap: 4px; transition: 0.2s;
+      background: #211108; border: 1.5px solid var(--gold-border);
+      border-radius: 10px; padding: 10px; text-align: center; cursor: pointer;
+      display: flex; flex-direction: column; align-items: center; gap: 3px; transition: 0.15s;
+      font-family: var(--font-ui);
     }
     .build-card:hover { border-color: #fde047; transform: translateY(-2px); }
     .build-card.selected { border-color: #22c55e; background: rgba(34, 197, 94, 0.2); }
@@ -458,22 +435,22 @@
     .dmg-popup {
       position: fixed; pointer-events: none; z-index: 200;
       font-family: var(--font-title); font-weight: 900;
-      text-shadow: 0 2px 10px rgba(0,0,0,0.9);
-      animation: floatDamage 0.8s ease-out forwards;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.9);
+      animation: floatDamage 0.75s ease-out forwards;
     }
     @keyframes floatDamage {
       0% { transform: translate(-50%, 0) scale(0.6); opacity: 0; }
-      20% { transform: translate(-50%, -10px) scale(1.3); opacity: 1; }
-      100% { transform: translate(-50%, -45px) scale(0.9); opacity: 0; }
+      20% { transform: translate(-50%, -8px) scale(1.25); opacity: 1; }
+      100% { transform: translate(-50%, -40px) scale(0.85); opacity: 0; }
     }
 
     /* Toast Message */
     #toast-msg {
-      position: fixed; top: 110px; left: 50%; transform: translateX(-50%);
+      position: fixed; top: 95px; left: 50%; transform: translateX(-50%);
       z-index: 999; background: linear-gradient(180deg, #f59e0b, #92400e);
       border: 2px solid #fef08a; color: #fff; font-family: var(--font-title);
-      padding: 10px 24px; border-radius: 25px; font-weight: 900; font-size: 14px;
-      box-shadow: 0 0 35px rgba(245, 158, 11, 0.9); display: none;
+      padding: 8px 20px; border-radius: 20px; font-weight: 800; font-size: 13px;
+      box-shadow: 0 0 30px rgba(245, 158, 11, 0.85); display: none;
     }
   </style>
 </head>
@@ -483,31 +460,31 @@
 
   <!-- ─── 1. TITLE SCREEN / MAIN MENU ─── -->
   <div id="main-menu">
-    <h1 class="game-logo">CHRONICLES OF AETHELGARD</h1>
-    <div class="game-subtitle">⚔️ Dynamic Swords, Arcane Wands & Bows 🏹</div>
+    <h1 class="game-logo">LOW POLY WORLD</h1>
+    <div class="game-subtitle">⚔️ Island Realm &middot; Action Combat 🏹</div>
     
     <div class="menu-wood-card">
-      <div style="font-size: 12px; color: #fef08a; font-weight: 800; letter-spacing: 1px;">CHOOSE HERO CLASS & PATH</div>
+      <div style="font-size: 11px; color: #fef08a; font-weight: 800; letter-spacing: 1px; font-family: var(--font-ui);">SELECT CLASS</div>
       <div class="class-select-row">
         <div class="class-wood-btn selected" id="cls-warrior" onclick="selectClass('Warrior')">
-          <div style="font-size: 24px; margin-bottom: 3px;">⚔️</div>
+          <div style="font-size: 22px; margin-bottom: 2px;">⚔️</div>
           WARRIOR
         </div>
         <div class="class-wood-btn" id="cls-mage" onclick="selectClass('Mage')">
-          <div style="font-size: 24px; margin-bottom: 3px;">🔮</div>
+          <div style="font-size: 22px; margin-bottom: 2px;">🔮</div>
           MAGE
         </div>
         <div class="class-wood-btn" id="cls-rogue" onclick="selectClass('Rogue')">
-          <div style="font-size: 24px; margin-bottom: 3px;">🏹</div>
+          <div style="font-size: 22px; margin-bottom: 2px;">🏹</div>
           ROGUE
         </div>
       </div>
       <button class="btn-enter-realm" onclick="startAdventure()">ENTER REALM</button>
-      <div style="font-size: 10px; opacity: 0.75; font-family: var(--font-ui);">WASD Move &middot; Tab Lock-On &middot; LMB Strike / Shoot &middot; 1-5 Spells &middot; I Backpack</div>
+      <div style="font-size: 10px; opacity: 0.8; font-family: var(--font-ui);">WASD Move &middot; Space Jump &middot; Tab Lock-On &middot; LMB / 1 Attack &middot; 2-5 Spells</div>
     </div>
   </div>
 
-  <!-- ─── 2. CINEMATIC LETTERBOX & ACT INTRO ─── -->
+  <!-- ─── 2. CINEMATIC LETTERBOX ─── -->
   <div id="cinematic-bars">
     <div class="cine-bar"></div>
     <div class="cine-bar"></div>
@@ -517,12 +494,12 @@
     <div class="act-title">HAVEN'S SANCTUARY</div>
   </div>
 
-  <!-- ─── 3. OUTDOOR FANTASY RPG HUD ─── -->
+  <!-- ─── 3. FANTASY RPG HUD ─── -->
   <div id="hud">
     <!-- Top Left: Hero Unit Frame -->
     <div id="hero-unit-frame">
-      <div class="hero-medallion" onclick="toggleModal('modal-char')" title="View Hero Sheet">
-        <span class="hero-avatar-icon" id="hero-avatar">🧙‍♂️</span>
+      <div class="hero-medallion" onclick="toggleModal('modal-char')" title="View Hero Record">
+        <span class="hero-avatar-icon" id="hero-avatar">⚔️</span>
         <div class="hero-lvl-ribbon" id="hero-lvl-badge">LV 1</div>
       </div>
       <div class="vitals-plank">
@@ -539,7 +516,7 @@
           <div class="bar-liquid bar-liquid-mp" id="mp-fill"></div>
         </div>
         <!-- Stamina -->
-        <div class="bar-frame" style="height:8px;">
+        <div class="bar-frame" style="height:6px;">
           <div class="bar-liquid bar-liquid-sta" id="sta-fill"></div>
         </div>
       </div>
@@ -548,9 +525,7 @@
     <!-- Top Center: Compass & Current Island -->
     <div id="top-compass-banner">
       <div class="compass-wood-dial">
-        <span>🧭</span>
-        <span>W &middot; NW &middot; <strong style="color:#fde047;">[ NORTH ]</strong> &middot; NE &middot; E</span>
-        <span>☀️ 12:00</span>
+        <span>🧭 [ NORTH ] &middot; ☀️ 12:00</span>
       </div>
       <div class="zone-banner" id="current-zone-name">Island I: Haven's Sanctuary</div>
       <div id="combo-badge">🔥 <span id="combo-num">0</span>x COMBO!</div>
@@ -564,66 +539,54 @@
         <div>💎 <span id="res-cryst">5</span></div>
         <div>🪙 <span id="res-gold">120</span></div>
       </div>
-      <!-- Interactive Questline Tracker -->
       <div id="quest-tracker-widget" onclick="toggleModal('modal-quests')">
         <div class="tracker-act-tag" id="track-act-tag">ISLAND I &middot; MAIN QUEST</div>
         <div class="tracker-quest-title" id="track-quest-title">Haven's Trial</div>
-        <div class="tracker-objective-text" id="track-quest-obj">
-          <span>⚔️</span> <span id="track-obj-text">Speak with Elder Cedric in town square</span>
-        </div>
-        <div class="tracker-progress-bar">
-          <div class="tracker-progress-fill" id="track-prog-fill" style="width: 25%;"></div>
-        </div>
+        <div class="tracker-objective-text" id="track-obj-text">Speak with Elder Cedric in village</div>
       </div>
     </div>
 
     <!-- Controls Reminder -->
     <div id="controls-hint">
-      <kbd>WASD</kbd> Move &middot; <kbd>Tab</kbd> Lock-On &middot; <kbd>Space</kbd> Jump &middot; <kbd>V</kbd> Roll &middot; <kbd>R</kbd> Mount &middot; <kbd>LMB/F</kbd> Attack &middot; <kbd>1-5</kbd> Spells &middot; <kbd>I</kbd> Backpack
+      <kbd>WASD</kbd> Move &middot; <kbd>Tab</kbd> Lock-On &middot; <kbd>Space</kbd> Jump &middot; <kbd>V</kbd> Roll &middot; <kbd>R</kbd> Mount &middot; <kbd>LMB/1</kbd> Weapon Attack &middot; <kbd>2-5</kbd> Spells &middot; <kbd>I</kbd> Backpack
     </div>
 
     <!-- World Boss Bar -->
     <div id="boss-bar-wrap">
-      <div class="boss-name-banner" id="boss-title-text">🌋 ANCIENT MAGMA TITAN 🌋</div>
+      <div class="boss-name-banner" id="boss-title-text">👑 GLOOM TREANT SENTINEL 👑</div>
       <div class="boss-hp-frame"><div class="boss-hp-fill" id="boss-fill"></div></div>
     </div>
 
-    <!-- Bottom Center: Hotbar -->
+    <!-- Bottom Center: Hotbar with Equipped Weapon Slot -->
     <div id="action-hotbar-container">
-      <div class="spell-socket active" id="slot-0" onclick="castSkill(0)">
-        <span class="spell-key-badge">LMB</span>
-        <span class="spell-icon" id="slot-icon-0">⚔️</span>
+      <div class="spell-socket active" id="slot-0" onclick="castSkill(0)" title="Main Hand Weapon (Click / LMB / 1)">
+        <span class="spell-key-badge">1 / LMB</span>
+        <span class="spell-icon" id="slot-icon-0">🗡️</span>
         <div class="spell-cd-overlay" id="cd-0"></div>
       </div>
-      <div class="spell-socket" id="slot-1" onclick="castSkill(1)">
-        <span class="spell-key-badge">1</span>
-        <span class="spell-icon" id="slot-icon-1">🔥</span>
+      <div class="spell-socket" id="slot-1" onclick="castSkill(1)" title="Fireball (Key 2)">
+        <span class="spell-key-badge">2</span>
+        <span class="spell-icon">🔥</span>
         <span class="spell-mana-badge">15</span>
         <div class="spell-cd-overlay" id="cd-1"></div>
       </div>
-      <div class="spell-socket" id="slot-2" onclick="castSkill(2)">
-        <span class="spell-key-badge">2</span>
-        <span class="spell-icon" id="slot-icon-2">❄️</span>
+      <div class="spell-socket" id="slot-2" onclick="castSkill(2)" title="Frost Nova (Key 3)">
+        <span class="spell-key-badge">3</span>
+        <span class="spell-icon">❄️</span>
         <span class="spell-mana-badge">20</span>
         <div class="spell-cd-overlay" id="cd-2"></div>
       </div>
-      <div class="spell-socket" id="slot-3" onclick="castSkill(3)">
-        <span class="spell-key-badge">3</span>
-        <span class="spell-icon" id="slot-icon-3">⚡</span>
+      <div class="spell-socket" id="slot-3" onclick="castSkill(3)" title="Chain Lightning (Key 4)">
+        <span class="spell-key-badge">4</span>
+        <span class="spell-icon">⚡</span>
         <span class="spell-mana-badge">25</span>
         <div class="spell-cd-overlay" id="cd-3"></div>
       </div>
-      <div class="spell-socket" id="slot-4" onclick="castSkill(4)">
-        <span class="spell-key-badge">4</span>
-        <span class="spell-icon" id="slot-icon-4">🌪️</span>
+      <div class="spell-socket" id="slot-4" onclick="castSkill(4)" title="Whirlwind (Key 5)">
+        <span class="spell-key-badge">5</span>
+        <span class="spell-icon">🌪️</span>
         <span class="spell-mana-badge">30</span>
         <div class="spell-cd-overlay" id="cd-4"></div>
-      </div>
-      <div class="spell-socket" id="slot-5" onclick="castSkill(5)">
-        <span class="spell-key-badge">5</span>
-        <span class="spell-icon" id="slot-icon-5">☄️</span>
-        <span class="spell-mana-badge">50</span>
-        <div class="spell-cd-overlay" id="cd-5"></div>
       </div>
     </div>
 
@@ -643,13 +606,13 @@
     </div>
   </div>
 
-  <!-- ─── 4. INTERACTIVE NPC & PORTAL DIALOGUE OVERLAY ─── -->
+  <!-- ─── 4. INTERACTIVE NPC DIALOGUE OVERLAY ─── -->
   <div id="interact-prompt">PRESS [E] TO TALK</div>
   <div id="dialogue-modal">
     <div class="npc-portrait" id="diag-portrait">🧙‍♂️</div>
     <div class="dialogue-content">
       <div class="npc-name" id="diag-name">Elder Cedric</div>
-      <div class="npc-speech" id="diag-speech">Greetings, young traveler. Follow the stone path to unlock the realm's secrets!</div>
+      <div class="npc-speech" id="diag-speech">Greetings, traveler. Slay the 3 Meadow Slimes along the stone road!</div>
       <div class="dialogue-options" id="diag-options">
         <button class="dialogue-opt-btn" onclick="advanceStoryDialogue()">Accept Quest</button>
         <button class="dialogue-opt-btn" onclick="closeDialogue()">Farewell</button>
@@ -657,21 +620,21 @@
     </div>
   </div>
 
-  <!-- Toast -->
+  <!-- Toast Message -->
   <div id="toast-msg">⭐ LEVEL UP! YOU REACHED LEVEL 2 ⭐</div>
 
-  <!-- ─── 5. FANTASY BACKPACK & MODALS ─── -->
+  <!-- ─── 5. FANTASY MODALS & BACKPACK ─── -->
   <div class="wood-modal" id="modal-inv">
     <div class="modal-head">
-      <h2 class="modal-title">🎒 Adventurer's Backpack & Gear</h2>
+      <h2 class="modal-title">🎒 Adventurer's Backpack & Equipment</h2>
       <button class="modal-close-btn" onclick="closeModals()">✕</button>
     </div>
     <div id="backpack-layout">
       <!-- Equipment Column -->
       <div class="equipment-column">
-        <div style="font-size:11px; color:#fde047; font-weight:800; text-align:center; margin-bottom:2px;">EQUIPPED</div>
+        <div style="font-size:10px; color:#fde047; font-weight:800; text-align:center; font-family:var(--font-ui);">EQUIPPED</div>
         <div class="equip-slot">
-          <div class="equip-slot-title">MAIN HAND</div>
+          <div class="equip-slot-title">WEAPON</div>
           <div class="equip-slot-icon" id="eq-main-icon">🗡️</div>
           <div class="equip-slot-name" id="eq-main-name">Aethel Blade</div>
         </div>
@@ -688,7 +651,7 @@
       </div>
       <!-- 16-Slot Grid -->
       <div>
-        <div style="font-size:11px; color:#fde047; font-weight:800; margin-bottom:6px;">BACKPACK SLOTS</div>
+        <div style="font-size:10px; color:#fde047; font-weight:800; margin-bottom:6px; font-family:var(--font-ui);">BACKPACK SLOTS</div>
         <div class="inventory-grid" id="backpack-slots-grid"></div>
       </div>
     </div>
@@ -697,21 +660,21 @@
   <!-- Quests Modal -->
   <div class="wood-modal" id="modal-quests">
     <div class="modal-head">
-      <h2 class="modal-title">📜 Quest Chronicles & Archipelago Secrets</h2>
+      <h2 class="modal-title">📜 Quest Chronicles</h2>
       <button class="modal-close-btn" onclick="closeModals()">✕</button>
     </div>
-    <div id="quest-story-list" style="display:flex; flex-direction:column; gap:12px; min-width:320px;">
-      <div style="background:#26140b; border:2px solid var(--gold-border); border-radius:12px; padding:12px;">
-        <h4 style="color:#fde047; font-size:13px; margin-bottom:4px;">🏝️ Island I: Haven's Sanctuary</h4>
-        <p style="font-size:11px; color:#e2e8f0; font-family:var(--font-ui);">Follow the stone path, speak with Elder Cedric, slay 3 Meadow Slimes, and defeat the Forest Guardian to claim the Sun-Key and unlock Portal I.</p>
+    <div id="quest-story-list" style="display:flex; flex-direction:column; gap:10px; min-width:300px;">
+      <div style="background:#211108; border:1.5px solid var(--gold-border); border-radius:10px; padding:10px;">
+        <h4 style="color:#fde047; font-size:12px; margin-bottom:3px;">🏝️ Island I: Haven's Sanctuary</h4>
+        <p style="font-size:10px; color:#e2e8f0; font-family:var(--font-ui);">Follow the stone road, defeat 3 Meadow Slimes, and vanquish the Gloom Treant Sentinel to claim the Sun-Key and unlock Portal I.</p>
       </div>
-      <div style="background:#26140b; border:2px solid var(--gold-border); border-radius:12px; padding:12px;">
-        <h4 style="color:#60a5fa; font-size:13px; margin-bottom:4px;">❄️ Island II: Frostveil Peak</h4>
-        <p style="font-size:11px; color:#e2e8f0; font-family:var(--font-ui);">Climb the snowy mountain path, meet Priestess Lyra, slay the Glacial Behemoth, and awaken the Glacial Keystone to unlock Portal II.</p>
+      <div style="background:#211108; border:1.5px solid var(--gold-border); border-radius:10px; padding:10px;">
+        <h4 style="color:#60a5fa; font-size:12px; margin-bottom:3px;">❄️ Island II: Frostveil Peak</h4>
+        <p style="font-size:10px; color:#e2e8f0; font-family:var(--font-ui);">Climb the glacier mountain, meet Priestess Lyra, slay the Glacial Behemoth, and awaken Portal II.</p>
       </div>
-      <div style="background:#26140b; border:2px solid var(--gold-border); border-radius:12px; padding:12px;">
-        <h4 style="color:#ef4444; font-size:13px; margin-bottom:4px;">🌋 Island III: Infernal Caldera</h4>
-        <p style="font-size:11px; color:#e2e8f0; font-family:var(--font-ui);">Cross the obsidian lava bridge, vanquish the Ancient Magma Titan, and restore the Heart of Aethelgard to save the realm!</p>
+      <div style="background:#211108; border:1.5px solid var(--gold-border); border-radius:10px; padding:10px;">
+        <h4 style="color:#ef4444; font-size:12px; margin-bottom:3px;">🌋 Island III: Infernal Caldera</h4>
+        <p style="font-size:10px; color:#e2e8f0; font-family:var(--font-ui);">Cross the magma ridge, defeat the Ancient Magma Titan, and restore the realm!</p>
       </div>
     </div>
   </div>
@@ -719,24 +682,24 @@
   <!-- Skills Modal -->
   <div class="wood-modal" id="modal-skills">
     <div class="modal-head">
-      <h2 class="modal-title">🌟 Hero Skill Tree & Spells</h2>
+      <h2 class="modal-title">🌟 Hero Skill Tree</h2>
       <button class="modal-close-btn" onclick="closeModals()">✕</button>
     </div>
-    <div style="font-size:13px; color:#fef08a; margin-bottom:12px;">
-      Available Skill Points: <strong id="sp-count" style="font-size:16px;">0</strong>
+    <div style="font-size:12px; color:#fef08a; margin-bottom:10px; font-family:var(--font-ui);">
+      Available Skill Points: <strong id="sp-count" style="font-size:14px;">0</strong>
     </div>
-    <div style="display:flex; gap:14px; flex-wrap:wrap; justify-content:center;">
-      <div style="background:#26140b; padding:14px; border-radius:14px; border:2px solid var(--gold-border); width:200px;">
-        <h4 style="color:#fde047; text-align:center; margin-bottom:8px;">⚔️ PATH OF IRON</h4>
-        <div style="font-size:12px; opacity:0.9;">Cleave Slash [Lv.1]</div>
-        <div style="font-size:12px; opacity:0.9; margin-top:6px;">Whirlwind Spin [Lv.2]</div>
-        <div style="font-size:12px; opacity:0.9; margin-top:6px;">Earth Shatter [Lv.4]</div>
+    <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
+      <div style="background:#211108; padding:12px; border-radius:10px; border:1.5px solid var(--gold-border); width:180px; font-family:var(--font-ui);">
+        <h4 style="color:#fde047; text-align:center; margin-bottom:6px; font-family:var(--font-title);">⚔️ PATH OF IRON</h4>
+        <div style="font-size:11px;">Cleave Slash [Lv.1]</div>
+        <div style="font-size:11px; margin-top:4px;">Whirlwind Spin [Lv.2]</div>
+        <div style="font-size:11px; margin-top:4px;">Earth Shatter [Lv.4]</div>
       </div>
-      <div style="background:#26140b; padding:14px; border-radius:14px; border:2px solid var(--gold-border); width:200px;">
-        <h4 style="color:#60a5fa; text-align:center; margin-bottom:8px;">🔮 PATH OF ARCANA</h4>
-        <div style="font-size:12px; opacity:0.9;">Fireball [Lv.1]</div>
-        <div style="font-size:12px; opacity:0.9; margin-top:6px;">Frost Nova [Lv.2]</div>
-        <div style="font-size:12px; opacity:0.9; margin-top:6px;">Meteor Strike [Lv.4]</div>
+      <div style="background:#211108; padding:12px; border-radius:10px; border:1.5px solid var(--gold-border); width:180px; font-family:var(--font-ui);">
+        <h4 style="color:#60a5fa; text-align:center; margin-bottom:6px; font-family:var(--font-title);">🔮 PATH OF ARCANA</h4>
+        <div style="font-size:11px;">Fireball [Lv.1]</div>
+        <div style="font-size:11px; margin-top:4px;">Frost Nova [Lv.2]</div>
+        <div style="font-size:11px; margin-top:4px;">Chain Lightning [Lv.4]</div>
       </div>
     </div>
   </div>
@@ -749,24 +712,24 @@
     </div>
     <div id="build-grid">
       <div class="build-card selected" onclick="selectBlueprint('wood_wall', this)">
-        <div style="font-size:28px;">🪵</div>
-        <div style="font-size:12px; font-weight:700;">Wood Wall</div>
-        <div style="font-size:10px; color:#f59e0b;">10 Wood</div>
+        <div style="font-size:24px;">🪵</div>
+        <div style="font-size:11px; font-weight:700;">Wood Wall</div>
+        <div style="font-size:9px; color:#f59e0b;">10 Wood</div>
       </div>
       <div class="build-card" onclick="selectBlueprint('stone_wall', this)">
-        <div style="font-size:28px;">🧱</div>
-        <div style="font-size:12px; font-weight:700;">Stone Bastion</div>
-        <div style="font-size:10px; color:#f59e0b;">15 Stone</div>
+        <div style="font-size:24px;">🧱</div>
+        <div style="font-size:11px; font-weight:700;">Stone Bastion</div>
+        <div style="font-size:9px; color:#f59e0b;">15 Stone</div>
       </div>
       <div class="build-card" onclick="selectBlueprint('floor', this)">
-        <div style="font-size:28px;">🟫</div>
-        <div style="font-size:12px; font-weight:700;">Platform</div>
-        <div style="font-size:10px; color:#f59e0b;">10 Wood</div>
+        <div style="font-size:24px;">🟫</div>
+        <div style="font-size:11px; font-weight:700;">Platform</div>
+        <div style="font-size:9px; color:#f59e0b;">10 Wood</div>
       </div>
       <div class="build-card" onclick="selectBlueprint('ramp', this)">
-        <div style="font-size:28px;">📐</div>
-        <div style="font-size:12px; font-weight:700;">Stair Ramp</div>
-        <div style="font-size:10px; color:#f59e0b;">10 Wood</div>
+        <div style="font-size:24px;">📐</div>
+        <div style="font-size:11px; font-weight:700;">Stair Ramp</div>
+        <div style="font-size:9px; color:#f59e0b;">10 Wood</div>
       </div>
     </div>
   </div>
@@ -774,36 +737,36 @@
   <!-- Character Stats Modal -->
   <div class="wood-modal" id="modal-char">
     <div class="modal-head">
-      <h2 class="modal-title">👑 Hero Character Record</h2>
+      <h2 class="modal-title">👑 Hero Record</h2>
       <button class="modal-close-btn" onclick="closeModals()">✕</button>
     </div>
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; font-size:14px; min-width:280px;">
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; font-size:12px; min-width:260px; font-family:var(--font-ui);">
       <div>Level: <strong id="char-lvl">1</strong></div>
       <div>Class: <strong id="char-class" style="color:#fde047;">Warrior</strong></div>
       <div>Weapon: <strong id="char-weapon-type" style="color:#60a5fa;">Sword</strong></div>
       <div>Attack Power: <strong id="char-atk">30</strong></div>
       <div>Magic Power: <strong id="char-matk">20</strong></div>
-      <div>Monsters Slayed: <strong id="char-kills">0</strong></div>
+      <div>Monsters Defeated: <strong id="char-kills">0</strong></div>
     </div>
   </div>
 
   <!-- Three Islands Map Modal -->
   <div class="wood-modal" id="modal-map">
     <div class="modal-head">
-      <h2 class="modal-title">🗺️ Archipelago of Aethelgard</h2>
+      <h2 class="modal-title">🗺️ Archipelago Map</h2>
       <button class="modal-close-btn" onclick="closeModals()">✕</button>
     </div>
-    <div style="text-align:center; margin-bottom:8px; font-size:12px; color:#fef08a;">
-      🏝️ Island I: Haven (Center) &nbsp;|&nbsp; ❄️ Island II: Frostveil (North) &nbsp;|&nbsp; 🌋 Island III: Caldera (South)
+    <div style="text-align:center; margin-bottom:8px; font-size:11px; color:#fef08a; font-family:var(--font-ui);">
+      🏝️ Island I: Haven &nbsp;|&nbsp; ❄️ Island II: Frostveil &nbsp;|&nbsp; 🌋 Island III: Caldera
     </div>
-    <div style="display:flex; justify-content:center; gap:8px;">
-      <button class="wood-menu-btn" onclick="fastTravel(1)">Teleport: Island I</button>
-      <button class="wood-menu-btn" onclick="fastTravel(2)">Teleport: Island II</button>
-      <button class="wood-menu-btn" onclick="fastTravel(3)">Teleport: Island III</button>
+    <div style="display:flex; justify-content:center; gap:6px;">
+      <button class="wood-menu-btn" onclick="fastTravel(1)">Island I</button>
+      <button class="wood-menu-btn" onclick="fastTravel(2)">Island II</button>
+      <button class="wood-menu-btn" onclick="fastTravel(3)">Island III</button>
     </div>
   </div>
 
-  <!-- Three.js CDN with multi-source fallback -->
+  <!-- Three.js CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script>
     if (typeof THREE === 'undefined') {
@@ -813,108 +776,58 @@
 
   <script>
   /* =========================================================================
-     CHRONICLES OF AETHELGARD — WEAPON SYSTEMS (SWORDS, WANDS, BOWS) & PATHS
+     LOW POLY WORLD — HIGH DETAIL PROCEDURAL 3D ENGINE
      ========================================================================= */
 
-  // ── 1. PROCEDURAL SOUND SYNTHESIZER ─────────────────────────────────────
-  class SoundEngine {
-    constructor() { this.ctx = null; }
-    init() {
-      if (!this.ctx) {
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        if (AudioContext) this.ctx = new AudioContext();
-      }
-    }
-    playTone(type, sFreq, eFreq, dur, vol = 0.3) {
-      try {
-        this.init();
-        if (!this.ctx) return;
-        if (this.ctx.state === 'suspended') this.ctx.resume();
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = type;
-        osc.frequency.setValueAtTime(sFreq, this.ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(Math.max(10, eFreq), this.ctx.currentTime + dur);
-        gain.gain.setValueAtTime(vol, this.ctx.currentTime);
-        gain.gain.linearRampToValueAtTime(0.001, this.ctx.currentTime + dur);
-        osc.connect(gain); gain.connect(this.ctx.destination);
-        osc.start(); osc.stop(this.ctx.currentTime + dur);
-      } catch(e){}
-    }
-    playSwing(pitch = 1.0) { this.playTone('sine', 400 * pitch, 80 * pitch, 0.12, 0.3); }
-    playWandBolt() { this.playTone('triangle', 600, 1200, 0.15, 0.3); }
-    playBowShot() { this.playTone('sawtooth', 300, 80, 0.18, 0.35); }
-    playHit() { this.playTone('sawtooth', 220, 45, 0.16, 0.4); }
-    playHeavyHit() { this.playTone('square', 120, 20, 0.28, 0.5); }
-    playMagic() { this.playTone('sawtooth', 400, 950, 0.22, 0.25); }
-    playTeleport() { this.playTone('sine', 200, 950, 0.6, 0.45); }
-    playRoll() { this.playTone('sine', 160, 60, 0.2, 0.25); }
-    playMount() { this.playTone('triangle', 300, 480, 0.25, 0.35); }
-    playBuild() { this.playTone('square', 140, 60, 0.1, 0.25); }
-    playCoin() { this.playTone('triangle', 850, 1350, 0.12, 0.3); }
-    playItem() { this.playTone('triangle', 450, 850, 0.15, 0.35); }
-    playLockOn() { this.playTone('sine', 600, 900, 0.1, 0.25); }
-    playChestOpen() {
-      [329.6, 440.0, 554.3, 659.2].forEach((f, i) => {
-        setTimeout(() => this.playTone('triangle', f, f*1.02, 0.2, 0.35), i*80);
-      });
-    }
-    playFanfare() {
-      [261.6, 329.6, 392.0, 523.2].forEach((f, i) => {
-        setTimeout(() => this.playTone('triangle', f, f*1.02, 0.25, 0.35), i*90);
-      });
-    }
-  }
-  const sfx = new SoundEngine();
-
-  // ── 2. THREE.JS SCENE SETUP & LIGHTING ──────────────────────────────────
+  // ── 1. THREE.JS SCENE SETUP & RICH FANTASY LIGHTING ─────────────────────
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x8bc4dd);
-  scene.fog = new THREE.FogExp2(0x8bc4dd, 0.0028);
+  scene.background = new THREE.Color(0x3a4f63);
+  scene.fog = new THREE.FogExp2(0x3a4f63, 0.0032);
 
-  const camera = new THREE.PerspectiveCamera(65, innerWidth / innerHeight, 0.1, 1000);
+  const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 1000);
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
   renderer.setSize(innerWidth, innerHeight);
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.05;
+  renderer.toneMappingExposure = 1.15;
   document.body.appendChild(renderer.domElement);
 
-  const sunLight = new THREE.DirectionalLight(0xfffaed, 1.4);
-  sunLight.position.set(100, 200, 80);
+  // Warm Golden Key Sunlight
+  const sunLight = new THREE.DirectionalLight(0xfff3d6, 1.6);
+  sunLight.position.set(120, 180, 90);
   sunLight.castShadow = true;
   sunLight.shadow.mapSize.set(2048, 2048);
   sunLight.shadow.camera.near = 10;
   sunLight.shadow.camera.far = 650;
-  sunLight.shadow.camera.left = -300;
-  sunLight.shadow.camera.right = 300;
-  sunLight.shadow.camera.top = 300;
-  sunLight.shadow.camera.bottom = -300;
-  sunLight.shadow.bias = -0.0004;
+  sunLight.shadow.camera.left = -280;
+  sunLight.shadow.camera.right = 280;
+  sunLight.shadow.camera.top = 280;
+  sunLight.shadow.camera.bottom = -280;
+  sunLight.shadow.bias = -0.0003;
   scene.add(sunLight);
 
-  const hemiLight = new THREE.HemisphereLight(0x8bc4dd, 0x475936, 0.55);
+  const hemiLight = new THREE.HemisphereLight(0x7ca1b8, 0x2e3a24, 0.65);
   scene.add(hemiLight);
-  const ambLight = new THREE.AmbientLight(0x4a4d62, 0.4);
+  const ambLight = new THREE.AmbientLight(0x2a3342, 0.45);
   scene.add(ambLight);
 
-  // ── 3. PROCEDURAL 3-ISLAND ARCHIPELAGO WITH STONE PATHWAYS ──────────────
+  // ── 2. PROCEDURAL 3-ISLAND TERRAIN (750x750) WITH COBBLESTONE TRAILS ────
   const terrainSize = 750;
   const terrainSegs = 130;
   const terrainGeo = new THREE.PlaneGeometry(terrainSize, terrainSize, terrainSegs, terrainSegs);
   const verts = terrainGeo.attributes.position;
   const colors = [];
 
-  const C_GRASS      = new THREE.Color(0x4ca243);
-  const C_DIRT       = new THREE.Color(0x7c5a3a);
-  const C_STONE_PATH = new THREE.Color(0x94a3b8);
-  const C_SAND       = new THREE.Color(0xd4a373);
-  const C_SNOW       = new THREE.Color(0xf1f5f9);
-  const C_ICE_ROCK   = new THREE.Color(0x64748b);
-  const C_LAVA_ROCK  = new THREE.Color(0x2e1a1a);
-  const C_OCEAN_BED  = new THREE.Color(0x1e3a5f);
+  const C_GRASS      = new THREE.Color(0x3d782f);
+  const C_DIRT       = new THREE.Color(0x5a3e26);
+  const C_STONE_PATH = new THREE.Color(0x78716c);
+  const C_SAND       = new THREE.Color(0xbfa17a);
+  const C_SNOW       = new THREE.Color(0xe2e8f0);
+  const C_ICE_ROCK   = new THREE.Color(0x475569);
+  const C_LAVA_ROCK  = new THREE.Color(0x241414);
+  const C_OCEAN_BED  = new THREE.Color(0x13273d);
 
   function getIslandElevation(x, z) {
     const d1 = Math.hypot(x - 0, z - 0);       // Island 1: Haven
@@ -951,9 +864,8 @@
 
     let c = C_OCEAN_BED.clone();
     if (type === 'HAVEN') {
-      // Cobblestone path connecting village (0,0) to Portal (0,52)
       const isPath = (Math.abs(x) < 2.5 && y > -10 && y < 55);
-      c = isPath ? C_STONE_PATH : ((h < 1.5) ? C_SAND : ((h < 4.0) ? C_DIRT : C_GRASS));
+      c = isPath ? C_STONE_PATH : ((h < 1.5) ? C_SAND : ((h < 3.8) ? C_DIRT : C_GRASS));
     } else if (type === 'FROSTVEIL') {
       c = (h > 24) ? C_SNOW : C_ICE_ROCK;
     } else if (type === 'CALDERA') {
@@ -993,22 +905,480 @@
   // Ocean Plane
   const ocean = new THREE.Mesh(
     new THREE.PlaneGeometry(1000, 1000),
-    new THREE.MeshStandardMaterial({ color: 0x0284c7, transparent: true, opacity: 0.8, roughness: 0.15 })
+    new THREE.MeshStandardMaterial({ color: 0x1e4a6d, transparent: true, opacity: 0.82, roughness: 0.2 })
   );
   ocean.rotation.x = -Math.PI / 2;
   ocean.position.y = 0;
   scene.add(ocean);
 
-  // Lava Lake on Island 3 (Caldera)
+  // Lava Lake on Island 3
   const lava = new THREE.Mesh(
     new THREE.CircleGeometry(24, 16),
-    new THREE.MeshStandardMaterial({ color: 0xff4500, emissive: 0xd97706, emissiveIntensity: 0.85, roughness: 0.4 })
+    new THREE.MeshStandardMaterial({ color: 0xe11d48, emissive: 0xb91c1c, emissiveIntensity: 0.9, roughness: 0.4 })
   );
   lava.rotation.x = -Math.PI / 2;
   lava.position.set(0, 6.5, 260);
   scene.add(lava);
 
-  // ── 4. ANCIENT PORTAL ARCHWAYS ──────────────────────────────────────────
+  // ── 3. HIGHLY DETAILED MEDIEVAL TUDOR BUILDINGS ─────────────────────────
+  const chimneySmokes = [];
+
+  function createDetailedMedievalHouse(x, z, angle = 0) {
+    const g = new THREE.Group();
+
+    // 1. Stone Foundation
+    const stoneBase = new THREE.Mesh(
+      new THREE.BoxGeometry(6.2, 0.8, 6.2),
+      new THREE.MeshStandardMaterial({ color: 0x57534e, flatShading: true, roughness: 0.9 })
+    );
+    stoneBase.position.y = 0.4;
+    stoneBase.castShadow = true; stoneBase.receiveShadow = true;
+    g.add(stoneBase);
+
+    // 2. Plaster Walls
+    const wall = new THREE.Mesh(
+      new THREE.BoxGeometry(5.6, 3.6, 5.6),
+      new THREE.MeshStandardMaterial({ color: 0xe7e5e4, flatShading: true, roughness: 0.85 })
+    );
+    wall.position.y = 2.4;
+    wall.castShadow = true; wall.receiveShadow = true;
+    g.add(wall);
+
+    // 3. Exposed Dark Oak Timber Framing
+    const beamMat = new THREE.MeshStandardMaterial({ color: 0x2e180d, flatShading: true, roughness: 0.75 });
+    
+    // Vertical Corner Posts
+    [[-2.8, -2.8], [2.8, -2.8], [-2.8, 2.8], [2.8, 2.8]].forEach(([bx, bz]) => {
+      const post = new THREE.Mesh(new THREE.BoxGeometry(0.35, 3.65, 0.35), beamMat);
+      post.position.set(bx, 2.4, bz);
+      post.castShadow = true; g.add(post);
+    });
+
+    // Horizontal Lintel Beams
+    const lintelFront = new THREE.Mesh(new THREE.BoxGeometry(5.8, 0.3, 0.3), beamMat);
+    lintelFront.position.set(0, 2.4, 2.82); g.add(lintelFront);
+    const lintelTop = new THREE.Mesh(new THREE.BoxGeometry(5.8, 0.3, 0.3), beamMat);
+    lintelTop.position.set(0, 4.1, 2.82); g.add(lintelTop);
+
+    // Diagonal Cross Braces
+    const braceL = new THREE.Mesh(new THREE.BoxGeometry(0.2, 2.6, 0.25), beamMat);
+    braceL.position.set(-1.6, 2.4, 2.82); braceL.rotation.z = Math.PI / 4; g.add(braceL);
+    const braceR = new THREE.Mesh(new THREE.BoxGeometry(0.2, 2.6, 0.25), beamMat);
+    braceR.position.set(1.6, 2.4, 2.82); braceR.rotation.z = -Math.PI / 4; g.add(braceR);
+
+    // 4. Multi-Pane Glowing Windows with Wood Shutters
+    const winMat = new THREE.MeshStandardMaterial({ color: 0xfef08a, emissive: 0xf59e0b, emissiveIntensity: 0.95 });
+    const winL = new THREE.Mesh(new THREE.BoxGeometry(0.9, 1.2, 0.1), winMat);
+    winL.position.set(-1.6, 2.8, 2.85); g.add(winL);
+    const winR = new THREE.Mesh(new THREE.BoxGeometry(0.9, 1.2, 0.1), winMat);
+    winR.position.set(1.6, 2.8, 2.85); g.add(winR);
+
+    // Shutters
+    const shutterMat = new THREE.MeshStandardMaterial({ color: 0x451a03 });
+    const shut1 = new THREE.Mesh(new THREE.BoxGeometry(0.4, 1.2, 0.12), shutterMat);
+    shut1.position.set(-2.15, 2.8, 2.86); g.add(shut1);
+    const shut2 = new THREE.Mesh(new THREE.BoxGeometry(0.4, 1.2, 0.12), shutterMat);
+    shut2.position.set(2.15, 2.8, 2.86); g.add(shut2);
+
+    // 5. Arched Wooden Front Door with Iron Knocker
+    const door = new THREE.Mesh(new THREE.BoxGeometry(1.3, 2.2, 0.2), new THREE.MeshStandardMaterial({ color: 0x3d1a08 }));
+    door.position.set(0, 1.7, 2.85); g.add(door);
+    const doorHandle = new THREE.Mesh(new THREE.SphereGeometry(0.08, 4, 4), new THREE.MeshStandardMaterial({ color: 0xd97706 }));
+    doorHandle.position.set(0.45, 1.6, 2.98); g.add(doorHandle);
+
+    // 6. Steep Low-Poly Tile Roof with Overhang Eaves
+    const roofMat = new THREE.MeshStandardMaterial({ color: 0x7c2d12, flatShading: true, roughness: 0.8 });
+    const roof = new THREE.Mesh(new THREE.ConeGeometry(5.2, 3.4, 4), roofMat);
+    roof.position.y = 5.6;
+    roof.rotation.y = Math.PI / 4;
+    roof.castShadow = true;
+    g.add(roof);
+
+    // 7. Stone Chimney Stack with Terracotta Pot
+    const chimney = new THREE.Mesh(
+      new THREE.BoxGeometry(0.9, 3.2, 0.9),
+      new THREE.MeshStandardMaterial({ color: 0x44403c, flatShading: true })
+    );
+    chimney.position.set(1.6, 5.8, -1.2);
+    chimney.castShadow = true;
+    g.add(chimney);
+
+    const chimneyPot = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 0.6, 6), new THREE.MeshStandardMaterial({ color: 0x9a3412 }));
+    chimneyPot.position.set(1.6, 7.5, -1.2);
+    g.add(chimneyPot);
+
+    // Smoke particle emitter reference
+    chimneySmokes.push({ x: x + 1.6, y: getTerrainHeight(x, z) + 7.8, z: z - 1.2 });
+
+    // 8. Wall Lantern with Point Light
+    const lantern = new THREE.Mesh(new THREE.DodecahedronGeometry(0.22, 0), winMat);
+    lantern.position.set(-0.9, 2.4, 3.0);
+    g.add(lantern);
+    const pLight = new THREE.PointLight(0xf59e0b, 1.2, 8);
+    pLight.position.set(-0.9, 2.4, 3.2);
+    g.add(pLight);
+
+    // 9. Barrels & Crates beside the wall
+    const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.45, 0.9, 8), new THREE.MeshStandardMaterial({ color: 0x543310 }));
+    barrel.position.set(3.2, 0.45, 1.2); barrel.castShadow = true; g.add(barrel);
+
+    g.position.set(x, getTerrainHeight(x, z), z);
+    g.rotation.y = angle;
+    scene.add(g);
+  }
+
+  createDetailedMedievalHouse(-14, -12, Math.PI / 8);
+  createDetailedMedievalHouse(16, -10, -Math.PI / 6);
+  createDetailedMedievalHouse(12, 20, Math.PI / 4);
+
+  // Rotating Windmill
+  const windmillGroup = new THREE.Group();
+  const wmTower = new THREE.Mesh(new THREE.CylinderGeometry(2.2, 3.6, 9.5, 8), new THREE.MeshStandardMaterial({ color: 0xd6d3d1, flatShading: true }));
+  wmTower.position.y = 4.75; wmTower.castShadow = true; windmillGroup.add(wmTower);
+  const wmRoof = new THREE.Mesh(new THREE.ConeGeometry(3.0, 2.8, 8), new THREE.MeshStandardMaterial({ color: 0x7c2d12, flatShading: true }));
+  wmRoof.position.y = 10.8; windmillGroup.add(wmRoof);
+  const sailsGroup = new THREE.Group();
+  for (let i = 0; i < 4; i++) {
+    const sail = new THREE.Mesh(new THREE.BoxGeometry(0.7, 4.8, 0.1), new THREE.MeshStandardMaterial({ color: 0x543310 }));
+    sail.position.y = 2.4;
+    const arm = new THREE.Group(); arm.rotation.z = (Math.PI / 2) * i;
+    arm.add(sail); sailsGroup.add(arm);
+  }
+  sailsGroup.position.set(0, 8.8, 2.3); windmillGroup.add(sailsGroup);
+  windmillGroup.position.set(-26, getTerrainHeight(-26, -26), -26);
+  scene.add(windmillGroup);
+
+  // Biome Trees
+  function createDetailedTree(x, z, type = 'oak') {
+    const g = new THREE.Group();
+    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.5, 2.4, 6), new THREE.MeshStandardMaterial({ color: 0x3d200f, flatShading: true }));
+    trunk.position.y = 1.2; trunk.castShadow = true; g.add(trunk);
+    let leafColor = (type === 'pine') ? 0x143d2b : 0x2d5e23;
+    const leafMat = new THREE.MeshStandardMaterial({ color: leafColor, flatShading: true, roughness: 0.8 });
+    if (type === 'pine') {
+      const c1 = new THREE.Mesh(new THREE.ConeGeometry(1.8, 2.8, 5), leafMat); c1.position.y = 2.8; c1.castShadow = true; g.add(c1);
+      const c2 = new THREE.Mesh(new THREE.ConeGeometry(1.3, 2.2, 5), leafMat); c2.position.y = 4.2; c2.castShadow = true; g.add(c2);
+    } else {
+      const b1 = new THREE.Mesh(new THREE.DodecahedronGeometry(1.9, 1), leafMat); b1.position.y = 3.0; b1.castShadow = true; g.add(b1);
+    }
+    const y = getTerrainHeight(x, z);
+    if (y > 0.5) {
+      g.position.set(x, y, z);
+      scene.add(g);
+    }
+  }
+
+  for (let i = 0; i < 28; i++) {
+    const a = Math.random() * Math.PI * 2, r = 18 + Math.random() * 45;
+    createDetailedTree(Math.cos(a)*r, Math.sin(a)*r, 'oak');
+  }
+  for (let i = 0; i < 32; i++) {
+    const a = Math.random() * Math.PI * 2, r = 10 + Math.random() * 50;
+    createDetailedTree(Math.cos(a)*r, -260 + Math.sin(a)*r, 'pine');
+  }
+
+  // ── 4. DETAILED HERO CHARACTER RIG & DETAILED 3D WEAPON MODELS ──────────
+  const player = {
+    group: new THREE.Group(),
+    lvl: 1, hp: 100, maxHp: 100,
+    mp: 60, maxMp: 60,
+    sta: 100, maxSta: 100,
+    exp: 0, expNext: 100,
+    atk: 30, matk: 25, def: 10, crit: 15,
+    wood: 50, stone: 30, crystal: 5, gold: 120,
+    kills: 0, currentIsland: 1, skillPoints: 0,
+    heroClass: 'Warrior',
+    weaponType: 'Sword',
+    isMounted: false,
+    isRolling: false, rollTimer: 0, rollDir: new THREE.Vector3(),
+    combo: 0, comboTimer: 0,
+    isAttacking: false, attackProgress: 0, attackChainIndex: 0,
+    lungeVelocity: new THREE.Vector3(),
+    lockedTarget: null,
+    walkPhase: 0,
+    activeCooldowns: [0, 0, 0, 0, 0],
+    activeQuestIndex: 0,
+    quests: [
+      { act: "ISLAND I", name: "Haven's Trial", desc: "Speak with Elder Cedric in town square", count: 0, target: 1, done: false },
+      { act: "ISLAND I", name: "Cleansing Haven", desc: "Defeat 3 Meadow Slimes (0/3)", count: 0, target: 3, done: false },
+      { act: "ISLAND I", name: "Forest Guardian", desc: "Slay the Guardian & unlock Frostveil Portal (0/1)", count: 0, target: 1, done: false },
+      { act: "ISLAND II", name: "Frostveil Secrets", desc: "Speak with Priestess Lyra on Island II", count: 0, target: 1, done: false },
+      { act: "ISLAND II", name: "Glacial Behemoth", desc: "Defeat the Behemoth & unlock Caldera Portal (0/1)", count: 0, target: 1, done: false },
+      { act: "ISLAND III", name: "The Ancient Titan", desc: "Defeat the Ancient Magma Titan on Island III (0/1)", count: 0, target: 1, done: false }
+    ],
+    backpack: [
+      { id: 'potion_hp', name: 'Health Flask', icon: '🧪', type: 'consumable', count: 5, effect: 'hp' },
+      { id: 'potion_mp', name: 'Mana Potion', icon: '🫙', type: 'consumable', count: 5, effect: 'mp' },
+      { id: 'sun_blade', name: 'Aethel Steel Sword', icon: '🗡️', type: 'weapon', weaponType: 'Sword', atk: 25 },
+      { id: 'wand_basic', name: 'Apprentice Wand', icon: '🔮', type: 'weapon', weaponType: 'Wand', matk: 30 },
+      { id: 'bow_basic', name: 'Hunter Recurve Bow', icon: '🏹', type: 'weapon', weaponType: 'Bow', atk: 28 },
+      { id: 'shield_iron', name: 'Knight Plate', icon: '🛡️', type: 'armor', def: 15 },
+      null, null, null, null, null, null, null, null
+    ]
+  };
+
+  // 1. Torso: Layered Tunic + Steel Breastplate + Pauldrons
+  const torsoGroup = new THREE.Group();
+  const tunic = new THREE.Mesh(
+    new THREE.BoxGeometry(0.7, 0.9, 0.44),
+    new THREE.MeshStandardMaterial({ color: 0x1e293b, flatShading: true, roughness: 0.7 })
+  );
+  tunic.position.y = 0.85; tunic.castShadow = true; torsoGroup.add(tunic);
+
+  const breastplate = new THREE.Mesh(
+    new THREE.BoxGeometry(0.64, 0.65, 0.48),
+    new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.75, roughness: 0.3, flatShading: true })
+  );
+  breastplate.position.y = 0.95; breastplate.castShadow = true; torsoGroup.add(breastplate);
+
+  const belt = new THREE.Mesh(
+    new THREE.BoxGeometry(0.72, 0.16, 0.46),
+    new THREE.MeshStandardMaterial({ color: 0x451a03, roughness: 0.8 })
+  );
+  belt.position.y = 0.45; torsoGroup.add(belt);
+
+  const beltBuckle = new THREE.Mesh(
+    new THREE.BoxGeometry(0.2, 0.2, 0.49),
+    new THREE.MeshStandardMaterial({ color: 0xf59e0b, metalness: 0.9, roughness: 0.2 })
+  );
+  beltBuckle.position.set(0, 0.45, 0); torsoGroup.add(beltBuckle);
+
+  // Left & Right Shoulder Pauldrons
+  const pauldronMat = new THREE.MeshStandardMaterial({ color: 0x64748b, metalness: 0.8, roughness: 0.3, flatShading: true });
+  const pauldronL = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.25, 0.36), pauldronMat);
+  pauldronL.position.set(-0.46, 1.25, 0); torsoGroup.add(pauldronL);
+  const pauldronR = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.25, 0.36), pauldronMat);
+  pauldronR.position.set(0.46, 1.25, 0); torsoGroup.add(pauldronR);
+
+  player.group.add(torsoGroup);
+
+  // 2. Head & Knight Helmet with Visor
+  const headGroup = new THREE.Group();
+  const face = new THREE.Mesh(
+    new THREE.BoxGeometry(0.44, 0.44, 0.44),
+    new THREE.MeshStandardMaterial({ color: 0xffdbb0, flatShading: true })
+  );
+  face.position.y = 1.5; headGroup.add(face);
+
+  const helmet = new THREE.Mesh(
+    new THREE.BoxGeometry(0.5, 0.32, 0.5),
+    new THREE.MeshStandardMaterial({ color: 0x64748b, metalness: 0.8, roughness: 0.3, flatShading: true })
+  );
+  helmet.position.y = 1.72; helmet.castShadow = true; headGroup.add(helmet);
+
+  const helmetVisor = new THREE.Mesh(
+    new THREE.BoxGeometry(0.52, 0.12, 0.3),
+    new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.9, roughness: 0.2 })
+  );
+  helmetVisor.position.set(0, 1.58, 0.15); headGroup.add(helmetVisor);
+
+  player.group.add(headGroup);
+
+  // 3. Cape & Scabbard
+  const cape = new THREE.Mesh(
+    new THREE.BoxGeometry(0.55, 0.95, 0.06),
+    new THREE.MeshStandardMaterial({ color: 0x991b1b, flatShading: true, roughness: 0.8 })
+  );
+  cape.position.set(0, 0.85, -0.25); cape.rotation.x = 0.15; player.group.add(cape);
+
+  // 4. Articulated Legs & Boots
+  const legL = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.65, 0.25), new THREE.MeshStandardMaterial({ color: 0x1e293b }));
+  legL.position.set(-0.18, 0.32, 0); player.group.add(legL);
+  const legR = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.65, 0.25), new THREE.MeshStandardMaterial({ color: 0x1e293b }));
+  legR.position.set(0.18, 0.32, 0); player.group.add(legR);
+
+  // 5. Right Arm & Weapon Pivot Group
+  const armRGroup = new THREE.Group();
+  armRGroup.position.set(0.48, 1.25, 0);
+
+  const armMesh = new THREE.Mesh(
+    new THREE.BoxGeometry(0.2, 0.55, 0.2),
+    new THREE.MeshStandardMaterial({ color: 0x1e293b, flatShading: true })
+  );
+  armMesh.position.y = -0.26; armRGroup.add(armMesh);
+
+  const gauntlet = new THREE.Mesh(
+    new THREE.BoxGeometry(0.24, 0.25, 0.24),
+    new THREE.MeshStandardMaterial({ color: 0x451a03, roughness: 0.8 })
+  );
+  gauntlet.position.y = -0.48; armRGroup.add(gauntlet);
+
+  // ── HIGHLY DETAILED 3D WEAPON MODELS ──
+  const weaponsRig = new THREE.Group();
+  weaponsRig.position.set(0, -0.52, 0.15);
+  armRGroup.add(weaponsRig);
+
+  // A. Handcrafted Steel Broadsword (Pommel, Leather Hilt, Crossguard with Gem, Fuller Blade)
+  const swordRig = new THREE.Group();
+  
+  // Pommel
+  const pommel = new THREE.Mesh(new THREE.DodecahedronGeometry(0.12, 0), new THREE.MeshStandardMaterial({ color: 0xd97706, metalness: 0.85, roughness: 0.3 }));
+  pommel.position.y = -0.3; swordRig.add(pommel);
+
+  // Leather Hilt Grip
+  const hiltGrip = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.35, 6), new THREE.MeshStandardMaterial({ color: 0x3d1a08, roughness: 0.9 }));
+  hiltGrip.position.y = -0.12; swordRig.add(hiltGrip);
+
+  // Crossguard with curved quillons
+  const crossguard = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.08, 0.15), new THREE.MeshStandardMaterial({ color: 0xd97706, metalness: 0.9, roughness: 0.25 }));
+  crossguard.position.y = 0.08; swordRig.add(crossguard);
+
+  const guardGem = new THREE.Mesh(new THREE.DodecahedronGeometry(0.06, 0), new THREE.MeshStandardMaterial({ color: 0xef4444, emissive: 0xb91c1c, emissiveIntensity: 0.9 }));
+  guardGem.position.set(0, 0.08, 0.08); swordRig.add(guardGem);
+
+  // Beveled Steel Blade with Central Fuller
+  const blade = new THREE.Mesh(
+    new THREE.BoxGeometry(0.16, 1.45, 0.04),
+    new THREE.MeshStandardMaterial({ color: 0xf1f5f9, metalness: 0.92, roughness: 0.18, flatShading: true })
+  );
+  blade.position.y = 0.82; blade.castShadow = true; swordRig.add(blade);
+
+  const bladeTip = new THREE.Mesh(
+    new THREE.ConeGeometry(0.11, 0.3, 4),
+    new THREE.MeshStandardMaterial({ color: 0xf1f5f9, metalness: 0.92, roughness: 0.18 })
+  );
+  bladeTip.position.y = 1.62; bladeTip.rotation.y = Math.PI / 4; swordRig.add(bladeTip);
+
+  swordRig.rotation.x = Math.PI / 2.8;
+  weaponsRig.add(swordRig);
+
+  // B. Arcane Wand with Glowing Floating Crystal Orb
+  const wandRig = new THREE.Group();
+  const wandStaff = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.07, 1.2, 6), new THREE.MeshStandardMaterial({ color: 0x451a03, roughness: 0.8 }));
+  wandStaff.position.y = 0.5; wandRig.add(wandStaff);
+  const wandOrb = new THREE.Mesh(new THREE.DodecahedronGeometry(0.18, 1), new THREE.MeshStandardMaterial({ color: 0x60a5fa, emissive: 0x3b82f6, emissiveIntensity: 1.0 }));
+  wandOrb.position.y = 1.2; wandRig.add(wandOrb);
+  wandRig.rotation.x = Math.PI / 2.8; wandRig.visible = false;
+  weaponsRig.add(wandRig);
+
+  // C. Recurve Bow
+  const bowRig = new THREE.Group();
+  const bowCurve = new THREE.Mesh(new THREE.TorusGeometry(0.55, 0.04, 6, 12, Math.PI * 0.8), new THREE.MeshStandardMaterial({ color: 0x78350f }));
+  bowCurve.rotation.z = Math.PI / 2; bowCurve.position.y = 0.4; bowRig.add(bowCurve);
+  bowRig.rotation.x = Math.PI / 2.8; bowRig.visible = false;
+  weaponsRig.add(bowRig);
+
+  player.group.add(armRGroup);
+
+  // Direwolf Mount
+  const mountGroup = new THREE.Group();
+  const mBody = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.8, 1.9), new THREE.MeshStandardMaterial({ color: 0x475569, flatShading: true }));
+  mBody.position.y = 0.6; mountGroup.add(mBody);
+  const mHead = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.6, 0.8), new THREE.MeshStandardMaterial({ color: 0x334155, flatShading: true }));
+  mHead.position.set(0, 1.1, 1.05); mountGroup.add(mHead);
+  mountGroup.visible = false;
+  player.group.add(mountGroup);
+
+  player.group.position.set(0, getTerrainHeight(0, 0), 0);
+  scene.add(player.group);
+
+  function updateEquippedWeaponModel(type) {
+    player.weaponType = type;
+    swordRig.visible = (type === 'Sword');
+    wandRig.visible = (type === 'Wand');
+    bowRig.visible = (type === 'Bow');
+    document.getElementById('char-weapon-type').textContent = type;
+    const icon = (type === 'Wand') ? '🔮' : ((type === 'Bow') ? '🏹' : '🗡️');
+    document.getElementById('slot-icon-0').textContent = icon;
+    document.getElementById('eq-main-icon').textContent = icon;
+  }
+
+  // ── 5. VFX PARTICLE ENGINE (SLASH TRAIL ARCS, SPARKS, SMOKE) ─────────────
+  const activeVFXParticles = [];
+  const activeSlashTrails = [];
+
+  function spawnSparkBurst(pos, colorHex = 0xf59e0b, count = 12) {
+    for (let i = 0; i < count; i++) {
+      const p = new THREE.Mesh(
+        new THREE.SphereGeometry(0.08 + Math.random()*0.06, 4, 4),
+        new THREE.MeshBasicMaterial({ color: colorHex })
+      );
+      p.position.copy(pos);
+      const vel = new THREE.Vector3(
+        (Math.random() - 0.5) * 6,
+        Math.random() * 5 + 1.2,
+        (Math.random() - 0.5) * 6
+      );
+      scene.add(p);
+      activeVFXParticles.push({ mesh: p, vel: vel, life: 0.4 + Math.random()*0.25 });
+    }
+  }
+
+  // Forward Slash Ribbon Geometry (Curving smoothly from Right to Left in front of Hero)
+  function spawnForwardSlashArc(origin, yaw, color = 0xfde047) {
+    const arcGeo = new THREE.RingGeometry(1.6, 2.4, 16, 1, -Math.PI * 0.35, Math.PI * 0.7);
+    const arcMat = new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 0.9, side: THREE.DoubleSide });
+    const arcMesh = new THREE.Mesh(arcGeo, arcMat);
+    arcMesh.position.copy(origin).add(new THREE.Vector3(0, 1.1, 0));
+    arcMesh.rotation.x = Math.PI / 2.2;
+    arcMesh.rotation.z = -yaw + Math.PI / 2;
+    scene.add(arcMesh);
+    activeSlashTrails.push({ mesh: arcMesh, life: 0.22 });
+  }
+
+  // Chimney Smoke Puffs
+  function spawnSmokePuff(pos) {
+    const smoke = new THREE.Mesh(
+      new THREE.DodecahedronGeometry(0.25 + Math.random()*0.15, 0),
+      new THREE.MeshBasicMaterial({ color: 0xa8a29e, transparent: true, opacity: 0.5 })
+    );
+    smoke.position.set(pos.x, pos.y, pos.z);
+    scene.add(smoke);
+    activeVFXParticles.push({
+      mesh: smoke,
+      vel: new THREE.Vector3((Math.random()-0.5)*0.5, 1.2 + Math.random()*0.5, (Math.random()-0.5)*0.5),
+      life: 2.2, isSmoke: true
+    });
+  }
+
+  // ── 6. MONSTERS & BOSSES ACROSS 3 ISLANDS ───────────────────────────────
+  const monsters = [];
+  const activeProjectiles = [];
+  const activeLootItems = [];
+
+  function createMonsterMesh(type, scale = 1.0) {
+    const g = new THREE.Group();
+    if (type === 'slime') {
+      const body = new THREE.Mesh(new THREE.DodecahedronGeometry(0.9, 1), new THREE.MeshStandardMaterial({ color: 0x22c55e, flatShading: true, roughness: 0.4 }));
+      body.position.y = 0.7; body.castShadow = true; g.add(body);
+    } else if (type === 'frost_slime') {
+      const body = new THREE.Mesh(new THREE.DodecahedronGeometry(0.9, 1), new THREE.MeshStandardMaterial({ color: 0x38bdf8, emissive: 0x0284c7, emissiveIntensity: 0.4, flatShading: true }));
+      body.position.y = 0.7; body.castShadow = true; g.add(body);
+    } else if (type === 'guardian') {
+      const trunk = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.6, 4.2, 6), new THREE.MeshStandardMaterial({ color: 0x3d200f, flatShading: true }));
+      trunk.position.y = 2.1; trunk.castShadow = true; g.add(trunk);
+      const canopy = new THREE.Mesh(new THREE.DodecahedronGeometry(2.2, 0), new THREE.MeshStandardMaterial({ color: 0x14532d }));
+      canopy.position.y = 4.8; g.add(canopy);
+    } else if (type === 'behemoth') {
+      const body = new THREE.Mesh(new THREE.BoxGeometry(3.0, 3.5, 3.0), new THREE.MeshStandardMaterial({ color: 0x93c5fd, emissive: 0x1d4ed8, emissiveIntensity: 0.5, flatShading: true }));
+      body.position.y = 2.4; body.castShadow = true; g.add(body);
+    } else if (type === 'titan') {
+      const torso = new THREE.Mesh(new THREE.BoxGeometry(2.8, 3.6, 2.2), new THREE.MeshStandardMaterial({ color: 0x1c1917, emissive: 0xef4444, emissiveIntensity: 0.6, flatShading: true }));
+      torso.position.y = 3.0; torso.castShadow = true; g.add(torso);
+      const head = new THREE.Mesh(new THREE.DodecahedronGeometry(1.2, 0), new THREE.MeshStandardMaterial({ color: 0x450a0a, flatShading: true }));
+      head.position.y = 5.4; g.add(head);
+    }
+    g.scale.set(scale, scale, scale);
+    return g;
+  }
+
+  function spawnMob(name, type, hp, dmg, exp, x, z, scale = 0.8, isBoss = false) {
+    const mesh = createMonsterMesh(type, scale);
+    const y = Math.max(0.5, getTerrainHeight(x, z));
+    mesh.position.set(x, y, z);
+    scene.add(mesh);
+    monsters.push({ name, type, hp, maxHp: hp, dmg, exp, mesh, x, z, y, isBoss, state: 'wander', atkCd: 0, speed: isBoss ? 4.5 : 4.0 });
+  }
+
+  for (let i = 0; i < 8; i++) spawnMob("Meadow Slime", "slime", 50, 6, 25, (Math.random()-0.5)*50, (Math.random()-0.5)*50 + 15, 0.75);
+  spawnMob("Gloom Treant Sentinel", "guardian", 450, 16, 250, 0, 38, 1.2, true);
+
+  for (let i = 0; i < 8; i++) spawnMob("Frost Slime", "frost_slime", 120, 14, 60, (Math.random()-0.5)*60, -260 + (Math.random()-0.5)*60, 0.8);
+  spawnMob("Glacial Behemoth", "behemoth", 1200, 32, 800, 0, -285, 1.4, true);
+
+  spawnMob("Ancient Magma Titan", "titan", 3800, 55, 3000, 0, 260, 2.6, true);
+
+  // ── 7. ANCIENT PORTAL ARCHWAYS ──────────────────────────────────────────
   const portals = [
     { id: 1, name: "Portal to Frostveil Peak", x: 0, z: 52, destX: 0, destZ: -210, destIsland: 2, unlocked: false, color: 0x38bdf8 },
     { id: 2, name: "Portal to Infernal Caldera", x: 0, z: -310, destX: 0, destZ: 210, destIsland: 3, unlocked: false, color: 0xef4444 },
@@ -1035,107 +1405,21 @@
     p.mesh = g;
   });
 
-  // ── 5. INTERACTIVE TREASURE CHESTS ON PATHS ─────────────────────────────
-  const treasureChests = [
-    { id: 'c1', x: 22, z: 12, opened: false, reward: { name: 'Apprentice Wand', icon: '🔮', type: 'weapon', weaponType: 'Wand', matk: 30 } },
-    { id: 'c2', x: -18, z: -250, opened: false, reward: { name: 'Ice-String Bow', icon: '🏹', type: 'weapon', weaponType: 'Bow', atk: 45 } },
-    { id: 'c3', x: 24, z: 240, opened: false, reward: { name: 'Dragonbane Greatsword', icon: '🗡️', type: 'weapon', weaponType: 'Sword', atk: 80 } }
-  ];
-
-  treasureChests.forEach(c => {
-    const g = new THREE.Group();
-    const box = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.8, 0.8), new THREE.MeshStandardMaterial({ color: 0xb45309, flatShading: true }));
-    box.position.y = 0.4; g.add(box);
-    const lid = new THREE.Mesh(new THREE.BoxGeometry(1.26, 0.3, 0.86), new THREE.MeshStandardMaterial({ color: 0xf59e0b }));
-    lid.position.set(0, 0.9, 0); g.add(lid);
-    c.lidMesh = lid;
-    const y = Math.max(0.5, getTerrainHeight(c.x, c.z));
-    g.position.set(c.x, y, c.z);
-    scene.add(g);
-    c.mesh = g;
-  });
-
-  // Village props
-  function createTudorHouse(x, z, angle = 0) {
-    const g = new THREE.Group();
-    const base = new THREE.Mesh(new THREE.BoxGeometry(5.4, 0.6, 5.4), new THREE.MeshStandardMaterial({ color: 0x475569, flatShading: true }));
-    base.position.y = 0.3; g.add(base);
-    const stucco = new THREE.Mesh(new THREE.BoxGeometry(4.8, 3.2, 4.8), new THREE.MeshStandardMaterial({ color: 0xfef3c7, flatShading: true }));
-    stucco.position.y = 1.9; stucco.castShadow = true; stucco.receiveShadow = true; g.add(stucco);
-    const roof = new THREE.Mesh(new THREE.ConeGeometry(4.6, 2.8, 4), new THREE.MeshStandardMaterial({ color: 0x991b1b, flatShading: true }));
-    roof.position.y = 4.6; roof.rotation.y = Math.PI / 4; roof.castShadow = true; g.add(roof);
-    g.position.set(x, getTerrainHeight(x, z), z);
-    g.rotation.y = angle;
-    scene.add(g);
-  }
-  createTudorHouse(-12, -12, Math.PI / 8);
-  createTudorHouse(14, -8, -Math.PI / 6);
-  createTudorHouse(10, 18, Math.PI / 4);
-
-  // Rotating Windmill
-  const windmillGroup = new THREE.Group();
-  const wmTower = new THREE.Mesh(new THREE.CylinderGeometry(2.0, 3.5, 9, 8), new THREE.MeshStandardMaterial({ color: 0xe2e8f0, flatShading: true }));
-  wmTower.position.y = 4.5; wmTower.castShadow = true; windmillGroup.add(wmTower);
-  const wmRoof = new THREE.Mesh(new THREE.ConeGeometry(2.8, 2.5, 8), new THREE.MeshStandardMaterial({ color: 0x991b1b, flatShading: true }));
-  wmRoof.position.y = 10.2; windmillGroup.add(wmRoof);
-  const sailsGroup = new THREE.Group();
-  for (let i = 0; i < 4; i++) {
-    const sail = new THREE.Mesh(new THREE.BoxGeometry(0.6, 4.5, 0.1), new THREE.MeshStandardMaterial({ color: 0x854d0e }));
-    sail.position.y = 2.2;
-    const arm = new THREE.Group(); arm.rotation.z = (Math.PI / 2) * i;
-    arm.add(sail); sailsGroup.add(arm);
-  }
-  sailsGroup.position.set(0, 8.2, 2.1); windmillGroup.add(sailsGroup);
-  windmillGroup.position.set(-25, getTerrainHeight(-25, -25), -25);
-  scene.add(windmillGroup);
-
-  // Biome Trees
-  function createDetailedTree(x, z, type = 'oak') {
-    const g = new THREE.Group();
-    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.45, 2.2, 5), new THREE.MeshStandardMaterial({ color: 0x543310, flatShading: true }));
-    trunk.position.y = 1.1; trunk.castShadow = true; g.add(trunk);
-    let leafColor = (type === 'pine') ? 0x1b4332 : 0x2e7d32;
-    const leafMat = new THREE.MeshStandardMaterial({ color: leafColor, flatShading: true, roughness: 0.7 });
-    if (type === 'pine') {
-      const c1 = new THREE.Mesh(new THREE.ConeGeometry(1.6, 2.5, 5), leafMat); c1.position.y = 2.5; c1.castShadow = true; g.add(c1);
-      const c2 = new THREE.Mesh(new THREE.ConeGeometry(1.2, 2.0, 5), leafMat); c2.position.y = 3.6; c2.castShadow = true; g.add(c2);
-    } else {
-      const b1 = new THREE.Mesh(new THREE.DodecahedronGeometry(1.7, 1), leafMat); b1.position.y = 2.7; b1.castShadow = true; g.add(b1);
-    }
-    const y = getTerrainHeight(x, z);
-    if (y > 0.5) {
-      g.position.set(x, y, z);
-      scene.add(g);
-    }
-  }
-
-  for (let i = 0; i < 30; i++) {
-    const a = Math.random() * Math.PI * 2, r = 18 + Math.random() * 45;
-    createDetailedTree(Math.cos(a)*r, Math.sin(a)*r, 'oak');
-  }
-  for (let i = 0; i < 35; i++) {
-    const a = Math.random() * Math.PI * 2, r = 10 + Math.random() * 50;
-    createDetailedTree(Math.cos(a)*r, -260 + Math.sin(a)*r, 'pine');
-  }
-
-  // ── 6. NPCS & STORYLINE ─────────────────────────────────────────────────
+  // NPCs
   const npcs = [
     {
       id: 'cedric', name: 'Elder Cedric', role: 'Haven Elder', icon: '🧙‍♂️',
       x: 0, z: -5, island: 1,
       dialogues: [
-        "Welcome to Haven's Sanctuary! The archipelago is fractured. Defeat 3 Meadow Slimes and the Forest Guardian to claim the Sun-Key and unlock the Frostveil Portal!",
-        "Splendid work, hero! The Frostveil Portal to the north is now open!",
-        "May the light protect your journey!"
+        "Welcome to Haven! Follow the stone road, defeat 3 Meadow Slimes and the Sentinel to claim the Sun-Key!",
+        "Splendid work! The northern Frostveil Portal is now unlocked!"
       ]
     },
     {
-      id: 'lyra', name: 'High Priestess Lyra', role: 'Glacial Shrine Maiden', icon: '✨',
+      id: 'lyra', name: 'High Priestess Lyra', role: 'Glacial Maiden', icon: '✨',
       x: 0, z: -230, island: 2,
       dialogues: [
-        "You reached Frostveil! The Glacial Behemoth guards the Keystone to the Caldera. Slay 3 Frost Slimes & the Behemoth to awaken the Portal!",
-        "The Glacial Keystone is yours! Step into the Caldera Portal to face the Titan!",
-        "May the frost empower your blade!"
+        "The Glacial Behemoth guards the Keystone. Defeat it to open the road to Caldera!"
       ]
     }
   ];
@@ -1144,165 +1428,270 @@
     const g = new THREE.Group();
     const body = new THREE.Mesh(new THREE.BoxGeometry(0.6, 1.2, 0.4), new THREE.MeshStandardMaterial({ color: 0x0284c7, flatShading: true }));
     body.position.y = 0.6; body.castShadow = true; g.add(body);
-    const head = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), new THREE.MeshStandardMaterial({ color: 0xffcc99, flatShading: true }));
+    const head = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), new THREE.MeshStandardMaterial({ color: 0xffdbb0, flatShading: true }));
     head.position.y = 1.45; head.castShadow = true; g.add(head);
     g.position.set(npc.x, getTerrainHeight(npc.x, npc.z), npc.z);
     scene.add(g);
     npc.mesh = g;
   });
 
-  // ── 7. HERO PLAYER & MULTI-WEAPON SYSTEM (SWORDS, WANDS, BOWS) ──────────
-  const player = {
-    group: new THREE.Group(),
-    lvl: 1, hp: 100, maxHp: 100,
-    mp: 60, maxMp: 60,
-    sta: 100, maxSta: 100,
-    exp: 0, expNext: 100,
-    atk: 30, matk: 25, def: 10, crit: 15,
-    wood: 50, stone: 30, crystal: 5, gold: 120,
-    kills: 0, currentIsland: 1, skillPoints: 0,
-    heroClass: 'Warrior',
-    weaponType: 'Sword', // 'Sword', 'Wand', 'Bow'
-    isMounted: false,
-    isRolling: false, rollTimer: 0, rollDir: new THREE.Vector3(),
-    combo: 0, comboTimer: 0, attackChainIndex: 0,
-    lungeVelocity: new THREE.Vector3(),
-    lockedTarget: null,
-    walkPhase: 0,
-    activeCooldowns: [0, 0, 0, 0, 0, 0],
-    activeQuestIndex: 0,
-    quests: [
-      { act: "ISLAND I", name: "Haven's Trial", desc: "Speak with Elder Cedric in town square", count: 0, target: 1, done: false },
-      { act: "ISLAND I", name: "Cleansing Haven", desc: "Defeat 3 Meadow Slimes (0/3)", count: 0, target: 3, done: false },
-      { act: "ISLAND I", name: "Forest Guardian", desc: "Slay the Guardian & unlock Frostveil Portal (0/1)", count: 0, target: 1, done: false },
-      { act: "ISLAND II", name: "Frostveil Secrets", desc: "Speak with Priestess Lyra on Island II", count: 0, target: 1, done: false },
-      { act: "ISLAND II", name: "Glacial Behemoth", desc: "Defeat the Behemoth & unlock Caldera Portal (0/1)", count: 0, target: 1, done: false },
-      { act: "ISLAND III", name: "The Ancient Titan", desc: "Defeat the Ancient Magma Titan on Island III (0/1)", count: 0, target: 1, done: false }
-    ],
-    backpack: [
-      { id: 'potion_hp', name: 'Health Flask', icon: '🧪', type: 'consumable', count: 5, effect: 'hp' },
-      { id: 'potion_mp', name: 'Mana Potion', icon: '🫙', type: 'consumable', count: 5, effect: 'mp' },
-      { id: 'iron_ore', name: 'Iron Ingot', icon: '🪨', type: 'material', count: 12 },
-      { id: 'arcane_cryst', name: 'Arcane Gem', icon: '💎', type: 'material', count: 4 },
-      { id: 'sun_blade', name: 'Aethel Blade', icon: '🗡️', type: 'weapon', weaponType: 'Sword', atk: 25 },
-      { id: 'wand_basic', name: 'Apprentice Wand', icon: '🔮', type: 'weapon', weaponType: 'Wand', matk: 30 },
-      { id: 'bow_basic', name: 'Hunter Bow', icon: '🏹', type: 'weapon', weaponType: 'Bow', atk: 28 },
-      { id: 'shield_iron', name: 'Knight Plate', icon: '🛡️', type: 'armor', def: 15 },
-      null, null, null, null, null, null, null, null
-    ]
-  };
-
-  // Articulated Character Geometry
-  const pBody = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.8, 0.4), new THREE.MeshStandardMaterial({ color: 0x1e3a8a, flatShading: true }));
-  pBody.position.y = 0.75; pBody.castShadow = true; player.group.add(pBody);
-
-  const pHead = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.48, 0.48), new THREE.MeshStandardMaterial({ color: 0xffcc99, flatShading: true }));
-  pHead.position.y = 1.38; pHead.castShadow = true; player.group.add(pHead);
-
-  const pHat = new THREE.Mesh(new THREE.ConeGeometry(0.36, 0.6, 5), new THREE.MeshStandardMaterial({ color: 0xf59e0b, flatShading: true }));
-  pHat.position.y = 1.88; player.group.add(pHat);
-
-  const cape = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.9, 0.05), new THREE.MeshStandardMaterial({ color: 0xb91c1c, flatShading: true }));
-  cape.position.set(0, 0.7, -0.22); cape.rotation.x = 0.15; player.group.add(cape);
-
-  const legL = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.55, 0.25), new THREE.MeshStandardMaterial({ color: 0x172554 }));
-  legL.position.set(-0.16, 0.28, 0); player.group.add(legL);
-  const legR = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.55, 0.25), new THREE.MeshStandardMaterial({ color: 0x172554 }));
-  legR.position.set(0.16, 0.28, 0); player.group.add(legR);
-
-  // Weapon Rigs Group
-  const weaponsHolder = new THREE.Group();
-  weaponsHolder.position.set(0.48, 0.8, 0.2);
-  player.group.add(weaponsHolder);
-
-  // 1. Sword Mesh
-  const swordMesh = new THREE.Mesh(
-    new THREE.BoxGeometry(0.12, 1.3, 0.28),
-    new THREE.MeshStandardMaterial({ color: 0xf59e0b, emissive: 0xd97706, emissiveIntensity: 0.6 })
-  );
-  swordMesh.rotation.x = Math.PI / 6;
-  weaponsHolder.add(swordMesh);
-
-  // 2. Wand Mesh with floating glowing gem orb
-  const wandGroup = new THREE.Group();
-  const wandShaft = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.09, 1.1, 6), new THREE.MeshStandardMaterial({ color: 0x543310 }));
-  wandShaft.rotation.x = Math.PI / 6; wandGroup.add(wandShaft);
-  const wandOrb = new THREE.Mesh(new THREE.DodecahedronGeometry(0.22, 1), new THREE.MeshStandardMaterial({ color: 0x60a5fa, emissive: 0x3b82f6, emissiveIntensity: 0.9 }));
-  wandOrb.position.set(0, 0.6, -0.3); wandGroup.add(wandOrb);
-  wandGroup.visible = false;
-  weaponsHolder.add(wandGroup);
-
-  // 3. Bow Mesh
-  const bowGroup = new THREE.Group();
-  const bowArc = new THREE.Mesh(new THREE.TorusGeometry(0.6, 0.05, 6, 12, Math.PI * 0.8), new THREE.MeshStandardMaterial({ color: 0x854d0e }));
-  bowArc.rotation.z = Math.PI / 2; bowGroup.add(bowArc);
-  bowGroup.visible = false;
-  weaponsHolder.add(bowGroup);
-
-  function updateEquippedWeaponModel(type) {
-    player.weaponType = type;
-    swordMesh.visible = (type === 'Sword');
-    wandGroup.visible = (type === 'Wand');
-    bowGroup.visible = (type === 'Bow');
-    document.getElementById('char-weapon-type').textContent = type;
-    const icon = (type === 'Wand') ? '🔮' : ((type === 'Bow') ? '🏹' : '⚔️');
-    document.getElementById('slot-icon-0').textContent = icon;
-  }
-
-  // Direwolf Mount
-  const mountGroup = new THREE.Group();
-  const mBody = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.8, 1.9), new THREE.MeshStandardMaterial({ color: 0x475569, flatShading: true }));
-  mBody.position.y = 0.6; mountGroup.add(mBody);
-  const mHead = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.6, 0.8), new THREE.MeshStandardMaterial({ color: 0x334155, flatShading: true }));
-  mHead.position.set(0, 1.1, 1.05); mountGroup.add(mHead);
-  mountGroup.visible = false;
-  player.group.add(mountGroup);
-
-  player.group.position.set(0, getTerrainHeight(0, 0), 0);
-  scene.add(player.group);
-
-  // ── 8. 3D VFX & PROJECTILE ENGINE ───────────────────────────────────────
-  const activeVFXParticles = [];
-  const activeSlashTrails = [];
-
-  function spawnSparkBurst(pos, colorHex = 0xf59e0b, count = 12) {
-    for (let i = 0; i < count; i++) {
-      const p = new THREE.Mesh(
-        new THREE.SphereGeometry(0.08 + Math.random()*0.08, 4, 4),
-        new THREE.MeshBasicMaterial({ color: colorHex })
-      );
-      p.position.copy(pos);
-      const vel = new THREE.Vector3(
-        (Math.random() - 0.5) * 8,
-        Math.random() * 6 + 1.5,
-        (Math.random() - 0.5) * 8
-      );
-      scene.add(p);
-      activeVFXParticles.push({ mesh: p, vel: vel, life: 0.45 + Math.random()*0.3 });
+  // ── 8. COMBAT, WEAPON ATTACKS & SMOOTH KEYFRAME ANIMATIONS ──────────────
+  function toggleTargetLock() {
+    if (player.lockedTarget) {
+      player.lockedTarget = null;
+      document.getElementById('lockon-reticle').style.display = 'none';
+      return;
+    }
+    let nearest = null, minDist = 28;
+    monsters.forEach(m => {
+      const d = Math.hypot(m.x - player.group.position.x, m.z - player.group.position.z);
+      if (d < minDist) { minDist = d; nearest = m; }
+    });
+    if (nearest) {
+      player.lockedTarget = nearest;
+      showToast(`🎯 Target Locked: ${nearest.name}`);
     }
   }
 
-  function spawnSlashArc(origin, rotY, color = 0xfde047) {
-    const arcGeo = new THREE.RingGeometry(1.6, 2.4, 16, 1, 0, Math.PI * 0.75);
-    const arcMat = new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 0.85, side: THREE.DoubleSide });
-    const arcMesh = new THREE.Mesh(arcGeo, arcMat);
-    arcMesh.position.copy(origin).add(new THREE.Vector3(0, 1.0, 0));
-    arcMesh.rotation.x = Math.PI / 2;
-    arcMesh.rotation.z = rotY;
-    scene.add(arcMesh);
-    activeSlashTrails.push({ mesh: arcMesh, life: 0.22 });
+  function castSkill(slot) {
+    if (player.activeCooldowns[slot] > 0) return;
+    const manaCosts = [0, 15, 20, 25, 30];
+    const cost = manaCosts[slot] || 0;
+    if (player.mp < cost) { showToast("⚠️ Not enough Mana!"); return; }
+    player.mp -= cost;
+    updateVitalsHUD();
+
+    let fwd = new THREE.Vector3(-Math.sin(playerYaw), 0, -Math.cos(playerYaw));
+    if (player.lockedTarget) {
+      const tVec = new THREE.Vector3(player.lockedTarget.x - player.group.position.x, 0, player.lockedTarget.z - player.group.position.z).normalize();
+      fwd.copy(tVec);
+    }
+
+    if (slot === 0) {
+      // Main Hand Weapon Attack
+      player.activeCooldowns[0] = 0.32;
+      player.isAttacking = true;
+      player.attackProgress = 0;
+      player.attackChainIndex = (player.attackChainIndex + 1) % 3;
+
+      // Lunge forward towards target
+      player.lungeVelocity.copy(fwd).multiplyScalar(13.5);
+
+      if (player.weaponType === 'Wand') {
+        spawnSpellProjectile('wand_bolt', player.group.position.clone().add(new THREE.Vector3(0, 1.2, 0)), fwd);
+      } else if (player.weaponType === 'Bow') {
+        spawnSpellProjectile('arrow', player.group.position.clone().add(new THREE.Vector3(0, 1.2, 0)), fwd);
+      } else {
+        // Sword Forward Slash Arc Ribbon
+        spawnForwardSlashArc(player.group.position, playerYaw, (player.attackChainIndex === 2) ? 0xef4444 : 0xfde047);
+        
+        // Damage Check in Front Cone
+        monsters.forEach(m => {
+          if (Math.hypot(m.x - player.group.position.x, m.z - player.group.position.z) < 5.2) {
+            player.combo++;
+            player.comboTimer = 3.5;
+            const isCrit = Math.random() < (player.crit / 100);
+            const mult = (player.attackChainIndex === 2) ? 1.6 : 1.0;
+            const dmg = Math.round(player.atk * mult * (1 + Math.min(1.0, player.combo * 0.05)) * (isCrit ? 1.8 : 1.0));
+            damageMonster(m, dmg, isCrit);
+            spawnSparkBurst(m.mesh.position, isCrit ? 0xfde047 : 0xf97316, 14);
+          }
+        });
+      }
+    } else if (slot === 1) {
+      player.activeCooldowns[1] = 1.2;
+      spawnSpellProjectile('fireball', player.group.position.clone().add(new THREE.Vector3(0, 1.2, 0)), fwd);
+    } else if (slot === 2) {
+      player.activeCooldowns[2] = 3.5;
+      spawnSparkBurst(player.group.position, 0x38bdf8, 20);
+      monsters.forEach(m => {
+        if (Math.hypot(m.x - player.group.position.x, m.z - player.group.position.z) < 9.0) {
+          damageMonster(m, Math.round(player.matk * 1.0), false, '#38bdf8');
+          m.state = 'frozen';
+          setTimeout(() => { if (m.state === 'frozen') m.state = 'chase'; }, 3000);
+        }
+      });
+    } else if (slot === 3) {
+      player.activeCooldowns[3] = 2.5;
+      monsters.filter(m => Math.hypot(m.x - player.group.position.x, m.z - player.group.position.z) < 14).slice(0, 3).forEach(m => {
+        damageMonster(m, Math.round(player.matk * 1.4), true, '#facc15');
+        spawnSparkBurst(m.mesh.position, 0xfacc15, 14);
+      });
+    } else if (slot === 4) {
+      player.activeCooldowns[4] = 4.0;
+      spawnForwardSlashArc(player.group.position, playerYaw, 0xf59e0b);
+      spawnForwardSlashArc(player.group.position, playerYaw + Math.PI, 0xf59e0b);
+      monsters.forEach(m => {
+        if (Math.hypot(m.x - player.group.position.x, m.z - player.group.position.z) < 7.0) {
+          damageMonster(m, Math.round(player.atk * 1.5), true, '#f59e0b');
+          spawnSparkBurst(m.mesh.position, 0xf59e0b, 10);
+        }
+      });
+    }
   }
 
-  function triggerScreenShake(intensity = 0.4) {
-    let elapsed = 0;
-    const interval = setInterval(() => {
-      elapsed += 0.03;
-      if (elapsed > 0.25) clearInterval(interval);
-      else {
-        camera.position.x += (Math.random() - 0.5) * intensity;
-        camera.position.y += (Math.random() - 0.5) * intensity;
+  function spawnSpellProjectile(type, origin, dir) {
+    let pMesh;
+    if (type === 'arrow') {
+      pMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 1.2, 4), new THREE.MeshBasicMaterial({ color: 0xfef08a }));
+      pMesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir);
+    } else if (type === 'wand_bolt') {
+      pMesh = new THREE.Mesh(new THREE.SphereGeometry(0.24, 6, 6), new THREE.MeshBasicMaterial({ color: 0x60a5fa }));
+    } else {
+      pMesh = new THREE.Mesh(new THREE.SphereGeometry(0.35, 6, 6), new THREE.MeshBasicMaterial({ color: 0xf97316 }));
+    }
+    pMesh.position.copy(origin);
+    scene.add(pMesh);
+    activeProjectiles.push({ type: type, mesh: pMesh, dir: dir.clone().normalize(), speed: (type === 'arrow' ? 38 : 24), life: 2.5 });
+  }
+
+  function damageMonster(m, dmg, isCrit = false, color = '#f59e0b') {
+    m.hp -= dmg;
+    showDamage(dmg, m.mesh.position, isCrit, color);
+
+    if (m.isBoss) {
+      document.getElementById('boss-bar-wrap').style.display = 'flex';
+      document.getElementById('boss-title-text').textContent = "👑 " + m.name.toUpperCase() + " 👑";
+      document.getElementById('boss-fill').style.width = Math.max(0, (m.hp / m.maxHp * 100)) + '%';
+    }
+
+    m.state = 'chase';
+    if (m.hp <= 0) {
+      if (player.lockedTarget === m) {
+        player.lockedTarget = null;
+        document.getElementById('lockon-reticle').style.display = 'none';
       }
-    }, 30);
+      player.kills++;
+      player.exp += m.exp;
+      player.gold += m.isBoss ? 150 : 20;
+      document.getElementById('char-kills').textContent = player.kills;
+      document.getElementById('res-gold').textContent = player.gold;
+      
+      // Level Up Check
+      if (player.exp >= player.expNext) {
+        player.lvl++;
+        player.exp -= player.expNext;
+        player.expNext = Math.round(player.expNext * 1.5);
+        player.maxHp += 20; player.hp = player.maxHp;
+        player.maxMp += 15; player.mp = player.maxMp;
+        player.atk += 8; player.matk += 6; player.def += 3;
+        player.skillPoints++;
+        document.getElementById('hero-lvl-badge').textContent = 'LV ' + player.lvl;
+        document.getElementById('char-lvl').textContent = player.lvl;
+        document.getElementById('char-atk').textContent = player.atk;
+        document.getElementById('char-matk').textContent = player.matk;
+        document.getElementById('sp-count').textContent = player.skillPoints;
+        showToast(`⭐ LEVEL UP! REACHED LEVEL ${player.lvl}! ⭐`);
+      }
+
+      document.getElementById('exp-ribbon-fill').style.width = Math.min(100, (player.exp / player.expNext * 100)) + '%';
+      
+      scene.remove(m.mesh);
+      monsters.splice(monsters.indexOf(m), 1);
+
+      if (m.isBoss) {
+        document.getElementById('boss-bar-wrap').style.display = 'none';
+        if (m.type === 'guardian') {
+          portals[0].unlocked = true;
+          player.activeQuestIndex = 3;
+          updateQuestHUD();
+          showToast("✨ SUN-KEY CLAIMED! Frostveil Portal UNLOCKED!");
+        } else if (m.type === 'behemoth') {
+          portals[1].unlocked = true;
+          player.activeQuestIndex = 5;
+          updateQuestHUD();
+          showToast("✨ GLACIAL KEYSTONE CLAIMED! Caldera Portal UNLOCKED!");
+        } else if (m.type === 'titan') {
+          showToast("🏆 VICTORY! LOW POLY WORLD IS RESTORED!");
+        }
+      } else {
+        if (player.activeQuestIndex === 1) {
+          player.quests[1].count++;
+          updateQuestHUD();
+          if (player.quests[1].count >= 3) {
+            player.activeQuestIndex = 2;
+            updateQuestHUD();
+            showToast("📜 QUEST: Vanquish the Sentinel at Portal I!");
+          }
+        }
+      }
+    }
+  }
+
+  function showDamage(val, pos, isCrit = false, color = '#f59e0b') {
+    const v = pos.clone().project(camera);
+    if (v.z > 1) return;
+    const el = document.createElement('div');
+    el.className = 'dmg-popup';
+    el.textContent = (isCrit ? "CRIT! " : "") + val;
+    el.style.left = (v.x * 0.5 + 0.5) * innerWidth + 'px';
+    el.style.top = (-(v.y * 0.5) + 0.5) * innerHeight + 'px';
+    el.style.color = isCrit ? '#fde047' : color;
+    el.style.fontSize = isCrit ? '20px' : '14px';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 750);
+  }
+
+  function showToast(txt) {
+    const t = document.getElementById('toast-msg');
+    t.textContent = txt; t.style.display = 'block';
+    setTimeout(() => t.style.display = 'none', 3200);
+  }
+
+  function updateVitalsHUD() {
+    document.getElementById('hp-fill').style.width = (player.hp / player.maxHp * 100) + '%';
+    document.getElementById('hp-val').textContent = Math.round(player.hp) + ' / ' + player.maxHp;
+    document.getElementById('mp-fill').style.width = (player.mp / player.maxMp * 100) + '%';
+    document.getElementById('mp-val').textContent = Math.round(player.mp) + ' / ' + player.maxMp;
+    document.getElementById('sta-fill').style.width = (player.sta / player.maxSta * 100) + '%';
+  }
+
+  function updateQuestHUD() {
+    const q = player.quests[player.activeQuestIndex];
+    if (q) {
+      document.getElementById('track-act-tag').textContent = q.act + " · MAIN QUEST";
+      document.getElementById('track-quest-title').textContent = q.name;
+      let objTxt = q.desc;
+      if (q.target) {
+        objTxt = `${q.desc.split('(')[0]} (${q.count}/${q.target})`;
+      }
+      document.getElementById('track-obj-text').textContent = objTxt;
+    }
+  }
+
+  function toggleMount() {
+    player.isMounted = !player.isMounted;
+    mountGroup.visible = player.isMounted;
+    showToast(player.isMounted ? "🐺 Mounted Direwolf (+60% Speed)!" : "Dismounted.");
+  }
+
+  function triggerDodgeRoll() {
+    if (player.sta >= 25 && !player.isRolling) {
+      player.sta -= 25;
+      player.isRolling = true;
+      player.rollTimer = 0.35;
+      const fwd = new THREE.Vector3(-Math.sin(playerYaw), 0, -Math.cos(playerYaw));
+      player.rollDir.copy(fwd);
+    }
+  }
+
+  function teleportTo(x, z, islandNum, name) {
+    player.group.position.set(x, getTerrainHeight(x, z), z);
+    player.currentIsland = islandNum;
+    document.getElementById('current-zone-name').textContent = `Island ${islandNum}: ${name}`;
+    showToast(`🌀 Arrived at Island ${islandNum}: ${name}!`);
+    closeModals();
+  }
+
+  function fastTravel(islandNum) {
+    if (islandNum === 1) teleportTo(0, 0, 1, "Haven's Sanctuary");
+    else if (islandNum === 2) {
+      if (!portals[0].unlocked) { showToast("🔒 Slay the Forest Guardian to unlock Frostveil!"); return; }
+      teleportTo(0, -210, 2, "Frostveil Peak");
+    } else if (islandNum === 3) {
+      if (!portals[1].unlocked) { showToast("🔒 Slay the Glacial Behemoth to unlock Caldera!"); return; }
+      teleportTo(0, 210, 3, "Infernal Caldera");
+    }
   }
 
   // Render Backpack
@@ -1336,7 +1725,6 @@
         player.mp = Math.min(player.maxMp, player.mp + 40);
         showToast("✨ Restored 40 MP!");
       }
-      sfx.playItem();
       item.count--;
       if (item.count <= 0) player.backpack[idx] = null;
       updateVitalsHUD();
@@ -1344,386 +1732,14 @@
     } else if (item.type === 'weapon') {
       if (item.weaponType) updateEquippedWeaponModel(item.weaponType);
       player.atk += item.atk || 10;
-      player.matk += item.matk || 10;
       document.getElementById('char-atk').textContent = player.atk;
-      document.getElementById('char-matk').textContent = player.matk;
       document.getElementById('eq-main-name').textContent = item.name;
-      document.getElementById('eq-main-icon').textContent = item.icon;
-      sfx.playFanfare();
       showToast(`⚔️ Equipped ${item.name}!`);
       renderBackpack();
     }
   }
 
-  // ── 9. MONSTERS & BOSSES ACROSS 3 ISLANDS ───────────────────────────────
-  const monsters = [];
-  const activeProjectiles = [];
-  const activeLootItems = [];
-
-  function createMonsterMesh(type, scale = 1.0) {
-    const g = new THREE.Group();
-    if (type === 'slime') {
-      const body = new THREE.Mesh(new THREE.DodecahedronGeometry(0.9, 1), new THREE.MeshStandardMaterial({ color: 0x22c55e, flatShading: true, roughness: 0.4 }));
-      body.position.y = 0.7; body.castShadow = true; g.add(body);
-    } else if (type === 'frost_slime') {
-      const body = new THREE.Mesh(new THREE.DodecahedronGeometry(0.9, 1), new THREE.MeshStandardMaterial({ color: 0x38bdf8, emissive: 0x0284c7, emissiveIntensity: 0.4, flatShading: true }));
-      body.position.y = 0.7; body.castShadow = true; g.add(body);
-    } else if (type === 'guardian') {
-      const trunk = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.6, 4.2, 6), new THREE.MeshStandardMaterial({ color: 0x451a03, flatShading: true }));
-      trunk.position.y = 2.1; trunk.castShadow = true; g.add(trunk);
-      const canopy = new THREE.Mesh(new THREE.DodecahedronGeometry(2.2, 0), new THREE.MeshStandardMaterial({ color: 0x14532d }));
-      canopy.position.y = 4.8; g.add(canopy);
-    } else if (type === 'behemoth') {
-      const body = new THREE.Mesh(new THREE.BoxGeometry(3.0, 3.5, 3.0), new THREE.MeshStandardMaterial({ color: 0x93c5fd, emissive: 0x1d4ed8, emissiveIntensity: 0.5, flatShading: true }));
-      body.position.y = 2.4; body.castShadow = true; g.add(body);
-    } else if (type === 'titan') {
-      const torso = new THREE.Mesh(new THREE.BoxGeometry(2.8, 3.6, 2.2), new THREE.MeshStandardMaterial({ color: 0x1c1917, emissive: 0xef4444, emissiveIntensity: 0.6, flatShading: true }));
-      torso.position.y = 3.0; torso.castShadow = true; g.add(torso);
-      const head = new THREE.Mesh(new THREE.DodecahedronGeometry(1.2, 0), new THREE.MeshStandardMaterial({ color: 0x450a0a, flatShading: true }));
-      head.position.y = 5.4; g.add(head);
-    }
-    g.scale.set(scale, scale, scale);
-    return g;
-  }
-
-  function spawnMob(name, type, hp, dmg, exp, x, z, scale = 0.8, isBoss = false) {
-    const mesh = createMonsterMesh(type, scale);
-    const y = Math.max(0.5, getTerrainHeight(x, z));
-    mesh.position.set(x, y, z);
-    scene.add(mesh);
-    monsters.push({ name, type, hp, maxHp: hp, dmg, exp, mesh, x, z, y, isBoss, state: 'wander', atkCd: 0, speed: isBoss ? 4.5 : 4.0 });
-  }
-
-  for (let i = 0; i < 8; i++) spawnMob("Meadow Slime", "slime", 50, 6, 25, (Math.random()-0.5)*50, (Math.random()-0.5)*50 + 15, 0.75);
-  spawnMob("Gloom Treant Sentinel", "guardian", 450, 16, 250, 0, 38, 1.2, true);
-
-  for (let i = 0; i < 8; i++) spawnMob("Frost Slime", "frost_slime", 120, 14, 60, (Math.random()-0.5)*60, -260 + (Math.random()-0.5)*60, 0.8);
-  spawnMob("Glacial Behemoth", "behemoth", 1200, 32, 800, 0, -285, 1.4, true);
-
-  spawnMob("Ancient Magma Titan", "titan", 3800, 55, 3000, 0, 260, 2.6, true);
-
-  function spawn3DLoot(x, y, z) {
-    const g = new THREE.Mesh(
-      new THREE.DodecahedronGeometry(0.35, 0),
-      new THREE.MeshStandardMaterial({ color: 0xfbbf24, emissive: 0xd97706, emissiveIntensity: 0.8 })
-    );
-    g.position.set(x, y + 0.4, z);
-    scene.add(g);
-    activeLootItems.push({ mesh: g, x: x, y: y + 0.4, z: z });
-  }
-
-  function spawnSpellProjectile(type, origin, dir) {
-    let pMesh;
-    if (type === 'arrow') {
-      pMesh = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.04, 0.04, 1.2, 4),
-        new THREE.MeshBasicMaterial({ color: 0xfef08a })
-      );
-      pMesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir);
-    } else if (type === 'wand_bolt') {
-      pMesh = new THREE.Mesh(
-        new THREE.SphereGeometry(0.24, 6, 6),
-        new THREE.MeshBasicMaterial({ color: 0x60a5fa })
-      );
-    } else {
-      pMesh = new THREE.Mesh(
-        new THREE.SphereGeometry(type === 'meteor' ? 0.9 : 0.35, 6, 6),
-        new THREE.MeshBasicMaterial({ color: type === 'fireball' ? 0xf97316 : (type === 'frost' ? 0x38bdf8 : 0xfacc15) })
-      );
-    }
-    pMesh.position.copy(origin);
-    scene.add(pMesh);
-    activeProjectiles.push({ type: type, mesh: pMesh, dir: dir.clone().normalize(), speed: (type === 'arrow' ? 38 : 24), life: 2.5 });
-  }
-
-  function toggleTargetLock() {
-    if (player.lockedTarget) {
-      player.lockedTarget = null;
-      document.getElementById('lockon-reticle').style.display = 'none';
-      return;
-    }
-    let nearest = null, minDist = 28;
-    monsters.forEach(m => {
-      const d = Math.hypot(m.x - player.group.position.x, m.z - player.group.position.z);
-      if (d < minDist) { minDist = d; nearest = m; }
-    });
-    if (nearest) {
-      player.lockedTarget = nearest;
-      sfx.playLockOn();
-      showToast(`🎯 Locked on: ${nearest.name}`);
-    }
-  }
-
-  function castSkill(slot) {
-    if (player.activeCooldowns[slot] > 0) return;
-    const manaCosts = [0, 15, 20, 25, 30, 50];
-    const cost = manaCosts[slot] || 0;
-    if (player.mp < cost) { showToast("⚠️ Not enough Mana!"); return; }
-    player.mp -= cost;
-    updateVitalsHUD();
-
-    let fwd = new THREE.Vector3(-Math.sin(playerYaw), 0, -Math.cos(playerYaw));
-    if (player.lockedTarget) {
-      const tVec = new THREE.Vector3(player.lockedTarget.x - player.group.position.x, 0, player.lockedTarget.z - player.group.position.z).normalize();
-      fwd.copy(tVec);
-    }
-
-    if (slot === 0) {
-      if (player.weaponType === 'Wand') {
-        // Wand Magic Bolt
-        player.activeCooldowns[0] = 0.28;
-        sfx.playWandBolt();
-        wandGroup.rotation.x = -Math.PI / 4;
-        setTimeout(() => wandGroup.rotation.x = 0, 150);
-        spawnSpellProjectile('wand_bolt', player.group.position.clone().add(new THREE.Vector3(0, 1.2, 0)), fwd);
-      } else if (player.weaponType === 'Bow') {
-        // Bow Arrow Shot
-        player.activeCooldowns[0] = 0.35;
-        sfx.playBowShot();
-        bowGroup.rotation.y = Math.PI / 4;
-        setTimeout(() => bowGroup.rotation.y = 0, 180);
-        spawnSpellProjectile('arrow', player.group.position.clone().add(new THREE.Vector3(0, 1.2, 0)), fwd);
-      } else {
-        // Sword 3-Hit Combo Chain & Lunge
-        player.activeCooldowns[0] = 0.32;
-        player.attackChainIndex = (player.attackChainIndex + 1) % 3;
-        player.lungeVelocity.copy(fwd).multiplyScalar(14.0);
-
-        const chain = player.attackChainIndex;
-        if (chain === 0) {
-          sfx.playSwing(1.2);
-          swordMesh.rotation.set(0, 1.4, -1.2);
-          spawnSlashArc(player.group.position, playerYaw, 0xfde047);
-        } else if (chain === 1) {
-          sfx.playSwing(1.4);
-          swordMesh.rotation.set(-1.6, 0, 0.8);
-          spawnSlashArc(player.group.position, playerYaw + Math.PI/4, 0xf97316);
-        } else {
-          sfx.playHeavyHit();
-          swordMesh.rotation.set(2.2, 0, 0);
-          triggerScreenShake(0.35);
-          spawnSlashArc(player.group.position, playerYaw - Math.PI/4, 0xef4444);
-          spawnSparkBurst(player.group.position.clone().add(fwd.clone().multiplyScalar(2)), 0xf59e0b, 18);
-        }
-        setTimeout(() => swordMesh.rotation.set(Math.PI / 6, 0, 0), 180);
-
-        monsters.forEach(m => {
-          if (Math.hypot(m.x - player.group.position.x, m.z - player.group.position.z) < 5.2) {
-            player.combo++;
-            player.comboTimer = 3.5;
-            const isCrit = Math.random() < (player.crit / 100);
-            const mult = (chain === 2) ? 1.6 : 1.0;
-            const dmg = Math.round(player.atk * mult * (1 + Math.min(1.0, player.combo * 0.05)) * (isCrit ? 1.8 : 1.0));
-            damageMonster(m, dmg, isCrit);
-            spawnSparkBurst(m.mesh.position, isCrit ? 0xfde047 : 0xf97316, 12);
-          }
-        });
-      }
-    } else if (slot === 1) {
-      player.activeCooldowns[1] = 1.2;
-      sfx.playMagic();
-      spawnSpellProjectile('fireball', player.group.position.clone().add(new THREE.Vector3(0, 1.2, 0)), fwd);
-    } else if (slot === 2) {
-      player.activeCooldowns[2] = 3.5;
-      sfx.playMagic();
-      triggerScreenShake(0.2);
-      spawnSparkBurst(player.group.position, 0x38bdf8, 20);
-      monsters.forEach(m => {
-        if (Math.hypot(m.x - player.group.position.x, m.z - player.group.position.z) < 9.0) {
-          damageMonster(m, Math.round(player.matk * 1.0), false, '#38bdf8');
-          m.state = 'frozen';
-          setTimeout(() => { if (m.state === 'frozen') m.state = 'chase'; }, 3000);
-        }
-      });
-    } else if (slot === 3) {
-      player.activeCooldowns[3] = 2.5;
-      sfx.playMagic();
-      monsters.filter(m => Math.hypot(m.x - player.group.position.x, m.z - player.group.position.z) < 14).slice(0, 3).forEach(m => {
-        damageMonster(m, Math.round(player.matk * 1.4), true, '#facc15');
-        spawnSparkBurst(m.mesh.position, 0xfacc15, 14);
-      });
-    } else if (slot === 4) {
-      player.activeCooldowns[4] = 4.0;
-      sfx.playSwing();
-      spawnSlashArc(player.group.position, 0, 0xf59e0b);
-      spawnSlashArc(player.group.position, Math.PI, 0xf59e0b);
-      monsters.forEach(m => {
-        if (Math.hypot(m.x - player.group.position.x, m.z - player.group.position.z) < 7.0) {
-          damageMonster(m, Math.round(player.atk * 1.5), true, '#f59e0b');
-          spawnSparkBurst(m.mesh.position, 0xf59e0b, 10);
-        }
-      });
-    } else if (slot === 5) {
-      player.activeCooldowns[5] = 7.0;
-      const targetPos = player.group.position.clone().add(fwd.clone().multiplyScalar(12));
-      spawnSpellProjectile('meteor', targetPos.clone().add(new THREE.Vector3(4, 25, 4)), new THREE.Vector3(-0.2, -1, -0.2));
-    }
-  }
-
-  function damageMonster(m, dmg, isCrit = false, color = '#f59e0b') {
-    m.hp -= dmg;
-    sfx.playHit();
-    showDamage(dmg, m.mesh.position, isCrit, color);
-
-    if (m.isBoss) {
-      document.getElementById('boss-bar-wrap').style.display = 'flex';
-      document.getElementById('boss-title-text').textContent = "👑 " + m.name.toUpperCase() + " 👑";
-      document.getElementById('boss-fill').style.width = Math.max(0, (m.hp / m.maxHp * 100)) + '%';
-    }
-
-    m.state = 'chase';
-    if (m.hp <= 0) {
-      if (player.lockedTarget === m) {
-        player.lockedTarget = null;
-        document.getElementById('lockon-reticle').style.display = 'none';
-      }
-      player.kills++;
-      player.exp += m.exp;
-      player.gold += m.isBoss ? 150 : 20;
-      document.getElementById('char-kills').textContent = player.kills;
-      document.getElementById('res-gold').textContent = player.gold;
-      
-      // Level Up Logic
-      if (player.exp >= player.expNext) {
-        player.lvl++;
-        player.exp -= player.expNext;
-        player.expNext = Math.round(player.expNext * 1.5);
-        player.maxHp += 20; player.hp = player.maxHp;
-        player.maxMp += 15; player.mp = player.maxMp;
-        player.atk += 8; player.matk += 6; player.def += 3;
-        player.skillPoints++;
-        document.getElementById('hero-lvl-badge').textContent = 'LV ' + player.lvl;
-        document.getElementById('char-lvl').textContent = player.lvl;
-        document.getElementById('char-atk').textContent = player.atk;
-        document.getElementById('char-matk').textContent = player.matk;
-        document.getElementById('sp-count').textContent = player.skillPoints;
-        sfx.playFanfare();
-        showToast(`⭐ LEVEL UP! LEVEL ${player.lvl}! +Stats & Skill Point! ⭐`);
-      }
-
-      document.getElementById('exp-ribbon-fill').style.width = Math.min(100, (player.exp / player.expNext * 100)) + '%';
-      
-      spawn3DLoot(m.x, m.y, m.z);
-      scene.remove(m.mesh);
-      monsters.splice(monsters.indexOf(m), 1);
-
-      if (m.isBoss) {
-        document.getElementById('boss-bar-wrap').style.display = 'none';
-        sfx.playFanfare();
-
-        if (m.type === 'guardian') {
-          portals[0].unlocked = true;
-          player.activeQuestIndex = 3;
-          updateQuestHUD();
-          showToast("✨ SUN-KEY UNLOCKED! Frostveil Portal is now ACTIVE!");
-        } else if (m.type === 'behemoth') {
-          portals[1].unlocked = true;
-          player.activeQuestIndex = 5;
-          updateQuestHUD();
-          showToast("✨ GLACIAL KEYSTONE UNLOCKED! Caldera Portal is ACTIVE!");
-        } else if (m.type === 'titan') {
-          showToast("🏆 VICTORY! REALM OF AETHELGARD IS RESTORED!");
-        }
-      } else {
-        if (player.activeQuestIndex === 1) {
-          player.quests[1].count++;
-          updateQuestHUD();
-          if (player.quests[1].count >= 3) {
-            player.activeQuestIndex = 2;
-            updateQuestHUD();
-            sfx.playFanfare();
-            showToast("📜 QUEST: Slay the Forest Guardian at Portal I!");
-          }
-        }
-      }
-    }
-  }
-
-  function showDamage(val, pos, isCrit = false, color = '#f59e0b') {
-    const v = pos.clone().project(camera);
-    if (v.z > 1) return;
-    const el = document.createElement('div');
-    el.className = 'dmg-popup';
-    el.textContent = (isCrit ? "CRIT! " : "") + val;
-    el.style.left = (v.x * 0.5 + 0.5) * innerWidth + 'px';
-    el.style.top = (-(v.y * 0.5) + 0.5) * innerHeight + 'px';
-    el.style.color = isCrit ? '#fde047' : color;
-    el.style.fontSize = isCrit ? '22px' : '15px';
-    document.body.appendChild(el);
-    setTimeout(() => el.remove(), 800);
-  }
-
-  function showToast(txt) {
-    const t = document.getElementById('toast-msg');
-    t.textContent = txt; t.style.display = 'block';
-    setTimeout(() => t.style.display = 'none', 3500);
-  }
-
-  function updateVitalsHUD() {
-    document.getElementById('hp-fill').style.width = (player.hp / player.maxHp * 100) + '%';
-    document.getElementById('hp-val').textContent = Math.round(player.hp) + ' / ' + player.maxHp;
-    document.getElementById('mp-fill').style.width = (player.mp / player.maxMp * 100) + '%';
-    document.getElementById('mp-val').textContent = Math.round(player.mp) + ' / ' + player.maxMp;
-    document.getElementById('sta-fill').style.width = (player.sta / player.maxSta * 100) + '%';
-  }
-
-  function updateQuestHUD() {
-    const q = player.quests[player.activeQuestIndex];
-    if (q) {
-      document.getElementById('track-act-tag').textContent = q.act + " · MAIN QUEST";
-      document.getElementById('track-quest-title').textContent = q.name;
-      let objTxt = q.desc;
-      let pct = 25;
-      if (q.target) {
-        pct = Math.min(100, Math.round((q.count / q.target) * 100));
-        objTxt = `${q.desc.split('(')[0]} (${q.count}/${q.target})`;
-      }
-      document.getElementById('track-obj-text').textContent = objTxt;
-      document.getElementById('track-prog-fill').style.width = pct + '%';
-    }
-  }
-
-  function toggleMount() {
-    player.isMounted = !player.isMounted;
-    mountGroup.visible = player.isMounted;
-    sfx.playMount();
-    showToast(player.isMounted ? "🐺 Mounted Direwolf (+60% Speed)!" : "Dismounted.");
-  }
-
-  function triggerDodgeRoll() {
-    if (player.sta >= 25 && !player.isRolling) {
-      player.sta -= 25;
-      player.isRolling = true;
-      player.rollTimer = 0.35;
-      const fwd = new THREE.Vector3(-Math.sin(playerYaw), 0, -Math.cos(playerYaw));
-      player.rollDir.copy(fwd);
-      sfx.playRoll();
-    }
-  }
-
-  // Fast Travel / Portal Jump
-  function teleportTo(x, z, islandNum, name) {
-    sfx.playTeleport();
-    player.group.position.set(x, getTerrainHeight(x, z), z);
-    player.currentIsland = islandNum;
-    document.getElementById('current-zone-name').textContent = `Island ${islandNum}: ${name}`;
-    document.getElementById('char-island').textContent = `Island ${islandNum}: ${name}`;
-    showToast(`🌀 Arrived at Island ${islandNum}: ${name}!`);
-    closeModals();
-  }
-
-  function fastTravel(islandNum) {
-    if (islandNum === 1) teleportTo(0, 0, 1, "Haven's Sanctuary");
-    else if (islandNum === 2) {
-      if (!portals[0].unlocked) { showToast("🔒 Unlock Frostveil first by defeating Forest Guardian!"); return; }
-      teleportTo(0, -210, 2, "Frostveil Peak");
-    } else if (islandNum === 3) {
-      if (!portals[1].unlocked) { showToast("🔒 Unlock Caldera first by defeating Glacial Behemoth!"); return; }
-      teleportTo(0, 210, 3, "Infernal Caldera");
-    }
-  }
-
-  // ── 10. GAME STATE & DIALOGUE ───────────────────────────────────────────
+  // ── 9. GAME STATE & DIALOGUE ────────────────────────────────────────────
   let gameState = 'MENU';
   let spawnProgress = 0;
   let yaw = 0, pitch = 0.2;
@@ -1733,7 +1749,6 @@
   let cameraZoomDistance = 7.0;
   let activeDialogueNPC = null;
   let activePortalNear = null;
-  let activeChestNear = null;
 
   function selectClass(cls) {
     player.heroClass = cls;
@@ -1748,7 +1763,6 @@
   }
 
   function startAdventure() {
-    sfx.playFanfare();
     document.getElementById('main-menu').classList.add('hidden');
     document.getElementById('cinematic-bars').classList.add('active');
     document.getElementById('act-banner').classList.add('show');
@@ -1762,7 +1776,7 @@
       document.getElementById('cinematic-bars').classList.remove('active');
       document.getElementById('hud').classList.add('active');
       gameState = 'PLAYING';
-    }, 1800);
+    }, 1600);
   }
 
   function openDialogue(npc) {
@@ -1778,13 +1792,7 @@
     if (activeDialogueNPC && activeDialogueNPC.id === 'cedric' && player.activeQuestIndex === 0) {
       player.activeQuestIndex = 1;
       updateQuestHUD();
-      sfx.playFanfare();
       showToast("📜 NEW QUEST: Slay 3 Meadow Slimes!");
-    } else if (activeDialogueNPC && activeDialogueNPC.id === 'lyra' && player.activeQuestIndex === 3) {
-      player.activeQuestIndex = 4;
-      updateQuestHUD();
-      sfx.playFanfare();
-      showToast("📜 NEW QUEST: Vanquish the Glacial Behemoth!");
     }
     closeDialogue();
   }
@@ -1807,7 +1815,7 @@
     document.querySelectorAll('.wood-modal').forEach(m => m.style.display = 'none');
   }
 
-  // ── 11. INPUT CONTROLS & PHYSICS ────────────────────────────────────────
+  // ── 10. INPUT CONTROLS & PHYSICS ────────────────────────────────────────
   const keys = {};
   document.addEventListener('keydown', e => {
     keys[e.code] = true;
@@ -1822,26 +1830,11 @@
       toggleTargetLock();
     }
     if (e.code === 'KeyE') {
-      if (activeChestNear && !activeChestNear.opened) {
-        activeChestNear.opened = true;
-        activeChestNear.lidMesh.rotation.x = -Math.PI / 2.5;
-        sfx.playChestOpen();
-        player.gold += 80;
-        document.getElementById('res-gold').textContent = player.gold;
-        if (activeChestNear.reward) {
-          player.backpack.push(activeChestNear.reward);
-          renderBackpack();
-          showToast(`🎁 Opened Chest! Found 80 Gold & ${activeChestNear.reward.name}!`);
-        } else {
-          showToast("🎁 Opened Chest! Found 80 Gold!");
-        }
-        return;
-      }
       if (activePortalNear) {
         if (activePortalNear.unlocked) {
           teleportTo(activePortalNear.destX, activePortalNear.destZ, activePortalNear.destIsland, activePortalNear.name.replace('Portal to ', ''));
         } else {
-          showToast("🔒 This Ancient Portal is sealed! Defeat the island boss to awaken it.");
+          showToast("🔒 Slay the island boss to awaken this portal!");
         }
         return;
       }
@@ -1859,11 +1852,11 @@
     if (e.code === 'KeyK') toggleModal('modal-skills');
     if (e.code === 'KeyM') toggleModal('modal-map');
     if (e.code === 'KeyC') toggleModal('modal-char');
-    if (e.code === 'Digit1') castSkill(1);
-    if (e.code === 'Digit2') castSkill(2);
-    if (e.code === 'Digit3') castSkill(3);
-    if (e.code === 'Digit4') castSkill(4);
-    if (e.code === 'Digit5') castSkill(5);
+    if (e.code === 'Digit1') castSkill(0);
+    if (e.code === 'Digit2') castSkill(1);
+    if (e.code === 'Digit3') castSkill(2);
+    if (e.code === 'Digit4') castSkill(3);
+    if (e.code === 'Digit5') castSkill(4);
     if (e.code === 'KeyF') castSkill(0);
     if (e.code === 'ControlLeft' || e.code === 'ControlRight') {
       shiftlockMode = (shiftlockMode + 1) % 3;
@@ -1895,8 +1888,9 @@
     cameraZoomDistance = Math.max(2.5, Math.min(18.0, cameraZoomDistance + e.deltaY * 0.006));
   });
 
-  // ── 12. MAIN ANIMATION & GAME LOOP ──────────────────────────────────────
+  // ── 11. MAIN ANIMATION LOOP & SMOOTH INTERPOLATION ──────────────────────
   const clock = new THREE.Clock();
+  let smokeTimer = 0;
 
   function animate() {
     requestAnimationFrame(animate);
@@ -1906,7 +1900,14 @@
     sailsGroup.rotation.z += 0.4 * dt;
     portals.forEach(p => { if (p.vortexMesh) p.vortexMesh.rotation.z += 1.5 * dt; });
 
-    // Active Slash Trails decay
+    // Chimney Smoke Spawner
+    smokeTimer += dt;
+    if (smokeTimer > 0.3) {
+      smokeTimer = 0;
+      chimneySmokes.forEach(s => spawnSmokePuff(s));
+    }
+
+    // Slash Trails decay
     for (let i = activeSlashTrails.length - 1; i >= 0; i--) {
       const s = activeSlashTrails[i];
       s.life -= dt;
@@ -1916,13 +1917,20 @@
       }
     }
 
-    // Active VFX Particles decay
+    // VFX Particles update
     for (let i = activeVFXParticles.length - 1; i >= 0; i--) {
       const p = activeVFXParticles[i];
-      p.vel.y -= 14 * dt;
-      p.mesh.position.addScaledVector(p.vel, dt);
-      p.life -= dt;
-      p.mesh.scale.multiplyScalar(0.96);
+      if (p.isSmoke) {
+        p.mesh.position.addScaledVector(p.vel, dt);
+        p.life -= dt;
+        p.mesh.scale.multiplyScalar(1.02);
+        p.mesh.material.opacity = Math.max(0, p.life / 2.2 * 0.5);
+      } else {
+        p.vel.y -= 14 * dt;
+        p.mesh.position.addScaledVector(p.vel, dt);
+        p.life -= dt;
+        p.mesh.scale.multiplyScalar(0.95);
+      }
       if (p.life <= 0) {
         scene.remove(p.mesh); activeVFXParticles.splice(i, 1);
       }
@@ -1932,7 +1940,7 @@
     player.mp = Math.min(player.maxMp, player.mp + 4 * dt);
     player.sta = Math.min(player.maxSta, player.sta + 15 * dt);
 
-    // Cooldown tick
+    // Cooldown ticks
     for (let i = 0; i < player.activeCooldowns.length; i++) {
       if (player.activeCooldowns[i] > 0) {
         player.activeCooldowns[i] -= dt;
@@ -2012,6 +2020,29 @@
         }
       }
 
+      // Smooth Multi-Frame Sword Attack Swing Interpolation (Forward Right-to-Left Slash)
+      if (player.isAttacking) {
+        player.attackProgress += dt / 0.28;
+        if (player.attackProgress >= 1.0) {
+          player.isAttacking = false;
+          armRGroup.rotation.set(0, 0, 0);
+          torsoGroup.rotation.y = 0;
+        } else {
+          const t = player.attackProgress;
+          if (t < 0.25) {
+            // Windup: Pull sword back to right shoulder
+            const ease = t / 0.25;
+            armRGroup.rotation.set(-0.6 * ease, 0.8 * ease, 0.4 * ease);
+            torsoGroup.rotation.y = 0.35 * ease;
+          } else {
+            // Forward Slash: Sweep forward across chest to left
+            const ease = (t - 0.25) / 0.75;
+            armRGroup.rotation.set(-0.6 + 1.6 * ease, 0.8 - 1.8 * ease, 0.4 - 0.8 * ease);
+            torsoGroup.rotation.y = 0.35 - 0.7 * ease;
+          }
+        }
+      }
+
       // Target Lock-On Tracking
       if (player.lockedTarget) {
         const d = Math.hypot(player.lockedTarget.x - player.group.position.x, player.lockedTarget.z - player.group.position.z);
@@ -2041,9 +2072,8 @@
       }
       player.group.quaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), playerYaw);
 
-      // Bilinear Smooth Elevation & Water Clamping
+      // Terrain Elevation Clamping & Gravity
       const groundY = Math.max(0, getTerrainHeight(player.group.position.x, player.group.position.z));
-      
       if (player.group.position.y > groundY + 0.05) {
         vy -= 26 * dt;
       } else {
@@ -2056,36 +2086,23 @@
       }
       player.group.position.y += vy * dt;
 
-      // Update Projectiles (Arrows, Wand Bolts, Fireballs, Meteors)
+      // Update Projectiles
       for (let i = activeProjectiles.length - 1; i >= 0; i--) {
         const p = activeProjectiles[i];
         p.mesh.position.addScaledVector(p.dir, p.speed * dt);
         p.life -= dt;
         let hit = false;
         for (const m of monsters) {
-          if (m.mesh.position.distanceTo(p.mesh.position) < (p.type === 'meteor' ? 3.5 : 1.8)) {
+          if (m.mesh.position.distanceTo(p.mesh.position) < 1.8) {
             hit = true;
             const pDmg = (p.type === 'arrow') ? Math.round(player.atk * 1.3) : Math.round(player.matk * 1.5);
-            damageMonster(m, pDmg, true, p.type === 'wand_bolt' ? '#60a5fa' : (p.type === 'arrow' ? '#fef08a' : '#f97316'));
+            damageMonster(m, pDmg, true, p.type === 'wand_bolt' ? '#60a5fa' : '#fef08a');
             spawnSparkBurst(m.mesh.position, p.type === 'wand_bolt' ? 0x60a5fa : 0xfef08a, 14);
             break;
           }
         }
         if (hit || p.life <= 0) {
           scene.remove(p.mesh); activeProjectiles.splice(i, 1);
-        }
-      }
-
-      // 3D Loot Magnetism Sweep
-      for (let i = activeLootItems.length - 1; i >= 0; i--) {
-        const item = activeLootItems[i];
-        item.mesh.rotation.y += 3.0 * dt;
-        if (Math.hypot(item.x - player.group.position.x, item.z - player.group.position.z) < 3.0) {
-          sfx.playCoin();
-          player.gold += 15;
-          document.getElementById('res-gold').textContent = player.gold;
-          scene.remove(item.mesh);
-          activeLootItems.splice(i, 1);
         }
       }
 
@@ -2111,7 +2128,6 @@
             if (m.atkCd <= 0 && !player.isRolling) {
               m.atkCd = 1.4;
               player.hp = Math.max(0, player.hp - Math.max(2, m.dmg - player.def));
-              sfx.playHit();
               showDamage(m.dmg, player.group.position.clone().add(new THREE.Vector3(0, 1.5, 0)), false, '#ef4444');
               updateVitalsHUD();
             }
@@ -2132,14 +2148,7 @@
       camera.position.copy(head).add(camOffset);
       camera.lookAt(head);
 
-      // Check near Chest / Portal / NPC prompt
-      activeChestNear = null;
-      treasureChests.forEach(c => {
-        if (!c.opened && Math.hypot(c.x - player.group.position.x, c.z - player.group.position.z) < 3.2) {
-          activeChestNear = c;
-        }
-      });
-
+      // Check near Portal / NPC prompt
       activePortalNear = null;
       portals.forEach(p => {
         if (Math.hypot(p.x - player.group.position.x, p.z - player.group.position.z) < 4.0) {
@@ -2155,10 +2164,7 @@
       });
 
       const promptEl = document.getElementById('interact-prompt');
-      if (activeChestNear) {
-        promptEl.style.display = 'block';
-        promptEl.textContent = "PRESS [E] TO OPEN TREASURE CHEST";
-      } else if (activePortalNear) {
+      if (activePortalNear) {
         promptEl.style.display = 'block';
         promptEl.textContent = activePortalNear.unlocked ? `[E] STEP THROUGH ${activePortalNear.name.toUpperCase()}` : `[E] ${activePortalNear.name.toUpperCase()} (LOCKED)`;
       } else if (nearNPC) {
