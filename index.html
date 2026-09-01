@@ -209,7 +209,7 @@
       height: 5px; border-radius: 3px;
     }
 
-    /* Top Center: Adventure Compass & Island Info */
+    /* Top Center: Compass & Current Island */
     #top-compass-banner {
       position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
       z-index: 50; display: flex; flex-direction: column; align-items: center; gap: 4px;
@@ -234,7 +234,7 @@
     }
     @keyframes popIn { 0% { transform: scale(0.6); } 100% { transform: scale(1.0); } }
 
-    /* Top Right: Resources & Questline Tracker Widget */
+    /* Top Right: Resources & Live Quest Tracker */
     #top-right-bar {
       position: fixed; top: 16px; right: 16px; z-index: 50;
       display: flex; flex-direction: column; align-items: flex-end; gap: 8px;
@@ -1406,13 +1406,11 @@
         sfx.playFanfare();
 
         if (m.type === 'guardian') {
-          // Island 1 Complete -> Unlock Portal 1 to Frostveil
           portals[0].unlocked = true;
           player.activeQuestIndex = 3;
           updateQuestHUD();
           showToast("✨ SUN-KEY UNLOCKED! Frostveil Portal is now ACTIVE!");
         } else if (m.type === 'behemoth') {
-          // Island 2 Complete -> Unlock Portal 2 to Caldera
           portals[1].unlocked = true;
           player.activeQuestIndex = 5;
           updateQuestHUD();
