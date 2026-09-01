@@ -52,21 +52,18 @@
     #crosshair::before { top: 6px; left: 0; width: 14px; height: 2px; }
     #crosshair::after { top: 0; left: 6px; width: 2px; height: 14px; }
 
-    /* Target Lock-On Diamond Reticle */
+    /* Target Lock-On Reticle */
     #lockon-reticle {
       position: fixed; pointer-events: none; z-index: 150; display: none;
-      width: 32px; height: 32px; transform: translate(-50%, -50%);
+      width: 34px; height: 34px; transform: translate(-50%, -50%);
       border: 3px solid #ef4444; border-radius: 6px;
-      box-shadow: 0 0 16px rgba(239, 68, 68, 0.9), inset 0 0 8px rgba(239, 68, 68, 0.7);
-      animation: lockPulse 0.8s ease-in-out infinite alternate;
+      box-shadow: 0 0 18px rgba(239, 68, 68, 0.95), inset 0 0 10px rgba(239, 68, 68, 0.8);
+      animation: lockPulse 0.7s ease-in-out infinite alternate;
     }
     @keyframes lockPulse {
-      0% { transform: translate(-50%, -50%) rotate(45deg) scale(0.9); }
-      100% { transform: translate(-50%, -50%) rotate(45deg) scale(1.15); }
+      0% { transform: translate(-50%, -50%) rotate(45deg) scale(0.85); }
+      100% { transform: translate(-50%, -50%) rotate(45deg) scale(1.2); }
     }
-
-    /* Screen Shake Container */
-    #game-container { position: fixed; inset: 0; width: 100vw; height: 100vh; }
 
     /* ─── 1. TITLE SCREEN / MAIN MENU ─── */
     #main-menu {
@@ -106,7 +103,7 @@
       padding: 28px 40px;
       box-shadow: 0 20px 60px rgba(0,0,0,0.95), inset 0 0 25px rgba(0,0,0,0.8), inset 0 2px 4px rgba(254, 240, 138, 0.4);
       display: flex; flex-direction: column; align-items: center; gap: 16px;
-      max-width: 460px; width: 92%;
+      max-width: 480px; width: 92%;
       position: relative;
     }
     .class-select-row {
@@ -487,10 +484,10 @@
   <!-- ─── 1. TITLE SCREEN / MAIN MENU ─── -->
   <div id="main-menu">
     <h1 class="game-logo">CHRONICLES OF AETHELGARD</h1>
-    <div class="game-subtitle">⚔️ Dynamic Lock-On & Fast Combat ⚔️</div>
+    <div class="game-subtitle">⚔️ Dynamic Swords, Arcane Wands & Bows 🏹</div>
     
     <div class="menu-wood-card">
-      <div style="font-size: 12px; color: #fef08a; font-weight: 800; letter-spacing: 1px;">CHOOSE HERO CLASS</div>
+      <div style="font-size: 12px; color: #fef08a; font-weight: 800; letter-spacing: 1px;">CHOOSE HERO CLASS & PATH</div>
       <div class="class-select-row">
         <div class="class-wood-btn selected" id="cls-warrior" onclick="selectClass('Warrior')">
           <div style="font-size: 24px; margin-bottom: 3px;">⚔️</div>
@@ -506,7 +503,7 @@
         </div>
       </div>
       <button class="btn-enter-realm" onclick="startAdventure()">ENTER REALM</button>
-      <div style="font-size: 10px; opacity: 0.75; font-family: var(--font-ui);">WASD Move &middot; Space Jump &middot; V Roll &middot; Tab Lock-On &middot; LMB Combo Slash &middot; 1-5 Spells</div>
+      <div style="font-size: 10px; opacity: 0.75; font-family: var(--font-ui);">WASD Move &middot; Tab Lock-On &middot; LMB Strike / Shoot &middot; 1-5 Spells &middot; I Backpack</div>
     </div>
   </div>
 
@@ -582,7 +579,7 @@
 
     <!-- Controls Reminder -->
     <div id="controls-hint">
-      <kbd>WASD</kbd> Move &middot; <kbd>Tab</kbd> Lock-On &middot; <kbd>Space</kbd> Jump &middot; <kbd>V</kbd> Roll &middot; <kbd>R</kbd> Mount &middot; <kbd>LMB/F</kbd> Combo Slash &middot; <kbd>1-5</kbd> Spells &middot; <kbd>I</kbd> Backpack
+      <kbd>WASD</kbd> Move &middot; <kbd>Tab</kbd> Lock-On &middot; <kbd>Space</kbd> Jump &middot; <kbd>V</kbd> Roll &middot; <kbd>R</kbd> Mount &middot; <kbd>LMB/F</kbd> Attack &middot; <kbd>1-5</kbd> Spells &middot; <kbd>I</kbd> Backpack
     </div>
 
     <!-- World Boss Bar -->
@@ -652,7 +649,7 @@
     <div class="npc-portrait" id="diag-portrait">🧙‍♂️</div>
     <div class="dialogue-content">
       <div class="npc-name" id="diag-name">Elder Cedric</div>
-      <div class="npc-speech" id="diag-speech">Greetings, young traveler. The three realm islands await your courage...</div>
+      <div class="npc-speech" id="diag-speech">Greetings, young traveler. Follow the stone path to unlock the realm's secrets!</div>
       <div class="dialogue-options" id="diag-options">
         <button class="dialogue-opt-btn" onclick="advanceStoryDialogue()">Accept Quest</button>
         <button class="dialogue-opt-btn" onclick="closeDialogue()">Farewell</button>
@@ -664,7 +661,6 @@
   <div id="toast-msg">⭐ LEVEL UP! YOU REACHED LEVEL 2 ⭐</div>
 
   <!-- ─── 5. FANTASY BACKPACK & MODALS ─── -->
-  <!-- Backpack / Inventory Modal -->
   <div class="wood-modal" id="modal-inv">
     <div class="modal-head">
       <h2 class="modal-title">🎒 Adventurer's Backpack & Gear</h2>
@@ -693,9 +689,7 @@
       <!-- 16-Slot Grid -->
       <div>
         <div style="font-size:11px; color:#fde047; font-weight:800; margin-bottom:6px;">BACKPACK SLOTS</div>
-        <div class="inventory-grid" id="backpack-slots-grid">
-          <!-- Populated by JS -->
-        </div>
+        <div class="inventory-grid" id="backpack-slots-grid"></div>
       </div>
     </div>
   </div>
@@ -709,15 +703,15 @@
     <div id="quest-story-list" style="display:flex; flex-direction:column; gap:12px; min-width:320px;">
       <div style="background:#26140b; border:2px solid var(--gold-border); border-radius:12px; padding:12px;">
         <h4 style="color:#fde047; font-size:13px; margin-bottom:4px;">🏝️ Island I: Haven's Sanctuary</h4>
-        <p style="font-size:11px; color:#e2e8f0; font-family:var(--font-ui);">Speak with Elder Cedric, slay 3 Meadow Slimes, and defeat the Forest Guardian to claim the Sun-Key and unlock Portal I.</p>
+        <p style="font-size:11px; color:#e2e8f0; font-family:var(--font-ui);">Follow the stone path, speak with Elder Cedric, slay 3 Meadow Slimes, and defeat the Forest Guardian to claim the Sun-Key and unlock Portal I.</p>
       </div>
       <div style="background:#26140b; border:2px solid var(--gold-border); border-radius:12px; padding:12px;">
         <h4 style="color:#60a5fa; font-size:13px; margin-bottom:4px;">❄️ Island II: Frostveil Peak</h4>
-        <p style="font-size:11px; color:#e2e8f0; font-family:var(--font-ui);">Travel across the northern seas, meet Priestess Lyra, slay the Glacial Behemoth, and awaken the Glacial Keystone to unlock Portal II.</p>
+        <p style="font-size:11px; color:#e2e8f0; font-family:var(--font-ui);">Climb the snowy mountain path, meet Priestess Lyra, slay the Glacial Behemoth, and awaken the Glacial Keystone to unlock Portal II.</p>
       </div>
       <div style="background:#26140b; border:2px solid var(--gold-border); border-radius:12px; padding:12px;">
         <h4 style="color:#ef4444; font-size:13px; margin-bottom:4px;">🌋 Island III: Infernal Caldera</h4>
-        <p style="font-size:11px; color:#e2e8f0; font-family:var(--font-ui);">Ascend the volcanic citadel, vanquish the Ancient Magma Titan, and restore the Heart of Aethelgard to save the realm!</p>
+        <p style="font-size:11px; color:#e2e8f0; font-family:var(--font-ui);">Cross the obsidian lava bridge, vanquish the Ancient Magma Titan, and restore the Heart of Aethelgard to save the realm!</p>
       </div>
     </div>
   </div>
@@ -786,10 +780,10 @@
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; font-size:14px; min-width:280px;">
       <div>Level: <strong id="char-lvl">1</strong></div>
       <div>Class: <strong id="char-class" style="color:#fde047;">Warrior</strong></div>
+      <div>Weapon: <strong id="char-weapon-type" style="color:#60a5fa;">Sword</strong></div>
       <div>Attack Power: <strong id="char-atk">30</strong></div>
       <div>Magic Power: <strong id="char-matk">20</strong></div>
-      <div>Monsters Defeated: <strong id="char-kills">0</strong></div>
-      <div>Unlocked Island: <strong id="char-island" style="color:#60a5fa;">Island I</strong></div>
+      <div>Monsters Slayed: <strong id="char-kills">0</strong></div>
     </div>
   </div>
 
@@ -819,7 +813,7 @@
 
   <script>
   /* =========================================================================
-     CHRONICLES OF AETHELGARD — DYNAMIC COMBAT & VFX ENGINE
+     CHRONICLES OF AETHELGARD — WEAPON SYSTEMS (SWORDS, WANDS, BOWS) & PATHS
      ========================================================================= */
 
   // ── 1. PROCEDURAL SOUND SYNTHESIZER ─────────────────────────────────────
@@ -848,7 +842,8 @@
       } catch(e){}
     }
     playSwing(pitch = 1.0) { this.playTone('sine', 400 * pitch, 80 * pitch, 0.12, 0.3); }
-    playPunch() { this.playTone('triangle', 180, 30, 0.15, 0.45); }
+    playWandBolt() { this.playTone('triangle', 600, 1200, 0.15, 0.3); }
+    playBowShot() { this.playTone('sawtooth', 300, 80, 0.18, 0.35); }
     playHit() { this.playTone('sawtooth', 220, 45, 0.16, 0.4); }
     playHeavyHit() { this.playTone('square', 120, 20, 0.28, 0.5); }
     playMagic() { this.playTone('sawtooth', 400, 950, 0.22, 0.25); }
@@ -859,6 +854,11 @@
     playCoin() { this.playTone('triangle', 850, 1350, 0.12, 0.3); }
     playItem() { this.playTone('triangle', 450, 850, 0.15, 0.35); }
     playLockOn() { this.playTone('sine', 600, 900, 0.1, 0.25); }
+    playChestOpen() {
+      [329.6, 440.0, 554.3, 659.2].forEach((f, i) => {
+        setTimeout(() => this.playTone('triangle', f, f*1.02, 0.2, 0.35), i*80);
+      });
+    }
     playFanfare() {
       [261.6, 329.6, 392.0, 523.2].forEach((f, i) => {
         setTimeout(() => this.playTone('triangle', f, f*1.02, 0.25, 0.35), i*90);
@@ -900,7 +900,7 @@
   const ambLight = new THREE.AmbientLight(0x4a4d62, 0.4);
   scene.add(ambLight);
 
-  // ── 3. PROCEDURAL 3-ISLAND ARCHIPELAGO TERRAIN (750x750) ────────────────
+  // ── 3. PROCEDURAL 3-ISLAND ARCHIPELAGO WITH STONE PATHWAYS ──────────────
   const terrainSize = 750;
   const terrainSegs = 130;
   const terrainGeo = new THREE.PlaneGeometry(terrainSize, terrainSize, terrainSegs, terrainSegs);
@@ -909,6 +909,7 @@
 
   const C_GRASS      = new THREE.Color(0x4ca243);
   const C_DIRT       = new THREE.Color(0x7c5a3a);
+  const C_STONE_PATH = new THREE.Color(0x94a3b8);
   const C_SAND       = new THREE.Color(0xd4a373);
   const C_SNOW       = new THREE.Color(0xf1f5f9);
   const C_ICE_ROCK   = new THREE.Color(0x64748b);
@@ -950,7 +951,9 @@
 
     let c = C_OCEAN_BED.clone();
     if (type === 'HAVEN') {
-      c = (h < 1.5) ? C_SAND : ((h < 4.0) ? C_DIRT : C_GRASS);
+      // Cobblestone path connecting village (0,0) to Portal (0,52)
+      const isPath = (Math.abs(x) < 2.5 && y > -10 && y < 55);
+      c = isPath ? C_STONE_PATH : ((h < 1.5) ? C_SAND : ((h < 4.0) ? C_DIRT : C_GRASS));
     } else if (type === 'FROSTVEIL') {
       c = (h > 24) ? C_SNOW : C_ICE_ROCK;
     } else if (type === 'CALDERA') {
@@ -1032,7 +1035,27 @@
     p.mesh = g;
   });
 
-  // ── 5. DETAILED 3D PROPS & BUILDINGS ────────────────────────────────────
+  // ── 5. INTERACTIVE TREASURE CHESTS ON PATHS ─────────────────────────────
+  const treasureChests = [
+    { id: 'c1', x: 22, z: 12, opened: false, reward: { name: 'Apprentice Wand', icon: '🔮', type: 'weapon', weaponType: 'Wand', matk: 30 } },
+    { id: 'c2', x: -18, z: -250, opened: false, reward: { name: 'Ice-String Bow', icon: '🏹', type: 'weapon', weaponType: 'Bow', atk: 45 } },
+    { id: 'c3', x: 24, z: 240, opened: false, reward: { name: 'Dragonbane Greatsword', icon: '🗡️', type: 'weapon', weaponType: 'Sword', atk: 80 } }
+  ];
+
+  treasureChests.forEach(c => {
+    const g = new THREE.Group();
+    const box = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.8, 0.8), new THREE.MeshStandardMaterial({ color: 0xb45309, flatShading: true }));
+    box.position.y = 0.4; g.add(box);
+    const lid = new THREE.Mesh(new THREE.BoxGeometry(1.26, 0.3, 0.86), new THREE.MeshStandardMaterial({ color: 0xf59e0b }));
+    lid.position.set(0, 0.9, 0); g.add(lid);
+    c.lidMesh = lid;
+    const y = Math.max(0.5, getTerrainHeight(c.x, c.z));
+    g.position.set(c.x, y, c.z);
+    scene.add(g);
+    c.mesh = g;
+  });
+
+  // Village props
   function createTudorHouse(x, z, angle = 0) {
     const g = new THREE.Group();
     const base = new THREE.Mesh(new THREE.BoxGeometry(5.4, 0.6, 5.4), new THREE.MeshStandardMaterial({ color: 0x475569, flatShading: true }));
@@ -1041,8 +1064,6 @@
     stucco.position.y = 1.9; stucco.castShadow = true; stucco.receiveShadow = true; g.add(stucco);
     const roof = new THREE.Mesh(new THREE.ConeGeometry(4.6, 2.8, 4), new THREE.MeshStandardMaterial({ color: 0x991b1b, flatShading: true }));
     roof.position.y = 4.6; roof.rotation.y = Math.PI / 4; roof.castShadow = true; g.add(roof);
-    const door = new THREE.Mesh(new THREE.BoxGeometry(1.2, 2.1, 0.15), new THREE.MeshStandardMaterial({ color: 0x451a03 }));
-    door.position.set(0, 1.35, 2.45); g.add(door);
     g.position.set(x, getTerrainHeight(x, z), z);
     g.rotation.y = angle;
     scene.add(g);
@@ -1130,7 +1151,7 @@
     npc.mesh = g;
   });
 
-  // ── 7. HERO PLAYER & BACKPACK SYSTEM ────────────────────────────────────
+  // ── 7. HERO PLAYER & MULTI-WEAPON SYSTEM (SWORDS, WANDS, BOWS) ──────────
   const player = {
     group: new THREE.Group(),
     lvl: 1, hp: 100, maxHp: 100,
@@ -1141,6 +1162,7 @@
     wood: 50, stone: 30, crystal: 5, gold: 120,
     kills: 0, currentIsland: 1, skillPoints: 0,
     heroClass: 'Warrior',
+    weaponType: 'Sword', // 'Sword', 'Wand', 'Bow'
     isMounted: false,
     isRolling: false, rollTimer: 0, rollDir: new THREE.Vector3(),
     combo: 0, comboTimer: 0, attackChainIndex: 0,
@@ -1162,9 +1184,11 @@
       { id: 'potion_mp', name: 'Mana Potion', icon: '🫙', type: 'consumable', count: 5, effect: 'mp' },
       { id: 'iron_ore', name: 'Iron Ingot', icon: '🪨', type: 'material', count: 12 },
       { id: 'arcane_cryst', name: 'Arcane Gem', icon: '💎', type: 'material', count: 4 },
-      { id: 'sun_blade', name: 'Aethel Blade', icon: '🗡️', type: 'weapon', atk: 25 },
+      { id: 'sun_blade', name: 'Aethel Blade', icon: '🗡️', type: 'weapon', weaponType: 'Sword', atk: 25 },
+      { id: 'wand_basic', name: 'Apprentice Wand', icon: '🔮', type: 'weapon', weaponType: 'Wand', matk: 30 },
+      { id: 'bow_basic', name: 'Hunter Bow', icon: '🏹', type: 'weapon', weaponType: 'Bow', atk: 28 },
       { id: 'shield_iron', name: 'Knight Plate', icon: '🛡️', type: 'armor', def: 15 },
-      null, null, null, null, null, null, null, null, null, null
+      null, null, null, null, null, null, null, null
     ]
   };
 
@@ -1186,21 +1210,44 @@
   const legR = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.55, 0.25), new THREE.MeshStandardMaterial({ color: 0x172554 }));
   legR.position.set(0.16, 0.28, 0); player.group.add(legR);
 
-  // Weapon Mesh with glowing edge
-  const weaponMesh = new THREE.Mesh(
+  // Weapon Rigs Group
+  const weaponsHolder = new THREE.Group();
+  weaponsHolder.position.set(0.48, 0.8, 0.2);
+  player.group.add(weaponsHolder);
+
+  // 1. Sword Mesh
+  const swordMesh = new THREE.Mesh(
     new THREE.BoxGeometry(0.12, 1.3, 0.28),
     new THREE.MeshStandardMaterial({ color: 0xf59e0b, emissive: 0xd97706, emissiveIntensity: 0.6 })
   );
-  weaponMesh.position.set(0.48, 0.8, 0.2); weaponMesh.rotation.x = Math.PI / 6;
-  player.group.add(weaponMesh);
+  swordMesh.rotation.x = Math.PI / 6;
+  weaponsHolder.add(swordMesh);
 
-  // Punch Fist
-  const punchFist = new THREE.Mesh(
-    new THREE.BoxGeometry(0.3, 0.3, 0.3),
-    new THREE.MeshStandardMaterial({ color: 0xf59e0b, emissive: 0xfbbf24, emissiveIntensity: 0.8 })
-  );
-  punchFist.position.set(0, 0.8, 0.6); punchFist.visible = false;
-  player.group.add(punchFist);
+  // 2. Wand Mesh with floating glowing gem orb
+  const wandGroup = new THREE.Group();
+  const wandShaft = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.09, 1.1, 6), new THREE.MeshStandardMaterial({ color: 0x543310 }));
+  wandShaft.rotation.x = Math.PI / 6; wandGroup.add(wandShaft);
+  const wandOrb = new THREE.Mesh(new THREE.DodecahedronGeometry(0.22, 1), new THREE.MeshStandardMaterial({ color: 0x60a5fa, emissive: 0x3b82f6, emissiveIntensity: 0.9 }));
+  wandOrb.position.set(0, 0.6, -0.3); wandGroup.add(wandOrb);
+  wandGroup.visible = false;
+  weaponsHolder.add(wandGroup);
+
+  // 3. Bow Mesh
+  const bowGroup = new THREE.Group();
+  const bowArc = new THREE.Mesh(new THREE.TorusGeometry(0.6, 0.05, 6, 12, Math.PI * 0.8), new THREE.MeshStandardMaterial({ color: 0x854d0e }));
+  bowArc.rotation.z = Math.PI / 2; bowGroup.add(bowArc);
+  bowGroup.visible = false;
+  weaponsHolder.add(bowGroup);
+
+  function updateEquippedWeaponModel(type) {
+    player.weaponType = type;
+    swordMesh.visible = (type === 'Sword');
+    wandGroup.visible = (type === 'Wand');
+    bowGroup.visible = (type === 'Bow');
+    document.getElementById('char-weapon-type').textContent = type;
+    const icon = (type === 'Wand') ? '🔮' : ((type === 'Bow') ? '🏹' : '⚔️');
+    document.getElementById('slot-icon-0').textContent = icon;
+  }
 
   // Direwolf Mount
   const mountGroup = new THREE.Group();
@@ -1214,7 +1261,7 @@
   player.group.position.set(0, getTerrainHeight(0, 0), 0);
   scene.add(player.group);
 
-  // ── 8. 3D VFX PARTICLE SYSTEM ───────────────────────────────────────────
+  // ── 8. 3D VFX & PROJECTILE ENGINE ───────────────────────────────────────
   const activeVFXParticles = [];
   const activeSlashTrails = [];
 
@@ -1231,7 +1278,7 @@
         (Math.random() - 0.5) * 8
       );
       scene.add(p);
-      activeVFXParticles.push({ mesh: p, vel: vel, life: 0.45 + Math.random()*0.3, maxLife: 0.75 });
+      activeVFXParticles.push({ mesh: p, vel: vel, life: 0.45 + Math.random()*0.3 });
     }
   }
 
@@ -1247,14 +1294,11 @@
   }
 
   function triggerScreenShake(intensity = 0.4) {
-    const el = document.body;
     let elapsed = 0;
     const interval = setInterval(() => {
       elapsed += 0.03;
-      if (elapsed > 0.25) {
-        clearInterval(interval);
-        camera.position.x += 0;
-      } else {
+      if (elapsed > 0.25) clearInterval(interval);
+      else {
         camera.position.x += (Math.random() - 0.5) * intensity;
         camera.position.y += (Math.random() - 0.5) * intensity;
       }
@@ -1270,7 +1314,7 @@
       const slot = document.createElement('div');
       slot.className = 'inv-slot';
       if (item) {
-        slot.title = `${item.name} (Click to Use / Equip)`;
+        slot.title = `${item.name} (Click to Equip / Use)`;
         slot.innerHTML = `
           <div class="inv-slot-icon">${item.icon}</div>
           ${item.count ? `<div class="inv-slot-count">${item.count}</div>` : ''}
@@ -1298,12 +1342,15 @@
       updateVitalsHUD();
       renderBackpack();
     } else if (item.type === 'weapon') {
+      if (item.weaponType) updateEquippedWeaponModel(item.weaponType);
       player.atk += item.atk || 10;
+      player.matk += item.matk || 10;
       document.getElementById('char-atk').textContent = player.atk;
+      document.getElementById('char-matk').textContent = player.matk;
       document.getElementById('eq-main-name').textContent = item.name;
       document.getElementById('eq-main-icon').textContent = item.icon;
       sfx.playFanfare();
-      showToast("⚔️ Equipped " + item.name + " (+Atk)!");
+      showToast(`⚔️ Equipped ${item.name}!`);
       renderBackpack();
     }
   }
@@ -1318,9 +1365,6 @@
     if (type === 'slime') {
       const body = new THREE.Mesh(new THREE.DodecahedronGeometry(0.9, 1), new THREE.MeshStandardMaterial({ color: 0x22c55e, flatShading: true, roughness: 0.4 }));
       body.position.y = 0.7; body.castShadow = true; g.add(body);
-      const eye1 = new THREE.Mesh(new THREE.SphereGeometry(0.12, 4, 4), new THREE.MeshBasicMaterial({ color: 0x000000 }));
-      eye1.position.set(-0.25, 0.8, 0.7); g.add(eye1);
-      const eye2 = eye1.clone(); eye2.position.x = 0.25; g.add(eye2);
     } else if (type === 'frost_slime') {
       const body = new THREE.Mesh(new THREE.DodecahedronGeometry(0.9, 1), new THREE.MeshStandardMaterial({ color: 0x38bdf8, emissive: 0x0284c7, emissiveIntensity: 0.4, flatShading: true }));
       body.position.y = 0.7; body.castShadow = true; g.add(body);
@@ -1329,14 +1373,9 @@
       trunk.position.y = 2.1; trunk.castShadow = true; g.add(trunk);
       const canopy = new THREE.Mesh(new THREE.DodecahedronGeometry(2.2, 0), new THREE.MeshStandardMaterial({ color: 0x14532d }));
       canopy.position.y = 4.8; g.add(canopy);
-      const eye = new THREE.Mesh(new THREE.SphereGeometry(0.3, 4, 4), new THREE.MeshBasicMaterial({ color: 0xf59e0b }));
-      eye.position.set(0, 3.2, 1.2); g.add(eye);
     } else if (type === 'behemoth') {
       const body = new THREE.Mesh(new THREE.BoxGeometry(3.0, 3.5, 3.0), new THREE.MeshStandardMaterial({ color: 0x93c5fd, emissive: 0x1d4ed8, emissiveIntensity: 0.5, flatShading: true }));
       body.position.y = 2.4; body.castShadow = true; g.add(body);
-      const horn1 = new THREE.Mesh(new THREE.ConeGeometry(0.5, 2.0, 4), new THREE.MeshStandardMaterial({ color: 0xffffff }));
-      horn1.position.set(-1.2, 4.8, 0); horn1.rotation.z = -0.5; g.add(horn1);
-      const horn2 = horn1.clone(); horn2.position.x = 1.2; horn2.rotation.z = 0.5; g.add(horn2);
     } else if (type === 'titan') {
       const torso = new THREE.Mesh(new THREE.BoxGeometry(2.8, 3.6, 2.2), new THREE.MeshStandardMaterial({ color: 0x1c1917, emissive: 0xef4444, emissiveIntensity: 0.6, flatShading: true }));
       torso.position.y = 3.0; torso.castShadow = true; g.add(torso);
@@ -1355,15 +1394,12 @@
     monsters.push({ name, type, hp, maxHp: hp, dmg, exp, mesh, x, z, y, isBoss, state: 'wander', atkCd: 0, speed: isBoss ? 4.5 : 4.0 });
   }
 
-  // Island 1 Mobs & Boss
   for (let i = 0; i < 8; i++) spawnMob("Meadow Slime", "slime", 50, 6, 25, (Math.random()-0.5)*50, (Math.random()-0.5)*50 + 15, 0.75);
   spawnMob("Gloom Treant Sentinel", "guardian", 450, 16, 250, 0, 38, 1.2, true);
 
-  // Island 2 Mobs & Boss
   for (let i = 0; i < 8; i++) spawnMob("Frost Slime", "frost_slime", 120, 14, 60, (Math.random()-0.5)*60, -260 + (Math.random()-0.5)*60, 0.8);
   spawnMob("Glacial Behemoth", "behemoth", 1200, 32, 800, 0, -285, 1.4, true);
 
-  // Island 3 Mobs & Final Titan Boss
   spawnMob("Ancient Magma Titan", "titan", 3800, 55, 3000, 0, 260, 2.6, true);
 
   function spawn3DLoot(x, y, z) {
@@ -1377,16 +1413,29 @@
   }
 
   function spawnSpellProjectile(type, origin, dir) {
-    const pMesh = new THREE.Mesh(
-      new THREE.SphereGeometry(type === 'meteor' ? 0.9 : 0.35, 6, 6),
-      new THREE.MeshBasicMaterial({ color: type === 'fireball' ? 0xf97316 : (type === 'frost' ? 0x38bdf8 : 0xfacc15) })
-    );
-    pMesh.position.copy(origin); scene.add(pMesh);
-    activeProjectiles.push({ type: type, mesh: pMesh, dir: dir.clone().normalize(), speed: 24, life: 2.5 });
-    sfx.playMagic();
+    let pMesh;
+    if (type === 'arrow') {
+      pMesh = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.04, 0.04, 1.2, 4),
+        new THREE.MeshBasicMaterial({ color: 0xfef08a })
+      );
+      pMesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir);
+    } else if (type === 'wand_bolt') {
+      pMesh = new THREE.Mesh(
+        new THREE.SphereGeometry(0.24, 6, 6),
+        new THREE.MeshBasicMaterial({ color: 0x60a5fa })
+      );
+    } else {
+      pMesh = new THREE.Mesh(
+        new THREE.SphereGeometry(type === 'meteor' ? 0.9 : 0.35, 6, 6),
+        new THREE.MeshBasicMaterial({ color: type === 'fireball' ? 0xf97316 : (type === 'frost' ? 0x38bdf8 : 0xfacc15) })
+      );
+    }
+    pMesh.position.copy(origin);
+    scene.add(pMesh);
+    activeProjectiles.push({ type: type, mesh: pMesh, dir: dir.clone().normalize(), speed: (type === 'arrow' ? 38 : 24), life: 2.5 });
   }
 
-  // Target Lock-On Toggle
   function toggleTargetLock() {
     if (player.lockedTarget) {
       player.lockedTarget = null;
@@ -1405,7 +1454,6 @@
     }
   }
 
-  // Dynamic Combo Chain & Lunge Attack
   function castSkill(slot) {
     if (player.activeCooldowns[slot] > 0) return;
     const manaCosts = [0, 15, 20, 25, 30, 50];
@@ -1421,47 +1469,59 @@
     }
 
     if (slot === 0) {
-      // 3-Hit Combo Chain & Lunge
-      player.activeCooldowns[0] = 0.32;
-      player.attackChainIndex = (player.attackChainIndex + 1) % 3;
-
-      // Lunge forward with momentum
-      player.lungeVelocity.copy(fwd).multiplyScalar(14.0);
-
-      const chain = player.attackChainIndex;
-      if (chain === 0) {
-        // Strike 1: Swift Slash
-        sfx.playSwing(1.2);
-        weaponMesh.rotation.set(0, 1.4, -1.2);
-        spawnSlashArc(player.group.position, playerYaw, 0xfde047);
-      } else if (chain === 1) {
-        // Strike 2: Rising Uppercut Slash
-        sfx.playSwing(1.4);
-        weaponMesh.rotation.set(-1.6, 0, 0.8);
-        spawnSlashArc(player.group.position, playerYaw + Math.PI/4, 0xf97316);
+      if (player.weaponType === 'Wand') {
+        // Wand Magic Bolt
+        player.activeCooldowns[0] = 0.28;
+        sfx.playWandBolt();
+        wandGroup.rotation.x = -Math.PI / 4;
+        setTimeout(() => wandGroup.rotation.x = 0, 150);
+        spawnSpellProjectile('wand_bolt', player.group.position.clone().add(new THREE.Vector3(0, 1.2, 0)), fwd);
+      } else if (player.weaponType === 'Bow') {
+        // Bow Arrow Shot
+        player.activeCooldowns[0] = 0.35;
+        sfx.playBowShot();
+        bowGroup.rotation.y = Math.PI / 4;
+        setTimeout(() => bowGroup.rotation.y = 0, 180);
+        spawnSpellProjectile('arrow', player.group.position.clone().add(new THREE.Vector3(0, 1.2, 0)), fwd);
       } else {
-        // Strike 3: Heavy Ground Smash Finisher
-        sfx.playHeavyHit();
-        weaponMesh.rotation.set(2.2, 0, 0);
-        triggerScreenShake(0.35);
-        spawnSlashArc(player.group.position, playerYaw - Math.PI/4, 0xef4444);
-        spawnSparkBurst(player.group.position.clone().add(fwd.clone().multiplyScalar(2)), 0xf59e0b, 18);
-      }
-      setTimeout(() => weaponMesh.rotation.set(Math.PI / 6, 0, 0), 180);
+        // Sword 3-Hit Combo Chain & Lunge
+        player.activeCooldowns[0] = 0.32;
+        player.attackChainIndex = (player.attackChainIndex + 1) % 3;
+        player.lungeVelocity.copy(fwd).multiplyScalar(14.0);
 
-      monsters.forEach(m => {
-        if (Math.hypot(m.x - player.group.position.x, m.z - player.group.position.z) < 5.2) {
-          player.combo++;
-          player.comboTimer = 3.5;
-          const isCrit = Math.random() < (player.crit / 100);
-          const mult = (chain === 2) ? 1.6 : 1.0;
-          const dmg = Math.round(player.atk * mult * (1 + Math.min(1.0, player.combo * 0.05)) * (isCrit ? 1.8 : 1.0));
-          damageMonster(m, dmg, isCrit);
-          spawnSparkBurst(m.mesh.position, isCrit ? 0xfde047 : 0xf97316, 12);
+        const chain = player.attackChainIndex;
+        if (chain === 0) {
+          sfx.playSwing(1.2);
+          swordMesh.rotation.set(0, 1.4, -1.2);
+          spawnSlashArc(player.group.position, playerYaw, 0xfde047);
+        } else if (chain === 1) {
+          sfx.playSwing(1.4);
+          swordMesh.rotation.set(-1.6, 0, 0.8);
+          spawnSlashArc(player.group.position, playerYaw + Math.PI/4, 0xf97316);
+        } else {
+          sfx.playHeavyHit();
+          swordMesh.rotation.set(2.2, 0, 0);
+          triggerScreenShake(0.35);
+          spawnSlashArc(player.group.position, playerYaw - Math.PI/4, 0xef4444);
+          spawnSparkBurst(player.group.position.clone().add(fwd.clone().multiplyScalar(2)), 0xf59e0b, 18);
         }
-      });
+        setTimeout(() => swordMesh.rotation.set(Math.PI / 6, 0, 0), 180);
+
+        monsters.forEach(m => {
+          if (Math.hypot(m.x - player.group.position.x, m.z - player.group.position.z) < 5.2) {
+            player.combo++;
+            player.comboTimer = 3.5;
+            const isCrit = Math.random() < (player.crit / 100);
+            const mult = (chain === 2) ? 1.6 : 1.0;
+            const dmg = Math.round(player.atk * mult * (1 + Math.min(1.0, player.combo * 0.05)) * (isCrit ? 1.8 : 1.0));
+            damageMonster(m, dmg, isCrit);
+            spawnSparkBurst(m.mesh.position, isCrit ? 0xfde047 : 0xf97316, 12);
+          }
+        });
+      }
     } else if (slot === 1) {
       player.activeCooldowns[1] = 1.2;
+      sfx.playMagic();
       spawnSpellProjectile('fireball', player.group.position.clone().add(new THREE.Vector3(0, 1.2, 0)), fwd);
     } else if (slot === 2) {
       player.activeCooldowns[2] = 3.5;
@@ -1673,6 +1733,7 @@
   let cameraZoomDistance = 7.0;
   let activeDialogueNPC = null;
   let activePortalNear = null;
+  let activeChestNear = null;
 
   function selectClass(cls) {
     player.heroClass = cls;
@@ -1681,6 +1742,9 @@
     document.getElementById('char-class').textContent = cls;
     const icons = { Warrior: '⚔️', Mage: '🔮', Rogue: '🏹' };
     document.getElementById('hero-avatar').textContent = icons[cls];
+    if (cls === 'Warrior') updateEquippedWeaponModel('Sword');
+    else if (cls === 'Mage') updateEquippedWeaponModel('Wand');
+    else if (cls === 'Rogue') updateEquippedWeaponModel('Bow');
   }
 
   function startAdventure() {
@@ -1758,6 +1822,21 @@
       toggleTargetLock();
     }
     if (e.code === 'KeyE') {
+      if (activeChestNear && !activeChestNear.opened) {
+        activeChestNear.opened = true;
+        activeChestNear.lidMesh.rotation.x = -Math.PI / 2.5;
+        sfx.playChestOpen();
+        player.gold += 80;
+        document.getElementById('res-gold').textContent = player.gold;
+        if (activeChestNear.reward) {
+          player.backpack.push(activeChestNear.reward);
+          renderBackpack();
+          showToast(`🎁 Opened Chest! Found 80 Gold & ${activeChestNear.reward.name}!`);
+        } else {
+          showToast("🎁 Opened Chest! Found 80 Gold!");
+        }
+        return;
+      }
       if (activePortalNear) {
         if (activePortalNear.unlocked) {
           teleportTo(activePortalNear.destX, activePortalNear.destZ, activePortalNear.destIsland, activePortalNear.name.replace('Portal to ', ''));
@@ -1898,7 +1977,6 @@
       const right = new THREE.Vector3(Math.cos(yaw), 0, -Math.sin(yaw));
       const move = new THREE.Vector3();
 
-      // Apply attack lunging momentum
       if (player.lungeVelocity.lengthSq() > 0.01) {
         player.group.position.addScaledVector(player.lungeVelocity, dt);
         player.lungeVelocity.multiplyScalar(0.82);
@@ -1941,16 +2019,12 @@
           player.lockedTarget = null;
           document.getElementById('lockon-reticle').style.display = 'none';
         } else {
-          // Orient hero towards locked enemy
           const targetYaw = Math.atan2(player.lockedTarget.x - player.group.position.x, player.lockedTarget.z - player.group.position.z);
           let diff = targetYaw - playerYaw;
           diff = Math.atan2(Math.sin(diff), Math.cos(diff));
           playerYaw += diff * 16 * dt;
-
-          // Align camera towards target
           yaw += (targetYaw + Math.PI - yaw) * 6 * dt;
 
-          // Screen Reticle
           const screenPos = player.lockedTarget.mesh.position.clone().add(new THREE.Vector3(0, 1.8, 0)).project(camera);
           if (screenPos.z < 1) {
             const rEl = document.getElementById('lockon-reticle');
@@ -1982,7 +2056,7 @@
       }
       player.group.position.y += vy * dt;
 
-      // Update Projectiles
+      // Update Projectiles (Arrows, Wand Bolts, Fireballs, Meteors)
       for (let i = activeProjectiles.length - 1; i >= 0; i--) {
         const p = activeProjectiles[i];
         p.mesh.position.addScaledVector(p.dir, p.speed * dt);
@@ -1991,8 +2065,9 @@
         for (const m of monsters) {
           if (m.mesh.position.distanceTo(p.mesh.position) < (p.type === 'meteor' ? 3.5 : 1.8)) {
             hit = true;
-            damageMonster(m, Math.round(player.matk * 1.6), true, p.type === 'fireball' ? '#f97316' : '#38bdf8');
-            spawnSparkBurst(m.mesh.position, p.type === 'fireball' ? 0xf97316 : 0x38bdf8, 16);
+            const pDmg = (p.type === 'arrow') ? Math.round(player.atk * 1.3) : Math.round(player.matk * 1.5);
+            damageMonster(m, pDmg, true, p.type === 'wand_bolt' ? '#60a5fa' : (p.type === 'arrow' ? '#fef08a' : '#f97316'));
+            spawnSparkBurst(m.mesh.position, p.type === 'wand_bolt' ? 0x60a5fa : 0xfef08a, 14);
             break;
           }
         }
@@ -2057,7 +2132,14 @@
       camera.position.copy(head).add(camOffset);
       camera.lookAt(head);
 
-      // Check near Portal / NPC prompt
+      // Check near Chest / Portal / NPC prompt
+      activeChestNear = null;
+      treasureChests.forEach(c => {
+        if (!c.opened && Math.hypot(c.x - player.group.position.x, c.z - player.group.position.z) < 3.2) {
+          activeChestNear = c;
+        }
+      });
+
       activePortalNear = null;
       portals.forEach(p => {
         if (Math.hypot(p.x - player.group.position.x, p.z - player.group.position.z) < 4.0) {
@@ -2073,7 +2155,10 @@
       });
 
       const promptEl = document.getElementById('interact-prompt');
-      if (activePortalNear) {
+      if (activeChestNear) {
+        promptEl.style.display = 'block';
+        promptEl.textContent = "PRESS [E] TO OPEN TREASURE CHEST";
+      } else if (activePortalNear) {
         promptEl.style.display = 'block';
         promptEl.textContent = activePortalNear.unlocked ? `[E] STEP THROUGH ${activePortalNear.name.toUpperCase()}` : `[E] ${activePortalNear.name.toUpperCase()} (LOCKED)`;
       } else if (nearNPC) {
